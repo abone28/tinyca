@@ -1,6 +1,6 @@
 # spec file for package tinyca
 #
-# $Id: tinyca.spec,v 1.9 2003/10/03 17:31:11 sm Exp $
+# $Id: tinyca.spec,v 1.13 2004/06/13 13:26:53 sm Exp $
 #
 # Copyright (c) 2002 Stephan Martin
 # This file and all modifications and additions to the pristine
@@ -44,7 +44,9 @@ TinyCA supports - creation and revocation of x509 - S/MIME
    and more.
 
 - client certificates for use in web browsers, email clients, IPsec,
-and more.
+  and more.
+
+- creation and management of SubCAs
 
 
 Authors:
@@ -66,9 +68,11 @@ make -C po
 
 mkdir -p $RPM_BUILD_ROOT%{bindir}
 mkdir -p $RPM_BUILD_ROOT%{libdir}
+mkdir -p $RPM_BUILD_ROOT%{libdir}/GUI
 mkdir -p $RPM_BUILD_ROOT%{templatesdir}
 mkdir -p $RPM_BUILD_ROOT%{localedir}/de/LC_MESSAGES/
 install -m 644 lib/*.pm $RPM_BUILD_ROOT%{libdir}
+install -m 644 lib/GUI/*.pm $RPM_BUILD_ROOT%{libdir}/GUI/
 install -m 644 templates/openssl.cnf $RPM_BUILD_ROOT%{templatesdir}
 install -m 755 tinyca $RPM_BUILD_ROOT%{bindir}
 install -m 644 locale/de/LC_MESSAGES/tinyca.mo %{buildroot}%{localedir}/de/LC_MESSAGES/
@@ -91,6 +95,13 @@ rm -rf %{buildroot}
 %endif
 
 %changelog
+* Sun Jun 13 2004 - sm@sm-zone.net
+- gui polishing
+- code cleanup
+- some usability improvements
+* Wed Jun  2 2004 - sm@sm-zone.net
+- gui polishing
+- GUI module splitted to several files
 * Fri Oct  3 2003 - sm@sm-zone.net
 - added a lot of configuration options
 - correctly import/show details of requests without extensions

@@ -1,4 +1,9 @@
-$Id: CHANGES,v 1.8 2004/05/22 14:28:26 sm Exp $
+$Id: CHANGES,v 1.10 2004/06/13 13:26:11 sm Exp $
+
+version 0.6.2 (beta) - Sun Jun 13 2004
+   * added new look for some functions
+   * key, request and certificate can be generated in one step
+   * code cleanup
 
 version 0.6.1 (beta) - Sat May 22 2004
    * fixed bug, which made it impossible to create a new Root-CA

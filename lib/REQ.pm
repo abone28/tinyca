@@ -1,6 +1,6 @@
 # Copyright (c) Stephan Martin <sm@sm-zone.net>
 #
-# $Id: REQ.pm,v 1.19 2004/05/06 19:22:23 sm Exp $
+# $Id: REQ.pm,v 1.28 2004/06/13 13:19:08 sm Exp $
 # 
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -40,19 +40,34 @@ sub get_req_create {
 
    $box->destroy() if(defined($box));
 
-   my ($name, $action, $parsed, $reqfile, $keyfile, $ca);
+   my ($name, $action, $parsed, $reqfile, $keyfile, $ca, $t);
 
    $ca   = $main->{'CA'}->{'actca'};
 
-   if(!(defined($opts))) {
+   if(!(defined($opts)) || !(ref($opts))) {
+      if(defined($opts) && $opts eq "signserver") {
+         $opts = {};
+         $opts->{'sign'} = 1;
+         $opts->{'type'} = "server";
+      } elsif(defined($opts) && $opts eq "signclient") {
+         $opts = {};
+         $opts->{'sign'} = 1;
+         $opts->{'type'} = "client";
+      } else {
+         $t = sprintf(gettext("Strange value for 'opts': %s"), $opts);
+         GUI::HELPERS::print_error($t);
+      }
       $opts->{'bits'}   = 2048;
       $opts->{'digest'} = 'sha1';
       $opts->{'algo'}   = 'rsa';
+      if(defined($opts) && $opts eq "sign") {
+         $opts->{'sign'} = 1;
+      }
    
       $parsed = $main->{'CERT'}->parse_cert($main, 'CA');
       
       defined($parsed) || 
-         $main->print_error(gettext("Can't read CA certificate"));
+         GUI::HELPERS::print_error(gettext("Can't read CA certificate"));
    
       # set defaults
       if(defined $parsed->{'C'}) {
@@ -75,34 +90,35 @@ sub get_req_create {
       return;
    }
 
-   if((not defined($opts->{'C'})) ||
-      ($opts->{'C'} eq "") ||
-      (not defined($opts->{'CN'})) ||
+   if((not defined($opts->{'CN'})) ||
       ($opts->{'CN'} eq "") ||
       (not defined($opts->{'passwd'})) ||
       ($opts->{'passwd'} eq "")) {
       $main->show_req_dialog($opts); 
-      $main->print_warning(gettext("Please specify at least Common Name, ")
-                          .gettext("Country and Password"));
+      GUI::HELPERS::print_warning(
+            gettext("Please specify at least Common Name ")
+            .gettext("and Password"));
       return;
    }
 
    if((not defined($opts->{'passwd2'})) ||
        $opts->{'passwd'} ne $opts->{'passwd2'}) { 
       $main->show_req_dialog($opts); 
-      $main->print_warning(gettext("Passwords don't match"));
+      GUI::HELPERS::print_warning(gettext("Passwords don't match"));
       return;
    }
 
    $opts->{'C'} = uc($opts->{'C'});
 
-   if(length($opts->{'C'}) != 2) {
+   if((defined $opts->{'C'}) &&
+      ($opts->{'C'} ne "") &&
+      (length($opts->{'C'}) != 2)) {
       $main->show_req_dialog($opts); 
-      $main->print_warning(gettext("Country must be exact 2 letter code"));
+      GUI::HELPERS::print_warning(gettext("Country must be exact 2 letter code"));
       return;
    }
 
-   $name = _gen_name($opts);
+   $name = HELPERS::gen_name($opts);
 
    $opts->{'reqname'} = MIME::Base64::encode($name, '');
 
@@ -125,27 +141,27 @@ sub get_req_create {
 sub create_req {
    my ($self, $main, $opts) = @_;
 
-   my($reqfile, $keyfile, $ca);
+   my($reqfile, $keyfile, $ca, $ret, $ext);
 
    $ca   = $main->{'CA'}->{'actca'};
 
    $reqfile = $main->{'CA'}->{$ca}->{'dir'}."/req/".$opts->{'reqname'}.".pem";
    $keyfile = $main->{'CA'}->{$ca}->{'dir'}."/keys/".$opts->{'reqname'}.".pem";
          
-   $main->{'OpenSSL'}->newkey(
+   ($ret, $ext) = $main->{'OpenSSL'}->newkey(
          'algo'    => $opts->{'algo'},
          'bits'    => $opts->{'bits'},
          'outfile' => $keyfile,
          'pass'    => $opts->{'passwd'}
          );
 
-   if (not -s $keyfile) { 
+   if (not -s $keyfile || $ret) { 
       unlink($keyfile);
-      $main->print_warning(gettext("Generating key failed"));
+      GUI::HELPERS::print_warning(gettext("Generating key failed"), $ext);
       return;
    }
 
-   $main->{'OpenSSL'}->newreq(
+   ($ret, $ext) = $main->{'OpenSSL'}->newreq(
          'config'   => $main->{'CA'}->{$ca}->{'cnf'},
          'outfile'  => $reqfile,
          'keyfile'  => $keyfile,
@@ -163,14 +179,20 @@ sub create_req {
                        ],
          );
 
-   if (not -s $reqfile) { 
+   if (not -s $reqfile || $ret) { 
       unlink($keyfile);
       unlink($reqfile);
-      $main->print_warning(gettext("Generating Request failed"));
+      GUI::HELPERS::print_warning(gettext("Generating Request failed"), $ext);
       return;
    }
 
    $main->create_mframe();
+
+   if($opts->{'sign'}) {
+      $opts->{'reqfile'} = $reqfile;
+      $opts->{'passwd'}  = undef; # to sign request, ca-password is needed
+      $self->get_sign_req($main, $opts);
+   }
 
    return;
 }
@@ -189,7 +211,7 @@ sub get_del_req {
    $ind = $main->{'reqlist'}->get_text($row, 7);
 
    if(not defined($ind)) {
-      $main->print_info(gettext("Please select a Request first"));
+      GUI::HELPERS::print_info(gettext("Please select a Request first"));
       return;
    }
 
@@ -200,7 +222,7 @@ sub get_del_req {
    $reqfile = $main->{'CA'}->{$ca}->{'dir'}."/req/".$reqname.".pem";
 
    if(not -s $reqfile) {
-      $main->print_warning(gettext("Request file not found"));
+      GUI::HELPERS::print_warning(gettext("Request file not found"));
       return;
    }
 
@@ -240,7 +262,7 @@ sub read_reqlist {
    }
 
    opendir(DIR, $reqdir) || do {
-      $main->print_warning(gettext("Can't open Request directory"));
+      GUI::HELPERS::print_warning(gettext("Can't open Request directory"));
       return(0);
    };
 
@@ -267,7 +289,7 @@ sub read_reqlist {
 sub get_sign_req {
    my ($self, $main, $opts, $box) = @_;
 
-   my($row, $ind, $time, $parsed, $ca);
+   my($row, $ind, $time, $parsed, $ca, $ext, $ret);
 
    $ca   = $main->{'CA'}->{'actca'};
 
@@ -280,7 +302,7 @@ sub get_sign_req {
       $ind = $main->{'reqlist'}->get_text($row, 7);
 
       if(not defined($ind)) {
-         $main->print_info(gettext("Please select a Request first"));
+         GUI::HELPERS::print_info(gettext("Please select a Request first"));
          return;
       }
 
@@ -292,7 +314,7 @@ sub get_sign_req {
          $main->{'CA'}->{$ca}->{'dir'}."/req/".$opts->{'reqname'}.".pem";
 
       if(not -s $opts->{'reqfile'}) {
-         $main->print_warning(gettext("Request file not found"));
+         GUI::HELPERS::print_warning(gettext("Request file not found"));
          return;
       }
    }
@@ -312,16 +334,19 @@ sub get_sign_req {
 
    $parsed = $main->{'CERT'}->parse_cert($main, 'CA');
 
-   defined($parsed) || $main->print_error(gettext("Can't read CA certificate"));
+   defined($parsed) || 
+      GUI::HELPERS::print_error(gettext("Can't read CA certificate"));
 
    if((($time + ($opts->{'days'} * 86400)) > $parsed->{'EXPDATE'}) &&
-      (!(defined($opts->{'ignoredate'})) || $opts->{'ignoredate'} ne 'true')){
+      (!(defined($opts->{'ignoredate'})) || 
+       $opts->{'ignoredate'} ne 'true')){
       $main->show_req_date_warning($opts);
       return;
    }
 
-   $self->sign_req($main, $opts);
-   return;
+   ($ret, $ext) = $self->sign_req($main, $opts);
+
+   return($ret, $ext);
 }
 
 #
@@ -330,13 +355,13 @@ sub get_sign_req {
 sub sign_req {
    my ($self, $main, $opts) = @_;
 
-   my($serial, $certout, $certfile, $certfile2, $ca, $ret, $t);
+   my($serial, $certout, $certfile, $certfile2, $ca, $ret, $t, $ext);
 
    $ca = $main->{'CA'}->{'actca'};
 
    $serial = $main->{'CA'}->{$ca}->{'dir'}."/serial";
    open(IN, "<$serial") || do {
-      $main->print_warning(gettext("Can't read serial"));
+      GUI::HELPERS::print_warning(gettext("Can't read serial"));
       return;
    };
    $serial = <IN>;
@@ -361,7 +386,7 @@ sub sign_req {
    }
 
    if(defined($opts->{'mode'}) && $opts->{'mode'} eq "sub") {
-      $ret = $main->{'OpenSSL'}->signreq(
+      ($ret, $ext) = $main->{'OpenSSL'}->signreq(
             'mode'            => $opts->{'mode'},
             'config'          => $main->{'CA'}->{$ca}->{'cnf'},
             'reqfile'         => $opts->{'reqfile'},
@@ -377,7 +402,7 @@ sub sign_req {
             'subjaltnametype' => $opts->{'subjectAltNameType'}
             );
    } else {
-      $ret = $main->{'OpenSSL'}->signreq(
+      ($ret, $ext) = $main->{'OpenSSL'}->signreq(
             'config'          => $main->{'CA'}->{$ca}->{'cnf'},
             'reqfile'         => $opts->{'reqfile'},
             'days'            => $opts->{'days'},
@@ -389,27 +414,29 @@ sub sign_req {
             'subjaltname'     => $opts->{'subjectAltName'},
             'subjaltnametype' => $opts->{'subjectAltNameType'}
             );
+
    }
 
-   if($ret == 1) {
+   if($ret eq 1) {
       $t = gettext("Wrong CA password given\nSigning of the Request failed");
-      $main->print_warning($t);
+      GUI::HELPERS::print_warning($t, $ext);
       return;
-   } elsif($ret == 2) {
+   } elsif($ret eq 2) {
       $t = gettext("CA Key not found\nSigning of the Request failed");
-      $main->print_warning($t);
+      GUI::HELPERS::print_warning($t, $ext);
       return;
-   } elsif($ret == 3) {
+   } elsif($ret eq 3) {
       $t = gettext("Certificate already existing\nSigning of the Request failed");
-      $main->print_warning($t);
+      GUI::HELPERS::print_warning($t, $ext);
       return;
-   } elsif($ret == 4) {
+   } elsif($ret eq 4) {
       $t = gettext("Invalid IP Address given\nSigning of the Request failed");
-      $main->print_warning($t);
+      GUI::HELPERS::print_warning($t, $ext);
       return;
    } elsif($ret) {
-      $main->print_warning(gettext("Signing of the Request failed"));
-      return;
+      GUI::HELPERS::print_warning(
+            gettext("Signing of the Request failed"), $ext);
+      return($ret, $ext);
    }
 
    if(defined($opts->{'mode'}) && $opts->{'mode'} eq "sub") {
@@ -422,16 +449,17 @@ sub sign_req {
    }
 
    if (not -s $certout) {
-         $main->print_warning(gettext("Signing of the Request failed"));
+         GUI::HELPERS::print_warning(
+               gettext("Signing of the Request failed"), $ext);
          return;
    }
 
    open(IN, "<$certout") || do {
-      $main->print_warning(gettext("Can't read Certificate file"));
+      GUI::HELPERS::print_warning(gettext("Can't read Certificate file"));
       return;
    };
    open(OUT, ">$certfile") || do {
-      $main->print_warning(gettext("Can't write Certificate file"));
+      GUI::HELPERS::print_warning(gettext("Can't write Certificate file"));
       return;
    };
    print OUT while(<IN>);
@@ -439,7 +467,7 @@ sub sign_req {
    if(defined($opts->{'mode'}) && $opts->{'mode'} eq "sub") {
       close OUT;
       open(OUT, ">$certfile2") || do {
-         $main->print_warning(gettext("Can't write Certificate file"));
+         GUI::HELPERS::print_warning(gettext("Can't write Certificate file"));
          return;
       };
       seek(IN, 0, 0);
@@ -448,14 +476,15 @@ sub sign_req {
    
    close IN; close OUT;
 
-   $main->print_info("Request signed succesfully.\nCertificate created");
+   GUI::HELPERS::print_info(
+         gettext("Request signed succesfully.\nCertificate created"), $ext);
    
    # force reread of certlist
    $main->{'CERT'}->read_certlist($main, 1);
 
    $main->create_mframe();
      
-   return;
+   return($ret, $ext);
 }
 
 #
@@ -463,6 +492,8 @@ sub sign_req {
 #
 sub get_import_req {
    my ($self, $main, $opts, $box) = @_;
+
+   my ($ret, $ext, $der);
 
    $box->destroy() if(defined($box));
 
@@ -477,18 +508,18 @@ sub get_import_req {
 
    if(not defined($opts->{'infile'})) {
       $main->show_req_import_dialog();
-      $main->print_warning(gettext("Please select a Request file first"));
+      GUI::HELPERS::print_warning(gettext("Please select a Request file first"));
       return;
    }
    if(not -s $opts->{'infile'}) {
       $main->show_req_import_dialog();
-      $main->print_warning(
+      GUI::HELPERS::print_warning(
             gettext("Can't find Request file: ").$opts->{'infile'});
       return;
    }
 
    open(IN, "<$opts->{'infile'}") || do {
-      $main->print_warning(
+      GUI::HELPERS::print_warning(
             gettext("Can't read Request file:").$opts->{'infile'});
       return;
    };
@@ -503,18 +534,24 @@ sub get_import_req {
    }
 
    if($format eq "DER") {
-      $opts->{'in'} = $main->{'OpenSSL'}->convdata(
+      ($ret, $der, $ext) = $opts->{'in'} = $main->{'OpenSSL'}->convdata(
             'cmd'     => 'req',
-            'main'    => $main,
             'data'    => $opts->{'in'},
             'inform'  => 'DER',
             'outform' => 'PEM'
             );
 
-      $opts->{'tmpfile'} = _mktmp($main->{'OpenSSL'}->{'tmp'}."/import");
+      if($ret) {
+         GUI::HELPERS::print_warning(
+               gettext("Error converting Request"), $ext);
+         return;
+      }
+
+      $opts->{'tmpfile'} = 
+         HELPERS::mktmp($main->{'OpenSSL'}->{'tmp'}."/import");
    
       open(TMP, ">$opts->{'tmpfile'}") || do {
-         $main->print_warning( gettext("Can't create temporary file: %s: %s"),
+         GUI::HELPERS::print_warning( gettext("Can't create temporary file: %s: %s"),
                $opts->{'tmpfile'}, $!);
          return;
       };
@@ -523,11 +560,13 @@ sub get_import_req {
       $file = $opts->{'tmpfile'};
    }
 
-   $parsed = $main->{'OpenSSL'}->parsereq($main, $file);
+   $parsed = $main->{'OpenSSL'}->parsereq(
+			$main->{'CA'}->{$ca}->{'cnf'},
+			$file);
    
    if(not defined($parsed)) {
       unlink($opts->{'tmpfile'});
-      $main->print_warning(gettext("Parsing Request failed"));
+      GUI::HELPERS::print_warning(gettext("Parsing Request failed"));
       return;
    }
    
@@ -545,7 +584,7 @@ sub import_req {
    
    my $ca = $main->{'CA'}->{'actca'};
 
-   $opts->{'name'} = _gen_name($parsed);
+   $opts->{'name'} = HELPERS::gen_name($parsed);
    
    $opts->{'reqname'} = MIME::Base64::encode($opts->{'name'}, '');
 
@@ -554,7 +593,7 @@ sub import_req {
 
    open(OUT, ">$opts->{'reqfile'}") || do {
       unlink($opts->{'tmpfile'});
-      $main->print_warning(gettext("Can't open output file: %s: %s"),
+      GUI::HELPERS::print_warning(gettext("Can't open output file: %s: %s"),
             $opts->{'reqfile'}, $!);
       return;
    };
@@ -575,55 +614,46 @@ sub parse_req {
 
    $reqfile = $main->{'CA'}->{$ca}->{'dir'}."/req/".$name.".pem";
 
-   $parsed = $main->{'OpenSSL'}->parsereq( $main, $reqfile);
+   $parsed = $main->{'OpenSSL'}->parsereq(
+			$main->{'CA'}->{$ca}->{'cnf'},
+			$reqfile);
 
    return($parsed);
-}
-
-
-sub _mktmp {
-   my $base = shift;
-
-   my @rand = ();
-   my $ret  = '';
-
-   do {
-      for(my $i = 0; $i < 8; $i++) { 
-         push(@rand, int(rand 26)+65);
-      }
-      my $end = pack("C8", @rand);
-      $ret = $base.$end; 
-   } while (-e $ret);
-
-   return($ret);
-}
-
-sub _gen_name {
-   my $opts = shift;
-
-   my $name = '';
-
-   foreach (qw(CN EMAIL OU O L ST C)) {
-      if((not defined($opts->{$_})) || ($opts->{$_} eq '')) {
-         $opts->{$_} = ".";
-      }
-      if($opts->{$_} ne '.' && not ref($opts->{$_})) {
-         $name .= $opts->{$_};
-      } elsif (ref($opts->{$_})) {
-         $name .= $opts->{$_}->[0];
-      } else {
-         $name .= " ";
-      }
-      $name .= ":" if($_ ne 'C');
-   }
-
-   return($name);
 }
 
 1
 
 # 
 # $Log: REQ.pm,v $
+# Revision 1.28  2004/06/13 13:19:08  sm
+# added possibility to generate request and certificate in one step
+#
+# Revision 1.27  2004/06/06 16:03:56  arasca
+# moved infobox (display of cert and req information at bottom of
+# tinyca GUI) into extra class.
+#
+# Revision 1.26  2004/05/27 17:06:57  arasca
+# Removed remaining references to $main in OpenSSL.pm
+#
+# Revision 1.25  2004/05/26 10:28:32  sm
+# added extended errormessages to every call of openssl
+#
+# Revision 1.24  2004/05/26 07:48:36  sm
+# adapted functions once more :-)
+#
+# Revision 1.23  2004/05/26 07:25:47  sm
+# moved print_* to GUI::HELPERS.pm
+#
+# Revision 1.22  2004/05/26 07:03:40  arasca
+# Moved miscellaneous functions to new module HELPERS.pm, removed
+# Messages.pm and adapted the remaining modules accordingly.
+#
+# Revision 1.21  2004/05/25 14:44:42  sm
+# added textfield to warning dialog
+#
+# Revision 1.20  2004/05/24 16:05:00  sm
+# some more helpers
+#
 # Revision 1.19  2004/05/06 19:22:23  sm
 # added display and export for DSA and RSA keys
 #

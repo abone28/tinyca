@@ -1,6 +1,6 @@
 #!/usr/bin/perl -w
 #
-# $Id: tinyca,v 1.10 2004/05/22 14:24:02 sm Exp $
+# $Id: tinyca,v 1.17 2004/06/07 13:11:28 sm Exp $
 #
 # Copyright (c) Stephan Martin <sm@sm-zone.net>
 #
@@ -26,10 +26,9 @@ use strict;
 use Gtk;
 use Gnome;
 set_locale Gtk;
-Gnome->init('TinyCA', '0.6.1');
+Gnome->init('TinyCA', '0.6.2');
 
 use MIME::Base64;
-use Time::Local;
 
 use POSIX;
 use Locale::gettext;
@@ -37,6 +36,12 @@ use Locale::gettext;
 use OpenSSL;
 use CA;
 use GUI;
+use HELPERS;
+use GUI::TCONFIG;
+use GUI::HELPERS;
+use GUI::CALLBACK;
+use GUI::X509_infobox;
+use GUI::WORDS;
 use CERT;
 use REQ;
 use KEY;

@@ -1,6 +1,6 @@
 # Copyright (c) Stephan Martin <sm@sm-zone.net>
 #
-# $Id: KEY.pm,v 1.13 2004/05/11 18:33:59 sm Exp $
+# $Id: KEY.pm,v 1.16 2004/06/09 13:48:29 sm Exp $
 # 
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -45,7 +45,7 @@ sub get_del_key {
    $ind = $main->{'keylist'}->get_text($row, 8);
 
    if(not defined $ind) {
-      $main->print_info(gettext("Please select a Key first"));
+      GUI::HELPERS::print_info(gettext("Please select a Key first"));
       return;
    }
 
@@ -56,7 +56,7 @@ sub get_del_key {
    $keyfile = $main->{'CA'}->{$ca}->{'dir'}."/keys/".$keyname.".pem";
 
    if(not -s $keyfile) {
-      $main->print_warning(gettext("Key file not found:".$keyfile));
+      GUI::HELPERS::print_warning(gettext("Key file not found:".$keyfile));
       return;
    }
 
@@ -98,7 +98,7 @@ sub read_keylist {
    }
 
    opendir(DIR, $keydir) || do {
-      $main->print_warning(gettext("Can't open key directory"));
+      GUI::HELPERS::print_warning(gettext("Can't open key directory"));
       return(0);
    };
 
@@ -128,7 +128,7 @@ sub get_export_key {
 
    $box->destroy() if(defined($box));
 
-   my($ca, $ind, $row, $t, $out, $cn, $email, $ret);
+   my($ca, $ind, $row, $t, $out, $cn, $email, $ret, $ext);
    
    $ca = $main->{'CA'}->{'actca'};
 
@@ -139,7 +139,7 @@ sub get_export_key {
       $email = $main->{'keylist'}->get_text($row, 1);
 
       if(not defined $ind) {
-         $main->print_info(gettext("Please select a Key first"));
+         GUI::HELPERS::print_info(gettext("Please select a Key first"));
          return;
       }
 
@@ -167,13 +167,13 @@ sub get_export_key {
 
    if((not defined($opts->{'outfile'})) || ($opts->{'outfile'} eq '')) {
       $main->show_export_dialog($opts, 'key');
-      $main->print_warning(gettext("Please give at least the output file"));
+      GUI::HELPERS::print_warning(gettext("Please give at least the output file"));
       return;
    }
 
    if($opts->{'nopass'} && $opts->{'format'} eq 'P12') {
       $main->show_export_dialog($opts, 'key');
-      $main->print_warning(gettext("Can't export PKCS#12 without passphrase"));
+      GUI::HELPERS::print_warning(gettext("Can't export PKCS#12 without passphrase"));
       return;
    }
 
@@ -185,8 +185,7 @@ sub get_export_key {
 
    if(($opts->{'format'} eq 'PEM') || ($opts->{'format'} eq 'DER')) {
       unless(($opts->{'format'} eq 'PEM') && not $opts->{'nopass'}) {
-         $out = $main->{'OpenSSL'}->convkey(
-               'main'    => $main,
+         ($out, $ext) = $main->{'OpenSSL'}->convkey(
                'type'    => $opts->{'type'},
                'inform'  => 'PEM',
                'outform' => $opts->{'format'},
@@ -195,13 +194,13 @@ sub get_export_key {
                'keyfile' => $opts->{'keyfile'}
                );
 
-         if(not defined($out)) {
-            $main->print_warning( 
-               gettext("Converting failed, Export not possible"));
-            return;
-         } elsif($out == 1) {
+         if(defined($out) && $out eq 1) {
             $t = gettext("Wrong password given\nDecrypting of the Key failed\nExport is not possible");
-            $main->print_warning($t);
+            GUI::HELPERS::print_warning($t, $ext);
+            return;
+         } elsif((not defined($out)) || (length($out) < 3)) {
+            GUI::HELPERS::print_warning( 
+               gettext("Converting failed, Export not possible"), $ext);
             return;
          }
       }
@@ -210,7 +209,7 @@ sub get_export_key {
          open(IN, "<$opts->{'keyfile'}") || do {
             $t = sprintf(gettext("Can't open Key file: %s: %s"), 
                   $opts->{'keyfile'}, $!);
-            $main->print_warning($t);
+            GUI::HELPERS::print_warning($t);
             return;
          };
          $out .= $_ while(<IN>);
@@ -220,7 +219,7 @@ sub get_export_key {
       open(OUT, ">$opts->{'outfile'}") || do {
             $t = sprintf(gettext("Can't open output file: %s: %s"), 
                   $opts->{'outfile'}, $!);
-         $main->print_warning($t);
+         GUI::HELPERS::print_warning($t);
          return;
       };
 
@@ -229,7 +228,7 @@ sub get_export_key {
 
       $t = sprintf(gettext("Key succesfully exported to %s"), 
             $opts->{'outfile'});
-      $main->print_info($t);
+      GUI::HELPERS::print_info($t);
       return;
 
    } elsif ($opts->{'format'} eq 'P12') {
@@ -244,7 +243,7 @@ sub get_export_key {
          $t = gettext("Certificate is necessary for export as PKCS#12");
          $t .= "\n";
          $t .= gettext("Export is not possible!");
-         $main->print_warning($t);
+         GUI::HELPERS::print_warning($t);
          return;
       }
 
@@ -255,8 +254,7 @@ sub get_export_key {
       }
 
       unlink($opts->{'outfile'});
-      $ret = $main->{'OpenSSL'}->genp12(
-            main      => $main,
+      ($ret, $ext) = $main->{'OpenSSL'}->genp12(
             type      => $opts->{'type'},
             certfile  => $opts->{'certfile'},
             keyfile   => $opts->{'keyfile'},
@@ -267,18 +265,18 @@ sub get_export_key {
             includeca => $opts->{'includeca'}
             );
 
-      if($ret == 1) {
+      if($ret eq 1) {
          $t = "Wrong password given\nDecrypting Key failed\nGenerating PKCS#12 failed";
-         $main->print_warning($t);
+         GUI::HELPERS::print_warning($t, $ext);
          return;
       } elsif($ret || (not -s $opts->{'outfile'})) {
-         $main->print_warning(gettext("Generating PKCS#12 failed"));
+         $t = gettext("Generating PKCS#12 failed");
          return;
       }
 
       $t = sprintf(gettext("Certificate and Key successfully exported to %s"), 
             $opts->{'outfile'});
-      $main->print_info($t);
+      GUI::HELPERS::print_info($t, $ext);
       return;
 
    } elsif ($opts->{'format'} eq "ZIP") {
@@ -288,7 +286,7 @@ sub get_export_key {
          $t = gettext("Certificate is necessary for export as Zip file");
          $t .= "\n";
          $t .= gettext("Export is not possible!");
-         $main->print_warning($t);
+         GUI::HELPERS::print_warning($t);
          return;
       }
 
@@ -301,7 +299,7 @@ sub get_export_key {
       my $tmpcacert = "$tmpdir/cacert.pem";
 
       open(OUT, ">$tmpcert") || do {
-         $main->print_warning(gettext("Can't create temporary file"));
+         GUI::HELPERS::print_warning(gettext("Can't create temporary file"));
          return;
       };
       print OUT $opts->{'parsed'}->{'PEM'};
@@ -310,14 +308,14 @@ sub get_export_key {
       # store key in temporary location
       {
       open(IN, "<$opts->{'keyfile'}") || do {
-         $main->print_warning(gettext("Can't read Key file"));
+         GUI::HELPERS::print_warning(gettext("Can't read Key file"));
          return;
       };
       my @key = <IN>;
       close IN;
 
       open(OUT, ">$tmpkey") || do {
-         $main->print_warning(gettext("Can't create temporary file"));
+         GUI::HELPERS::print_warning(gettext("Can't create temporary file"));
          return;
       };
       print OUT @key;
@@ -328,14 +326,14 @@ sub get_export_key {
       {
       $opts->{'cafile'} = $main->{'CA'}->{$ca}->{'dir'}."/cacert.pem";
       open(IN, "<$opts->{'cafile'}") || do {
-         $main->print_warning(gettext("Can't read CA certificate"));
+         GUI::HELPERS::print_warning(gettext("Can't read CA certificate"));
          return;
       };
       my @cacert = <IN>;
       close IN;
 
       open(OUT, ">$tmpcacert") || do {
-         $main->print_warning(gettext("Can't create temporary file"));
+         GUI::HELPERS::print_warning(gettext("Can't create temporary file"));
          return;
       };
       print OUT @cacert;
@@ -348,12 +346,12 @@ sub get_export_key {
       my $ret = $? >> 8;
 
       if(not -s $opts->{'outfile'} || $ret) {
-         $main->print_warning(gettext("Generating Zip file failed"));
+         GUI::HELPERS::print_warning(gettext("Generating Zip file failed"));
       } else {
          $t = sprintf(
                gettext("Certificate and Key successfully exported to %s"), 
                $opts->{'outfile'});
-         $main->print_info($t);
+         GUI::HELPERS::print_info($t);
       }
       unlink($tmpcacert);
       unlink($tmpcert);
@@ -364,11 +362,11 @@ sub get_export_key {
    } else {
       $t = sprintf(gettext("Invalid format for export requested: %s"), 
             $opts->{'format'});
-      $main->print_warning($t);
+      GUI::HELPERS::print_warning($t);
       return;
    }
 
-   $main->print_warning(gettext("Something Failed ??"));
+   GUI::HELPERS::print_warning(gettext("Something Failed ??"));
 
    return;
 }
@@ -382,7 +380,7 @@ sub _check_key {
    open(KEY, "<$file") || do {
       $t = sprintf(gettext("Can't open Key file: %s: %s"), 
             $file, $!);
-      $main->print_warning($t);
+      GUI::HELPERS::print_warning($t);
       return;
    };
 
@@ -408,6 +406,17 @@ sub _check_key {
 
 #
 # $Log: KEY.pm,v $
+# Revision 1.16  2004/06/09 13:48:29  sm
+# fixed all calls to OpenSSL containing $main
+# fixed callbacks with wrong $words reference
+# fixed some typos and wordings
+#
+# Revision 1.15  2004/05/26 10:28:32  sm
+# added extended errormessages to every call of openssl
+#
+# Revision 1.14  2004/05/26 07:48:36  sm
+# adapted functions once more :-)
+#
 # Revision 1.13  2004/05/11 18:33:59  sm
 # corrected generation of exportfile names
 #

@@ -1,6 +1,6 @@
 # Copyright (c) Stephan Martin <sm@sm-zone.net>
 #
-# $Id: OpenSSL.pm,v 1.22 2004/05/06 19:22:23 sm Exp $
+# $Id: OpenSSL.pm,v 1.36 2004/06/08 16:23:30 sm Exp $
 # 
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -23,19 +23,19 @@ package OpenSSL;
 use POSIX;
 use Locale::gettext;
 use IPC::Open3;
+use Time::Local;
 
 sub new {
    my $self  = {};
-   my $that  = shift;
-   my $main  = shift;
+   my ($that, $opensslbin, $tmpdir) = @_;
    my $class = ref($that) || $that;
 
-   $self->{'bin'} = $main->{'init'}->{'opensslbin'};
+   $self->{'bin'} = $opensslbin;
    my $t = sprintf("Can't execute OpenSSL: %s", $self->{'bin'});
-   $main->print_error($t)
+   GUI::HELPERS::print_error($t)
       if (! -x $self->{'bin'});
 
-   $self->{'tmp'}  = $main->{'init'}->{'basedir'}."/tmp";
+   $self->{'tmp'}  = $tmpdir;
 
    open(TEST, "$self->{'bin'} version|");
    my $v = <TEST>;
@@ -54,9 +54,9 @@ sub newkey {
    my $self = shift;
    my $opts = { @_ };
 
-   my ($cmd);
-   if($opts->{'algo'} eq "dsa") {
-      my $param = _mktmp($self->{'tmp'}."/param");
+   my ($cmd, $ext);
+   if(defined($opts->{'algo'}) && $opts->{'algo'} eq "dsa") {
+      my $param = HELPERS::mktmp($self->{'tmp'}."/param");
       
       $cmd = "$self->{'bin'} dsaparam";
       $cmd .= " -out $param";
@@ -66,43 +66,51 @@ sub newkey {
       $cmd = "$self->{'bin'} gendsa";
       $cmd .= " -des3";
       $cmd .= " -passout env:SSLPASS";
-      $cmd .= " -out $opts->{'outfile'}";
+      $cmd .= " -out \"$opts->{'outfile'}\"";
       $cmd .= " $param";
-      
-      $ENV{'SSLPASS'} = $opts->{'pass'};
-      system($cmd);
-      delete($ENV{'SSLPASS'});
-
    } else {
       $cmd = "$self->{'bin'} genrsa";
       $cmd .= " -des3";
       $cmd .= " -passout env:SSLPASS";
 
-      $cmd .= " -out $opts->{'outfile'}";
+      $cmd .= " -out \"$opts->{'outfile'}\"";
 
       $cmd .= " $opts->{'bits'}";
-      $ENV{'SSLPASS'} = $opts->{'pass'};
-      system($cmd);
-      delete($ENV{'SSLPASS'});
    }
+
+   $ENV{'SSLPASS'} = $opts->{'pass'};
+   my($rdfh, $wtfh);
+   $ext = "$cmd\n\n";
+   open3($wtfh, $rdfh, $rdfh, $cmd);
+   while(<$rdfh>) {
+      $ext .= $_;
+   }
+
+   my $ret = $? >> 8;
+   
+   delete($ENV{'SSLPASS'});
+
+   return($ret, $ext);
 }
 
 sub signreq {
    my $self = shift;
    my $opts = { @_ };
 
+   my $ext;
+
    my $cmd = "$self->{'bin'} ca -batch";
    $cmd .= " -passin env:SSLPASS";
    $cmd .= " -config $opts->{'config'}";
    $cmd .= " -name $opts->{'caname'}" if($opts->{'caname'} ne "");
-   $cmd .= " -in $opts->{'reqfile'}";
+   $cmd .= " -in \"$opts->{'reqfile'}\"";
    $cmd .= " -days $opts->{'days'}";
    $cmd .= " -preserveDN";
 
    if(defined($opts->{'mode'}) && $opts->{'mode'} eq "sub") {
-      $cmd .= " -keyfile $opts->{'keyfile'}";
-      $cmd .= " -cert $opts->{'cacertfile'}";
-      $cmd .= " -outdir $opts->{'outdir'}";
+      $cmd .= " -keyfile \"$opts->{'keyfile'}\"";
+      $cmd .= " -cert \"$opts->{'cacertfile'}\"";
+      $cmd .= " -outdir \"$opts->{'outdir'}\"";
       $ENV{'SSLPASS'} = $opts->{'parentpw'};
    } else {
       $ENV{'SSLPASS'} = $opts->{'pass'};
@@ -132,8 +140,10 @@ sub signreq {
       
    my($rdfh, $wtfh);
    open3($wtfh, $rdfh, $rdfh, $cmd);
+   $ext = "$cmd\n\n";
    while(<$rdfh>) {
       # print STDERR "DEBUG cmd returns: $_\n";
+      $ext .= $_;
       if($_ =~ /unable to load CA private key/) {
          delete($ENV{'SSLPASS'});
          $ENV{'NSSSLSERVERNAME'}     = 'dummy';
@@ -142,7 +152,7 @@ sub signreq {
          $ENV{'SUBJECTALTNAMEIP'}    = 'dummy';
          $ENV{'SUBJECTALTNAMEDNS'}   = 'dummy';
          $ENV{'SUBJECTALTNAMEEMAIL'} = 'dummy';
-         return(1);
+         return(1, $ext);
       } elsif($_ =~ /trying to load CA private key/) {
          delete($ENV{'SSLPASS'});
          $ENV{'NSSSLSERVERNAME'}     = 'dummy';
@@ -151,7 +161,7 @@ sub signreq {
          $ENV{'SUBJECTALTNAMEIP'}    = 'dummy';
          $ENV{'SUBJECTALTNAMEDNS'}   = 'dummy';
          $ENV{'SUBJECTALTNAMEEMAIL'} = 'dummy';
-         return(2);
+         return(2, $ext);
       } elsif($_ =~ /There is already a certificate for/) {
          delete($ENV{'SSLPASS'});
          $ENV{'NSSSLSERVERNAME'}     = 'dummy';
@@ -160,7 +170,7 @@ sub signreq {
          $ENV{'SUBJECTALTNAMEIP'}    = 'dummy';
          $ENV{'SUBJECTALTNAMEDNS'}   = 'dummy';
          $ENV{'SUBJECTALTNAMEEMAIL'} = 'dummy';
-         return(3);
+         return(3, $ext);
       } elsif($_ =~ /bad ip address/) {
          delete($ENV{'SSLPASS'});
          $ENV{'NSSSLSERVERNAME'}     = 'dummy';
@@ -169,9 +179,12 @@ sub signreq {
          $ENV{'SUBJECTALTNAMEIP'}    = 'dummy';
          $ENV{'SUBJECTALTNAMEDNS'}   = 'dummy';
          $ENV{'SUBJECTALTNAMEEMAIL'} = 'dummy';
-         return(4);
+         return(4, $ext);
       }
    }
+
+   my $ret = $? >> 8;
+
    delete($ENV{'SSLPASS'});
    $ENV{'NSSSLSERVERNAME'}     = 'dummy';
    $ENV{'NSREVOCATIONURL'}     = 'dummy';
@@ -180,14 +193,14 @@ sub signreq {
    $ENV{'SUBJECTALTNAMEDNS'}   = 'dummy';
    $ENV{'SUBJECTALTNAMEEMAIL'} = 'dummy';
 
-   my $ret = $? >> 8;
-
-   return($ret);
+   return($ret, $ext);
 }
 
 sub revoke {
    my $self = shift;
    my $opts = { @_ };
+
+   my $ext;
 
    my $cmd = "$self->{'bin'} ca";
    $cmd .= " -passin env:SSLPASS";
@@ -197,24 +210,31 @@ sub revoke {
 
    $ENV{'SSLPASS'} = $opts->{'pass'};
    my($rdfh, $wtfh);
+   $ext = "$cmd\n\n";
    open3($wtfh, $rdfh, $rdfh, $cmd);
    while(<$rdfh>) {
+      $ext .= $_;
       if($_ =~ /unable to load CA private key/) {
          delete($ENV{'SSLPASS'});
-         return(1);
+         return(1, $ext);
       } elsif($_ =~ /trying to load CA private key/) {
          delete($ENV{'SSLPASS'});
-         return(2);
+         return(2, $ext);
       }
    }
+
+   my $ret = $? >> 8;
+   
    delete($ENV{'SSLPASS'});
 
-   return(0);
+   return($ret, $ext);
 }
 
 sub newreq {
    my $self = shift;
    my $opts = { @_ };
+
+   my $ext;
 
    my $cmd = "$self->{'bin'} req -new";
    $cmd .= " -keyform PEM";
@@ -228,24 +248,36 @@ sub newreq {
 
    $ENV{'SSLPASS'} = $opts->{'pass'};
    #   print "DEBUG call: $cmd\n";
-   open(CMD, "|$cmd");
+   
+   my($rdfh, $wtfh);
+   $ext = "$cmd\n\n";
+   open3($wtfh, $rdfh, $rdfh, $cmd);
+
    foreach(@{$opts->{'dn'}}) {
       # print "DEBUG: add to dn: $_\n";
       if(defined($_)) {
-         print CMD "$_\n";
+         print $wtfh "$_\n";
       } else {
-         print CMD ".\n";
+         print $wtfh ".\n";
       }
    }
-   close CMD;
+
+   while(<$rdfh>) {
+      $ext .= $_;
+   }
+
+   my $ret = $? >> 8;
+   
    delete($ENV{'SSLPASS'});
 
-   return;
+   return($ret, $ext);
 }
 
 sub newcert {
    my $self = shift;
    my $opts = { @_ };
+
+   my $ext;
 
    my $cmd = "$self->{'bin'} req -x509";
    $cmd .= " -keyform PEM";
@@ -253,25 +285,35 @@ sub newcert {
    $cmd .= " -passin env:SSLPASS";
 
    $cmd .= " -config $opts->{'config'}";
-   $cmd .= " -out $opts->{'outfile'}";
-   $cmd .= " -key $opts->{'keyfile'}";
-   $cmd .= " -in $opts->{'reqfile'}";
+   $cmd .= " -out \"$opts->{'outfile'}\"";
+   $cmd .= " -key \"$opts->{'keyfile'}\"";
+   $cmd .= " -in \"$opts->{'reqfile'}\"";
    $cmd .= " -days $opts->{'days'}";
    $cmd .= " -"."$opts->{'digest'}";
 
    $ENV{'SSLPASS'} = $opts->{'pass'};
-   system($cmd);
+
+   my($rdfh, $wtfh);
+   $ext = "$cmd\n\n";
+   open3($wtfh, $rdfh, $rdfh, $cmd);
+   while(<$rdfh>) {
+      $ext .= $_;
+   }
+
+   my $ret = $? >> 8;
+
    delete($ENV{'SSLPASS'});
+
+   return($ret, $ext);
 }
 
 sub newcrl {
    my $self = shift;
-   my $main = shift;
    my $opts = { @_ };
 
-   my $out;
+   my ($out, $ext);
 
-   my $tmpfile = _mktmp($self->{'tmp'}."/crl");
+   my $tmpfile = HELPERS::mktmp($self->{'tmp'}."/crl");
    my $cmd = "$self->{'bin'} ca -gencrl";
    $cmd .= " -passin env:SSLPASS";
    $cmd .= " -config $opts->{'config'}";
@@ -281,23 +323,27 @@ sub newcrl {
 
    $ENV{'SSLPASS'} = $opts->{ 'pass'};
    my($rdfh, $wtfh);
+   $ext = "$cmd\n\n";
    open3($wtfh, $rdfh, $rdfh, $cmd);
    while(<$rdfh>) {
+      $ext .= $_;
       # print STDERR "DEBUG: cmd return: $_";
       if($_ =~ /unable to load CA private key/) {
          delete($ENV{'SSLPASS'});
-         return(1);
+         return(1, $ext);
       } elsif($_ =~ /trying to load CA private key/) {
          delete($ENV{'SSLPASS'});
-         return(2);
+         return(2, $ext);
       }
    }
+
    my $ret = $? >> 8;
+
    delete($ENV{'SSLPASS'});
 
-   return($ret) if($ret);
+   return($ret, $ext) if($ret);
 
-   my $crl = $self->parsecrl($main, $tmpfile, 1);
+   my $crl = $self->parsecrl($tmpfile, 1);
    unlink( $tmpfile);
 
    $opts->{'format'} = 'PEM' if ( !defined( $opts->{ 'format'}));
@@ -316,14 +362,14 @@ sub newcrl {
    print OUT $out;
    close OUT;
 
-   return(0);
+   return($ret, $ext);
 }
    
 sub parsecrl {
-   my ($self, $main, $file, $force) = @_;
+   my ($self, $file, $force) = @_;
 
    my $tmp   = {};
-   my (@lines, $i, $t);
+   my (@lines, $i, $t, $ext, $ret);
 
    # check if crl is cached
    if($self->{'CACHE'}->{$file} && not $force) {
@@ -331,27 +377,38 @@ sub parsecrl {
    }
 
    open(IN, $file) || do {
-      $t = sprintf("Can't open CRL '%s': %s", $file, $!);
-      $main->print_warning($t);
+      $t = sprintf(gettext("Can't open CRL '%s': %s"), $file, $!);
+      GUI::HELPERS::print_warning($t);
       return;
    };
 
    # convert crl to PEM, DER and TEXT
    $tmp->{'PEM'} .= $_ while(<IN>);
-   $tmp->{'TXT'}   = $self->convdata(
+   ($ret, $tmp->{'TXT'}, $ext) = $self->convdata(
          'cmd'     => 'crl',
-         'main'    => $main,
          'data'    => $tmp->{'PEM'},
          'inform'  => 'PEM',
          'outform' => 'TEXT'
          );
-   $tmp->{'DER'} = $self->convdata(
+
+   if($ret) {
+      $t = gettext("Error converting CLR");
+      GUI::HELPERS::print_warning($t, $ext);
+      return;
+   }
+   
+   ($ret, $tmp->{'DER'}, $ext) = $self->convdata(
          'cmd'     => 'crl',
-         'main'    => $main,
          'data'    => $tmp->{'PEM'},
          'inform'  => 'PEM',
          'outform' => 'DER'
          );
+
+   if($ret) {
+      $t = gettext("Error converting CLR");
+      GUI::HELPERS::print_warning($t, $ext);
+      return;
+   }
 
    # get "normal infos"
    @lines = split(/\n/, $tmp->{'TXT'});
@@ -389,7 +446,7 @@ sub parsecrl {
             push(@{$tmp->{'LIST'}}, $t);
          } else {
             $t = sprintf("CRL seems to be corrupt: %s\n", $file);
-            $main->print_warning($t);
+            GUI::HELPERS::print_warning($t);
             return;
          }
          
@@ -404,12 +461,10 @@ sub parsecrl {
 }
 
 sub parsecert {
-   my ($self, $main, $file, $force) = @_;
+   my ($self, $crlfile, $indexfile, $file, $force) = @_;
 
    my $tmp   = {};
-   my (@lines, @dn, $i, $c, $v, $k, $cmd, $crl, $time, $t);
-
-   my $ca  = $main->{'CA'}->{'actca'};
+   my (@lines, $dn, $i, $c, $v, $k, $cmd, $crl, $time, $t, $ext, $ret);
 
    $time = time();
 
@@ -424,26 +479,37 @@ sub parsecert {
 
    open(IN, $file) || do {
       $t = sprintf("Can't open Certificate '%s': %s", $file, $!);
-      $main->print_warning($t);
+      GUI::HELPERS::print_warning($t);
       return;
    };
 
    # convert certificate to PEM, DER and TEXT
    $tmp->{'PEM'} .= $_ while(<IN>);
-   $tmp->{'TEXT'} = $self->convdata(
+   ($ret, $tmp->{'TEXT'}, $ext) = $self->convdata(
          'cmd'     => 'x509',
-         'main'    => $main,
          'data'    => $tmp->{'PEM'},
          'inform'  => 'PEM',
          'outform' => 'TEXT'
          );
-   $tmp->{'DER'} = $self->convdata(
+
+   if($ret) {
+      $t = gettext("Error converting Certificate");
+      GUI::HELPERS::print_warning($t, $ext);
+      return;
+   }
+   
+   ($ret, $tmp->{'DER'}, $ext) = $self->convdata(
          'cmd'     => 'x509',
-         'main'    => $main,
          'data'    => $tmp->{'PEM'},
          'inform'  => 'PEM',
          'outform' => 'DER'
          );
+
+   if($ret) {
+      $t = gettext("Error converting Certificate");
+      GUI::HELPERS::print_warning($t, $ext);
+      return;
+   }
 
    # get "normal infos"
    @lines = split(/\n/, $tmp->{'TEXT'});
@@ -473,78 +539,59 @@ sub parsecert {
       }
    }   
 
-   $tmp->{'DN'} =~ s/,/\//g;
-   @dn = split(/\//, $tmp->{'DN'});
-   foreach(@dn) {
-      s/^\s+//;
-      s/\s+$//;
-      ($k, $v) = split(/=/);
-      if($k =~ /ou/i) {
-         $tmp->{'OU'} or  $tmp->{'OU'} = [];
-         push(@{$tmp->{'OU'}}, $v);
-      } elsif($k eq 'emailAddress' || $k eq 'Email') {
-	 $tmp->{'EMAIL'} = $v;
-      } else {
-         $tmp->{uc($k)} = $v;
-      }
+   # parse subject DN
+   $dn = HELPERS::parse_dn($tmp->{'DN'});
+   foreach(keys(%$dn)) { 
+      $tmp->{$_} = $dn->{$_};
    }
+
+   # parse issuer DN
+   $tmp->{'ISSUERDN'} = HELPERS::parse_dn($tmp->{'ISSUER'});
 
    # get extensions
-   $tmp->{'EXT'} = {};
-   for($i = 0; $lines[$i] !~ /^[\s\t]*X509v3 extensions:$/i; $i++) {
-      return($tmp) if not defined($lines[$i]);
-   }
-   $i++;
-
-   while($i < @lines) {
-      if(($lines[$i] =~ /^[\s\t]*[^:]+:\s*$/) ||
-         ($lines[$i] =~ /^[\s\t]*[^:]+:\s+.+$/)) {
-         if($lines[$i] =~ /^[\s\t]*Signature Algorithm/i) {
-            $i++;
-            next;
-         }
-         $k = $lines[$i];
-         $k =~ s/[\s\t:]*$//g;
-         $k =~ s/^[\s\t]*//g;
-         $tmp->{'EXT'}->{$k} = [];
-         $i++;
-         while(($lines[$i] !~ /^[\s\t].+:\s*$/) && 
-               ($lines[$i] !~ /^[\s\t]*[^:]+:\s+.+$/) &&
-               ($lines[$i] !~ /^[\s\t]*Signature Algorithm/i) &&
-               ($i < @lines)) {
-            $v = $lines[$i];
-            $v =~ s/^[\s]+//g;
-            $v =~ s/[\s]+$//g;
-            $i++;
-            next if $v =~ /^$/;
-            next if $v =~ /Signature Algorithm:/;
-            my @vs = split(/,/, $v);
-            foreach(@vs) {
-               $_ =~ s/^\s//;
-               $_ =~ s/\s$//;
-               push(@{$tmp->{'EXT'}->{$k}}, $_);
-            }
-         }
-      } else {
-         $i++;
-      }
-   }
+   $tmp->{'EXT'} = HELPERS::parse_extensions(\@lines, "cert");
 
    # get fingerprint 
    $cmd = "$self->{'bin'} x509 -noout -fingerprint -in $file";
-   open(CMD, "$cmd|");
-   ($k, $v) = split(/=/, <CMD>);
-   close(CMD);
-   $tmp->{'FINGERPRINT'} = $v if($k =~ /MD5 Fingerprint/i);
+   my($rdfh, $wtfh);
+   $ext = "$cmd\n\n";
+   open3($wtfh, $rdfh, $rdfh, $cmd);
+   while(<$rdfh>){
+      $ext .= $_;
+      ($k, $v) = split(/=/);
+      $tmp->{'FINGERPRINTMD5'} = $v if($k =~ /MD5 Fingerprint/i);
+      chomp($tmp->{'FINGERPRINTMD5'});
+   }
+   $ret = $? >> 8;
+
+   if($ret) {
+      $t = gettext("Error reading fingerprint from Certificate");
+      GUI::HELPERS::print_warning($t, $ext);
+   }
+
+   $cmd = "$self->{'bin'} x509 -noout -fingerprint -sha1 -in $file";
+   $ext = "$cmd\n\n";
+   open3($wtfh, $rdfh, $rdfh, $cmd);
+   while(<$rdfh>){
+      $ext .= $_;
+      ($k, $v) = split(/=/);
+      $tmp->{'FINGERPRINTSHA1'} = $v if($k =~ /SHA1 Fingerprint/i);
+      chomp($tmp->{'FINGERPRINTSHA1'});
+   }
+   $ret = $? >> 8;
+
+   if($ret) {
+      $t = gettext("Error reading fingerprint from Certificate");
+      GUI::HELPERS::print_warning($t, $ext);
+   }
 
    $tmp->{'EXPDATE'} = _get_date( $tmp->{'NOTAFTER'});
 
    $crl = $self->parsecrl( 
-         $main,
-         $main->{'CA'}->{$ca}->{'dir'}."/crl/crl.pem"
+	 $crlfile
          );
 
-   defined($crl) || $main->print_error(gettext("Can't read CRL"));
+   defined($crl) || GUI::HELPERS::print_error(gettext("Can't read CRL"));
 
    $tmp->{'STATUS'} = gettext("VALID");
 
@@ -552,7 +599,7 @@ sub parsecert {
       $tmp->{'STATUS'} = gettext("EXPIRED");
       # keep database up to date
       if($crl->{'ISSUER'} eq $tmp->{'ISSUER'}) {
-         _set_expired($tmp->{'SERIAL'}, $main);
+         _set_expired($tmp->{'SERIAL'}, $indexfile);
       }
    }
    
@@ -569,13 +616,11 @@ sub parsecert {
 }
 
 sub parsereq {
-   my ($self, $main, $file) = @_;
+   my ($self, $config, $file) = @_;
 
-   my $ca     = $main->{'CA'}->{'actca'};
-   my $config = $main->{'CA'}->{$ca}->{'cnf'};
    my $tmp    = {};
 
-   my (@lines, @dn, $i, $c, $v, $k, $cmd, $t);
+   my (@lines, $dn, $i, $c, $v, $k, $cmd, $t, $ext, $ret);
 
    # check if request is cached
    if($self->{'CACHE'}->{$file}) {
@@ -584,30 +629,40 @@ sub parsereq {
 
    open(IN, $file) || do {
       $t = sprintf(gettext("Can't open Request file %s: %s"), $file, $!);
-      $main->print_warning($t);
+      GUI::HELPERS::print_warning($t);
       return;
    };
 
    # convert request to PEM, DER and TEXT
    $tmp->{'PEM'} .= $_ while(<IN>);
 
-   $tmp->{'TEXT'} = $self->convdata(
+   ($ret, $tmp->{'TEXT'}, $ext) = $self->convdata(
          'cmd'     => 'req',
-         'main'    => $main,
          'config'  => $config,
          'data'    => $tmp->{'PEM'},
          'inform'  => 'PEM',
          'outform' => 'TEXT'
          );
 
-   $tmp->{'DER'} = $self->convdata(
+   if($ret) {
+      $t = gettext("Error converting Request");
+      GUI::HELPERS::print_warning($t, $ext);
+      return;
+   }
+
+   ($ret, $tmp->{'DER'}, $ext) = $self->convdata(
          'cmd'     => 'req',
-         'main'    => $main,
          'config'  => $config,
          'data'    => $tmp->{'PEM'},
          'inform'  => 'PEM',
          'outform' => 'DER'
          );
+
+   if($ret) {
+      $t = gettext("Error converting Request");
+      GUI::HELPERS::print_warning($t, $ext);
+      return;
+   }
 
    # get "normal infos"
    @lines = split(/\n/, $tmp->{'TEXT'});
@@ -625,59 +680,13 @@ sub parsereq {
       }
    }   
 
-   $tmp->{'DN'} =~ s/,/\//g;
-   @dn = split(/\//, $tmp->{'DN'});
-   foreach(@dn) {
-      s/^\s+//;
-      s/\s+$//;
-      ($k, $v) = split(/=/);
-      if($k =~ /ou/i) {
-         $tmp->{'OU'} or  $tmp->{'OU'} = [];
-         push(@{$tmp->{'OU'}}, $v);
-      } else {
-         if($k =~ /emailaddress/i) {
-            $tmp->{'EMAIL'} = $v;
-         } else {
-            $tmp->{uc($k)} = $v;
-         }
-      }
+   $dn = HELPERS::parse_dn($tmp->{'DN'});
+   foreach(keys(%$dn)) {
+      $tmp->{$_} = $dn->{$_};
    }
 
    # get extensions
-   $tmp->{'EXT'} = {};
-   for($i = 0; 
-        defined($lines[$i]) && 
-        $lines[$i] !~ /^[\s\t]*Requested extensions:$/i;
-        $i++) {
-      return($tmp) if not defined($lines[$i]);
-   }
-   $i++;
-
-   while($i < @lines) {
-      if($lines[$i] =~ /^[\s\t]*[^:]+:\s*$/) {
-         $k = $lines[$i];
-         $k =~ s/[\s\t:]*$//g;
-         $k =~ s/^[\s\t]*//g;
-         $tmp->{'EXT'}->{$k} = [];
-         $i++;
-         while($lines[$i] !~ /^[\s\t].+:\s*$/ && $i < @lines) {
-            $v = $lines[$i];
-            $v =~ s/^[\s]+//g;
-            $v =~ s/[\s]+$//g;
-            $i++;
-            next if $v =~ /^$/;
-            next if $v =~ /Signature Algorithm:/;
-            my @vs = split(/,/, $v);
-            foreach(@vs) {
-               $_ =~ s/^\s//;
-               $_ =~ s/\s$//;
-               push(@{$tmp->{'EXT'}->{$k}}, $_);
-            }
-         }
-      } else {
-         $i++;
-      }
-   }
+   $tmp->{'EXT'} = HELPERS::parse_extensions(\@lines, "req");
 
    $self->{'CACHE'}->{$file} = $tmp;
 
@@ -688,13 +697,13 @@ sub convdata {
    my $self = shift;
    my $opts = { @_ };
    
-   my $tmp  = '';
-   my $file = _mktmp($self->{'tmp'}."/data");
+   my ($tmp, $ext, $ret);
+   my $file = HELPERS::mktmp($self->{'tmp'}."/data");
 
    my $cmd = "$self->{'bin'} $opts->{'cmd'}";
    $cmd .= " -config $opts->{'config'}" if(defined($opts->{'config'}));
    $cmd .= " -inform $opts->{'inform'}";
-   $cmd .= " -out $file";
+   $cmd .= " -out \"$file\"";
    if($opts->{'outform'} eq "TEXT") {
       $cmd .= " -text -noout";
    } else {
@@ -702,15 +711,21 @@ sub convdata {
    }
 
    my($rdfh, $wtfh);
+   $ext = "$cmd\n\n";
    open3($wtfh, $rdfh, $rdfh, $cmd);
    print $wtfh "$opts->{'data'}\n";
    while(<$rdfh>){
-      print STDERR "DEBUG: cmd ret: $_";
+      $ext .= $_;
+      # print STDERR "DEBUG: cmd ret: $_";
    };
+
+   $ret = $? >> 8;
+
+   return($ret, undef, $ext) if($ret);
 
    open(IN, $file) || do {
       my $t = sprintf(gettext("Can't open file %s: %s"), $file, $!);
-      $opts->{'main'}->print_warning($t);
+      GUI::HELPERS::print_warning($t);
       return;
    };
    $tmp .= $_ while(<IN>);
@@ -718,19 +733,19 @@ sub convdata {
 
    unlink($file);
 
-   return($tmp);
+   return($ret, $tmp, $ext);
 }
 
 sub convkey {
    my $self = shift;
    my $opts = { @_ };
 
-   my $tmp  = '';
-   my $file = _mktmp($self->{'tmp'}."/key");
+   my ($tmp, $ext);
+   my $file = HELPERS::mktmp($self->{'tmp'}."/key");
 
    my $cmd = "$self->{'bin'}";
 
-   print STDERR "DEBUG: got type: $opts->{'type'}\n";
+   # print STDERR "DEBUG: got type: $opts->{'type'}\n";
   
    if($opts->{'type'} eq "RSA") {
       $cmd .= " rsa";
@@ -740,8 +755,8 @@ sub convkey {
 
    $cmd .= " -inform $opts->{'inform'}";
    $cmd .= " -outform $opts->{'outform'}";
-   $cmd .= " -in $opts->{'keyfile'}";
-   $cmd .= " -out $file";
+   $cmd .= " -in \"$opts->{'keyfile'}\"";
+   $cmd .= " -out \"$file\"";
 
    $cmd .= " -passin env:SSLPASS";
    $cmd .= " -passout env:SSLPASSOUT -des3" if(not $opts->{'nopass'});
@@ -750,17 +765,23 @@ sub convkey {
    $ENV{'SSLPASSOUT'} = $opts->{'pass'} if(not $opts->{'nopass'});
    
    my($rdfh, $wtfh);
+   $ext = "$cmd\n\n";
    open3($wtfh, $rdfh, $rdfh, $cmd);
    while(<$rdfh>) {
+      $ext .= $_;
       if($_ =~ /unable to load key/) {
          delete($ENV{'SSLPASS'});
          delete($ENV{'SSLPASSOUT'});
-         return(1);
+         return(1, $ext);
       }
    }
 
+   my $ret = $? >> 8;
+
    delete($ENV{'SSLPASS'});
    delete($ENV{'SSLPASSOUT'});
+
+   return($ret, $ext) if($ret);
 
    open(IN, $file) || return(undef);
    $tmp .= $_ while(<IN>);
@@ -775,14 +796,12 @@ sub genp12 {
    my $self = shift;
    my $opts = { @_ };
 
-   my($main, $cmd);
+   my($cmd, $ext);
    
-   $main = $opts->{'main'};
-
    $cmd = "$self->{'bin'} pkcs12 -export";
-   $cmd .= " -out $opts->{'outfile'}";
-   $cmd .= " -in $opts->{'certfile'}";
-   $cmd .= " -inkey $opts->{'keyfile'}";
+   $cmd .= " -out \"$opts->{'outfile'}\"";
+   $cmd .= " -in \"$opts->{'certfile'}\"";
+   $cmd .= " -inkey \"$opts->{'keyfile'}\"";
    $cmd .= " -passout env:P12PASS";
    $cmd .= " -passin env:SSLPASS";
    $cmd .= " -certfile $opts->{'cafile'}" if($opts->{'includeca'});
@@ -790,12 +809,14 @@ sub genp12 {
    $ENV{'P12PASS'} = $opts->{'p12passwd'};
    $ENV{'SSLPASS'} = $opts->{'passwd'};
    my($rdfh, $wtfh);
+   $ext = "$cmd\n\n";
    open3($wtfh, $rdfh, $rdfh, $cmd);
    while(<$rdfh>) {
+      $ext .= $_;
       if($_ =~ /Error loading private key/) {
          delete($ENV{'SSLPASS'});
          delete($ENV{'P12PASS'});
-         return(1);
+         return(1, $ext);
       }
    }
    my $ret = $? >> 8;
@@ -803,38 +824,15 @@ sub genp12 {
    delete($ENV{'P12PASS'});
    delete($ENV{'SSLPASS'});
 
-   return($ret) if($ret);
-
-   return(0);
-}
-
-sub _mktmp { 
-   my $base = shift;
-
-   my @rand = ();
-   my $ret  = '';
-
-   do { 
-      for(my $i = 0; $i < 8; $i++) { 
-         push(@rand, int(rand 26)+65);
-      }
-      my $end = pack("C8", @rand);
-      $ret = $base.$end;
-   } while (-e $ret);
-
-   return($ret);
+   return($ret, $ext);
 }
 
 sub _set_expired {
-   my ($serial, $main) =@_;
+   my ($serial, $index) =@_;
    
-   my $ca = $main->{'CA'}->{'actca'};
-
-   my $index = $main->{'CA'}->{$ca}->{'dir'}."/index.txt";
-
    open(IN, "<$index") || do {
       my $t = sprintf(gettext("Can't read index %s: %s"), $index, $!);
-      $main->print_warning($t);
+      HELPERS::print_warning($t);
       return;
    };
 
@@ -844,7 +842,7 @@ sub _set_expired {
 
    open(OUT, ">$index") || do {
       my $t = sprintf(gettext("Can't write index %s: %s"), $index, $!);
-      $main->print_warning($t);
+      HELPERS::print_warning($t);
       return;
    };
 

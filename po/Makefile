@@ -1,4 +1,4 @@
-POTFILES=$(wildcard ../lib/*.pm) ../tinyca
+POTFILES=$(wildcard ../lib/*.pm) $(wildcard ../lib/GUI/*.pm) ../tinyca
 CATALOGS=de.mo
 
 all: $(CATALOGS)

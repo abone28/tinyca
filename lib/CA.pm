@@ -1,6 +1,6 @@
 # Copyright (c) Stephan Martin <sm@sm-zone.net>
 #
-# $Id: CA.pm,v 1.19 2004/05/21 05:57:11 sm Exp $
+# $Id: CA.pm,v 1.25 2004/06/09 10:15:34 sm Exp $
 # 
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -101,7 +101,7 @@ sub open_ca {
    $main->{'bar'}->set_status(gettext("  Opening CA: ").$opts->{'name'});
 
    if(!exists($self->{$opts->{'name'}})) {
-      $main->print_warning(gettext("Invalid CA selected"));
+      GUI::HELPERS::print_warning(gettext("Invalid CA selected"));
       return;
    }
 
@@ -133,13 +133,14 @@ sub open_ca {
 
    $main->{'Openssl'} = undef;
    $main->{'bar'}->set_status(gettext("  Initializing OpenSSL"));
-   $main->{'Openssl'} = OpenSSL->new($main);
+   $main->{'OpenSSL'} = OpenSSL->new($main->{'init'}->{'opensslbin'},
+                                     $main->{'init'}->{'basedir'}."/tmp");
 
    $index = $main->{'CA'}->{$opts->{'name'}}->{'dir'}."/index.txt";
 
    $main->{'bar'}->set_status(gettext("  Check for CA Version"));
    open(INDEX, "+<$index") || do {
-      $main->print_error(gettext("Can't open index file: ".$!));
+      GUI::HELPERS::print_error(gettext("Can't open index file: ".$!));
       return;
    };
 
@@ -161,12 +162,12 @@ sub open_ca {
 
    if($opts->{'doconv'}) {
       open(INDEX, "+<$index") || do {
-         $main->print_error(gettext("Can't open index file: ".$!));
+         GUI::HELPERS::print_error(gettext("Can't open index file: ".$!));
          return;
       };
       $bak = $index.".bak";
       open(BAK, "+>$bak") || do {
-         $main->print_error(gettext("Can't open index backup: ").$!);
+         GUI::HELPERS::print_error(gettext("Can't open index backup: ").$!);
          return;
       };
       seek(INDEX, 0, 0);
@@ -188,7 +189,7 @@ sub open_ca {
       $t .= gettext("You will find a backup copy of the index file at: ");
       $t .= $bak;
 
-      $main->print_info($t);
+      GUI::HELPERS::print_info($t);
    }
 
    $main->{'bar'}->set_status(gettext("  Read Configuration"));
@@ -218,7 +219,7 @@ sub get_ca_delete {
       return;
    }elsif(!exists($self->{$name})) {
       $main->show_select_ca_dialog('delete');
-      $main->print_warning(gettext("Invalid CA selected"));
+      GUI::HELPERS::print_warning(gettext("Invalid CA selected"));
       return;
    }else {
       $self->delete_ca($main, $name);
@@ -284,7 +285,7 @@ sub delete_ca {
    $main->create_mframe();
 
    $t = sprintf(gettext("CA: %s deleted"), $name);
-   $main->print_info($t);
+   GUI::HELPERS::print_info($t);
 
    return;
 }
@@ -333,7 +334,7 @@ sub get_ca_create {
    if(defined($mode) && $mode eq "sub") {
       if(not defined($opts->{'parentpw'})) {
          $main->show_ca_dialog($opts, $mode);
-         $main->print_warning(
+         GUI::HELPERS::print_warning(
              gettext("Password of parent CA is needed for creating a Sub CA"));
          return;
       }
@@ -343,7 +344,7 @@ sub get_ca_create {
 	   ($opts->{'name'} eq "") ||
 	   ($opts->{'name'} =~ /\s/)) { 
       $main->show_ca_dialog($opts, $mode);
-      $main->print_warning(gettext("Name must be filled in and must")
+      GUI::HELPERS::print_warning(gettext("Name must be filled in and must")
                           .gettext(" not contain Spaces"));
       return;
    }
@@ -355,7 +356,7 @@ sub get_ca_create {
       (not defined($opts->{'passwd'})) ||
       ($opts->{'passwd'} eq "")) { 
       $main->show_ca_dialog($opts, $mode);
-      $main->print_warning(gettext("Please specify at least Common Name, ")
+      GUI::HELPERS::print_warning(gettext("Please specify at least Common Name, ")
                            .gettext("Country and Password"));
       return;
    }
@@ -363,7 +364,7 @@ sub get_ca_create {
    if((not defined($opts->{'passwd2'})) ||
       $opts->{'passwd'} ne $opts->{'passwd2'}) { 
       $main->show_ca_dialog($opts, $mode);
-      $main->print_warning(gettext("Passwords don't match"));
+      GUI::HELPERS::print_warning(gettext("Passwords don't match"));
       return;
    }
 
@@ -371,7 +372,7 @@ sub get_ca_create {
 
    if(length($opts->{'C'}) != 2) { 
       $main->show_ca_dialog($opts, $mode);
-      $main->print_warning(gettext("Country must be exact 2 letter code"));
+      GUI::HELPERS::print_warning(gettext("Country must be exact 2 letter code"));
       return;
    }
 
@@ -380,7 +381,7 @@ sub get_ca_create {
    $t = sprintf(gettext("CA: %s already exists"), $name);
    if(defined($self->{$name})) { 
       $main->show_ca_dialog($opts, $mode);
-      $main->print_warning($t);
+      GUI::HELPERS::print_warning($t);
       return;
    }
 
@@ -400,7 +401,7 @@ sub create_ca_env {
    $name = $opts->{'name'};
 
    if((!defined($name)) || $name eq '') {
-      $main->print_error(gettext("No CA name given"));
+      GUI::HELPERS::print_error(gettext("No CA name given"));
       return;
    }
  
@@ -408,32 +409,32 @@ sub create_ca_env {
    $self->{$name}->{'dir'} = $self->{'init'}->{'basedir'}."/".$name;
 
    mkdir($self->{$name}->{'dir'}, 0700) || do { 
-      $main->print_error(gettext("Can't create directory: ").$!);
+      GUI::HELPERS::print_error(gettext("Can't create directory: ").$!);
       return;
    };
 
    mkdir($self->{$name}->{'dir'}."/req", 0700) || do { 
-      $main->print_error(gettext("Can't create directory: ").$!);
+      GUI::HELPERS::print_error(gettext("Can't create directory: ").$!);
       return;
    };
 
    mkdir($self->{$name}->{'dir'}."/keys", 0700) || do { 
-      $main->print_error(gettext("Can't create directory: ").$!);
+      GUI::HELPERS::print_error(gettext("Can't create directory: ").$!);
       return;
    };
 
    mkdir($self->{$name}->{'dir'}."/certs", 0700) || do { 
-      $main->print_error(gettext("Can't create directory: ").$!);
+      GUI::HELPERS::print_error(gettext("Can't create directory: ").$!);
       return;
    };
 
    mkdir($self->{$name}->{'dir'}."/crl", 0700) || do { 
-      $main->print_error(gettext("Can't create directory: ").$!);
+      GUI::HELPERS::print_error(gettext("Can't create directory: ").$!);
       return;
    };
 
    mkdir($self->{$name}->{'dir'}."/newcerts", 0700) || do { 
-      $main->print_error(gettext("Can't create directory: ").$!);
+      GUI::HELPERS::print_error(gettext("Can't create directory: ").$!);
       return;
    };
 
@@ -443,12 +444,12 @@ sub create_ca_env {
 
    open(IN, "<$in") || do {
       $t = sprintf(gettext("Can't open template file %s %s"), $in, $!);
-      $main->print_error($t);
+      GUI::HELPERS::print_error($t);
       return;
    };
    open(OUT, ">$out") || do {
       $t = sprintf(gettext("Can't open output file: %s: %s"),$out, $!);
-      $main->print_error($t);
+      GUI::HELPERS::print_error($t);
       return;
    };
    while(<IN>) {
@@ -464,14 +465,14 @@ sub create_ca_env {
    # create some more files
    $index = $self->{$name}->{'dir'}."/index.txt";
    open(OUT, ">$index") || do {
-      $main->print_error(gettext("Can't open index file: ").$!);
+      GUI::HELPERS::print_error(gettext("Can't open index file: ").$!);
       return;
    };
    close OUT;
 
    $serial = $self->{$name}->{'dir'}."/serial";
    open(OUT, ">$serial") || do {
-      $main->print_error(gettext("Can't write serial file: ").$!);
+      GUI::HELPERS::print_error(gettext("Can't write serial file: ").$!);
       return;
    };
    print OUT "01";
@@ -480,7 +481,7 @@ sub create_ca_env {
    if(defined($mode) && $mode eq "sub") {
       $self->create_ca($main, $opts, undef, $mode);
    } else {
-      $main->show_config_ca($opts, $mode);
+      GUI::TCONFIG::show_config_ca($main, $opts, $mode);
    }
 
    return;
@@ -492,7 +493,7 @@ sub create_ca_env {
 sub create_ca {
    my ($self, $main, $opts, $box, $mode, $name) = @_;
 
-   my ($fname, $t, $index, $serial, $ca);
+   my ($fname, $t, $index, $serial, $ca, $ret, $ext);
 
    $ca = $self->{'actca'};
 
@@ -501,25 +502,25 @@ sub create_ca {
    $name = $opts->{'name'};
 
    if((!defined($name)) || $name eq '') {
-      $main->print_error(gettext("No CA name given"));
+      GUI::HELPERS::print_error(gettext("No CA name given"));
       return;
    }
 
    # create CA certifikate
-   $main->{'OpenSSL'}->newkey( 
+   ($ret, $ext) = $main->{'OpenSSL'}->newkey( 
          'bits'    => $opts->{'bits'},
          'outfile' => $self->{$name}->{'dir'}."/cacert.key",
          'pass'    => $opts->{'passwd'}
          );
    
-   if (not -s $self->{$name}->{'dir'}."/cacert.key") {
-      $main->print_warning(gettext("Generating key failed"));
+   if (not -s $self->{$name}->{'dir'}."/cacert.key" || $ret) {
+      GUI::HELPERS::print_warning(gettext("Generating key failed"), $ext);
       _rm_dir($self->{$name}->{'dir'});
       delete($self->{$name});
       return;
    }
 
-   $main->{'OpenSSL'}->newreq( 
+   ($ret, $ext) = $main->{'OpenSSL'}->newreq( 
          'config'  => $self->{$name}->{'cnf'},
          'outfile' => $self->{$name}->{'dir'}."/cacert.req",
          'digest'   => $opts->{'digest'},
@@ -537,14 +538,14 @@ sub create_ca {
          'keyfile' => $self->{$name}->{'dir'}."/cacert.key"
          );
 
-   $fname = _gen_name($opts);
+   $fname = HELPERS::gen_name($opts);
 
    $opts->{'reqname'} = MIME::Base64::encode($fname, '');
    
-   if (not -s $self->{$name}->{'dir'}."/cacert.req") {
+   if (not -s $self->{$name}->{'dir'}."/cacert.req" || $ret) {
       unlink($self->{$name}->{'dir'}."/cacert.key");
       unlink($self->{$name}->{'dir'}."/cacert.req");
-      $main->print_warning(gettext("Generating Request failed"));
+      GUI::HELPERS::print_warning(gettext("Generating Request failed"), $ext);
       _rm_dir($self->{$name}->{'dir'});
       delete($self->{$name});
       return;
@@ -552,11 +553,11 @@ sub create_ca {
    if(defined($mode) && $mode eq "sub") {
       # for SubCAs: copy the request to the signing CA
       open(IN, "<$self->{$name}->{'dir'}"."/cacert.req") || do {
-         $main->print_warning(gettext("Can't read Certificate"));
+         GUI::HELPERS::print_warning(gettext("Can't read Certificate"));
          return;
       };
       open(OUT, ">$self->{$ca}->{'dir'}"."/req/".$opts->{'reqname'}.".pem") || do {
-         $main->print_warning(gettext("Can't write Certificate"));
+         GUI::HELPERS::print_warning(gettext("Can't write Certificate"));
          return;
       };
       print OUT while(<IN>);
@@ -564,11 +565,11 @@ sub create_ca {
 
       # for SubCAs: copy the key to the signing CA
       open(IN, "<$self->{$name}->{'dir'}"."/cacert.key") || do {
-         $main->print_warning(gettext("Can't read Certificate"));
+         GUI::HELPERS::print_warning(gettext("Can't read Certificate"));
          return;
       };
       open(OUT, ">$self->{$ca}->{'dir'}"."/keys/".$opts->{'reqname'}.".pem") || do {
-         $main->print_warning(gettext("Can't write Certificate"));
+         GUI::HELPERS::print_warning(gettext("Can't write Certificate"));
          return;
       };
       print OUT while(<IN>);
@@ -577,7 +578,7 @@ sub create_ca {
    }
 
    if(defined($mode) && $mode eq "sub") {
-      $main->{'REQ'}->sign_req(
+      ($ret, $ext) = $main->{'REQ'}->sign_req(
             $main,
             {
             'mode'       => "sub",
@@ -594,7 +595,7 @@ sub create_ca {
             }
             );
    } else {
-      $main->{'OpenSSL'}->newcert( 
+      ($ret, $ext) = $main->{'OpenSSL'}->newcert( 
             'config'  => $self->{$name}->{'cnf'},
             'outfile' => $self->{$name}->{'dir'}."/cacert.pem",
             'keyfile' => $self->{$name}->{'dir'}."/cacert.key",
@@ -605,8 +606,9 @@ sub create_ca {
             );
    }
    
-   if (not -s $self->{$name}->{'dir'}."/cacert.pem") {
-      $main->print_warning(gettext("Generating certificate failed"));
+   if (not -s $self->{$name}->{'dir'}."/cacert.pem" || $ret) {
+      GUI::HELPERS::print_warning(
+            gettext("Generating certificate failed"), $ext);
       _rm_dir($self->{$name}->{'dir'});
       delete($self->{$name});
       return;
@@ -626,7 +628,7 @@ sub create_ca {
 
      open(IN, "<$in") || do {
         $t = sprintf(gettext("Can't open ca certificate file %s %s"), $in, $!);
-        $main->print_warning($t);
+        GUI::HELPERS::print_warning($t);
         _rm_dir($self->{$name}->{'dir'});
         delete($self->{$name});
         return;
@@ -647,7 +649,7 @@ sub create_ca {
      $in  = $self->{$name}->{'dir'}."/cacert.pem";
      open(IN, "<$in") || do {
         $t = sprintf(gettext("Can't open ca certificate file %s %s"), $in, $!);
-        $main->print_warning($t);
+        GUI::HELPERS::print_warning($t);
         _rm_dir($self->{$name}->{'dir'});
         delete($self->{$name});
         return;
@@ -659,8 +661,7 @@ sub create_ca {
      close OUT;
    }
 
-   $main->{'OpenSSL'}->newcrl(
-         $main,
+   ($ret, $ext) = $main->{'OpenSSL'}->newcrl(
          config  => $self->{$name}->{'cnf'},
          pass    => $opts->{'passwd'},
          crldays => $main->{'TCONFIG'}->{'server_ca'}->{'default_crl_days'},
@@ -668,8 +669,8 @@ sub create_ca {
          format  => 'PEM'
          );
 
-   if (not -s $self->{$name}->{'dir'}."/crl/crl.pem") {
-      $main->print_warning("Generating CRL failed");
+   if (not -s $self->{$name}->{'dir'}."/crl/crl.pem" || $ret) {
+      GUI::HELPERS::print_warning(gettext("Generating CRL failed"), $ext);
       _rm_dir($self->{$name}->{'dir'});
       delete($self->{$name});
       return;
@@ -679,7 +680,7 @@ sub create_ca {
    push(@{$self->{'calist'}}, $name);
    @{$self->{'calist'}} = sort(@{$self->{'calist'}});
    $t = sprintf(gettext("CA: %s created"), $name);
-   $main->print_info($t);
+   GUI::HELPERS::print_info($t);
 
    $self->open_ca($main, $opts);
    return;
@@ -707,13 +708,13 @@ sub export_ca_chain {
    $chainfile = $self->{$ca}->{'dir'}."/cachain.pem";
 
    open(IN, "<$self->{$ca}->{'dir'}"."/cachain.pem") || do {
-      $main->print_warning(gettext("Can't open certificate chain file: %s: %s"),
+      GUI::HELPERS::print_warning(gettext("Can't open certificate chain file: %s: %s"),
             $self->{$ca}->{'dir'}."/cachain.pem", $!);
       return;
    };
 
    open(OUT, ">$opts->{'outfile'}") || do {
-      $main->print_warning(gettext("Can't open output file: %s: %s"), 
+      GUI::HELPERS::print_warning(gettext("Can't open output file: %s: %s"), 
             $opts->{'outfile'}, $!);
       return;
    };
@@ -723,7 +724,7 @@ sub export_ca_chain {
    
    $t = sprintf(gettext("Certificate Chain succesfully exported to: %s"), 
          $opts->{'outfile'});
-   $main->print_info($t);
+   GUI::HELPERS::print_info($t);
 
    return;
 }
@@ -752,7 +753,7 @@ sub export_ca_cert {
    $parsed = $main->{'CERT'}->parse_cert($main, 'CA');
 
    if(not defined $parsed) {
-      $main->print_error(gettext("Can't read CA certificate"));
+      GUI::HELPERS::print_error(gettext("Can't read CA certificate"));
    }
 
    if($opts->{'format'} eq "PEM") {
@@ -764,12 +765,12 @@ sub export_ca_cert {
    } else {
       $t = sprintf(gettext("Invalid Format for export_ca_cert(): %s"), 
             $opts->{'format'});
-      $main->print_warning($t);
+      GUI::HELPERS::print_warning($t);
       return;
    }
 
    open(OUT, ">$opts->{'outfile'}") || do {
-      $main->print_warning(gettext("Can't open output file: %s: %s"), 
+      GUI::HELPERS::print_warning(gettext("Can't open output file: %s: %s"), 
             $opts->{'outfile'}, $!);
       return;
    };
@@ -779,7 +780,7 @@ sub export_ca_cert {
    
    $t = sprintf(gettext("Certificate succesfully exported to: %s"), 
          $opts->{'outfile'});
-   $main->print_info($t);
+   GUI::HELPERS::print_info($t);
 
    return;
 }
@@ -790,7 +791,7 @@ sub export_ca_cert {
 sub export_crl {
    my ($self, $main, $opts, $box) = @_;
     
-   my($ca, $t, $ret);
+   my($ca, $t, $ret, $ext);
 
    $box->destroy() if(defined($box));
 
@@ -807,14 +808,14 @@ sub export_crl {
 
    if((not defined($opts->{'outfile'})) || ($opts->{'outfile'} eq '')) { 
       $main->show_crl_export_dialog($opts);
-      $main->print_warning(gettext("Please give the output file"));
+      GUI::HELPERS::print_warning(gettext("Please give the output file"));
 	   return;
       };
 
    if((not defined($opts->{'passwd'})) || ($opts->{'passwd'} eq '')) { 
       $t = gettext("Please give the CA password to create the Revocation List");
       $main->show_crl_export_dialog($opts);
-      $main->print_warning($t);
+      GUI::HELPERS::print_warning($t);
       return;
    }
 
@@ -822,8 +823,7 @@ sub export_crl {
       $main->init_openssl($ca);
    }
 
-   $ret = $main->{'OpenSSL'}->newcrl(
-         $main,
+   ($ret, $ext) = $main->{'OpenSSL'}->newcrl(
          config  => $self->{$ca}->{'cnf'},
          pass    => $opts->{'passwd'},
          crldays => $opts->{'days'},
@@ -831,27 +831,28 @@ sub export_crl {
          format  => $opts->{'format'}
          );
 
-   if($ret == 1) {
+   if($ret eq 1) {
       $t = gettext("Wrong CA password given\nGenerating Revocation List failed");
-      $main->print_warning($t);
+      GUI::HELPERS::print_warning($t, $ext);
       return;
-   } elsif($ret == 2) {
+   } elsif($ret eq 2) {
       $t = gettext("CA Key not found\nGenerating Revocation List failed");
-      $main->print_warning($t);
+      GUI::HELPERS::print_warning($t, $ext);
       return;
    } elsif($ret) {
-      $main->print_warning(gettext("Generating Revocation List failed"));
+      $t = gettext("Generating Revocation List failed");
+      GUI::HELPERS::print_warning($t, $ext);
       return;
    }
 
    if (not -s $opts->{'outfile'}) {
-      $main->print_warning(gettext("Generating Revocation List failed"));
+      GUI::HELPERS::print_warning(gettext("Generating Revocation List failed"));
       return;
    }
 
    $t = sprintf(gettext("CRL successfully exported to: %s"), 
          $opts->{'outfile'});
-   $main->print_info($t);
+   GUI::HELPERS::print_info($t, $ext);
 
    return;
 }
@@ -878,28 +879,6 @@ sub _rm_dir {
    rmdir($dir);
    
    return(0);
-}
-
-sub _gen_name {
-   my $opts = shift;
-
-   my $name = '';
-
-   foreach (qw(CN EMAIL OU O L ST C)) {
-      if((not defined($opts->{$_})) || ($opts->{$_} eq '')) {
-         $opts->{$_} = ".";
-      }
-      if($opts->{$_} ne '.' && not ref($opts->{$_})) {
-         $name .= $opts->{$_};
-      } elsif (ref($opts->{$_})) {
-         $name .= $opts->{$_}->[0];
-      } else {
-         $name .= " ";
-      }
-      $name .= ":" if($_ ne 'C');
-   }
-
-   return($name);
 }
 
 1
