@@ -1,6 +1,6 @@
 # Copyright (c) Stephan Martin <sm@sm-zone.net>
 #
-# $Id: REQ.pm,v 1.40 2004/07/15 10:45:47 sm Exp $
+# $Id: REQ.pm,v 1.44 2004/07/26 09:54:28 sm Exp $
 # 
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -192,6 +192,9 @@ sub create_req {
       GUI::HELPERS::print_warning(gettext("Generating Request failed"), $ext);
       return;
    }
+
+   my $parsed = $self->parse_req($main, $opts->{'reqname'}, 1);
+   # print STDERR "DEBUG: returned from parse_req: $parsed->{'KEYSIZE'}\n";
 
    $main->{'reqbrowser'}->update($cadir."/req",
                                  $cadir."/crl/crl.pem",
@@ -575,7 +578,6 @@ sub sign_req {
                                   $cadir."/index.txt",
                                   0);
 
-   $opts = undef;
    delete($opts->{$_}) foreach(keys(%$opts));
    $opts = undef;
 
@@ -713,7 +715,7 @@ sub import_req {
 }
 
 sub parse_req {
-   my ($self, $main, $name) = @_;
+   my ($self, $main, $name, $force) = @_;
    
    my ($parsed, $ca, $reqfile, $req);
 
@@ -723,9 +725,8 @@ sub parse_req {
 
    $reqfile = $main->{'CA'}->{$ca}->{'dir'}."/req/".$name.".pem";
 
-   $parsed = $self->{'OpenSSL'}->parsereq(
-			$main->{'CA'}->{$ca}->{'cnf'},
-			$reqfile);
+   $parsed = $self->{'OpenSSL'}->parsereq($main->{'CA'}->{$ca}->{'cnf'},
+         $reqfile, $force);
 
    GUI::HELPERS::set_cursor($main, 0);
 
@@ -736,6 +737,21 @@ sub parse_req {
 
 # 
 # $Log: REQ.pm,v $
+# Revision 1.44  2004/07/26 09:54:28  sm
+# don't crash when deleting last request list
+#
+# Revision 1.43  2004/07/23 17:44:00  sm
+# force reread of request when overwriting an old one
+# removed the direct usage of 'OpenSSL.pm' in X509_browser, use correct
+# abstraction via 'REQ.pm' and 'CERT.pm'
+#
+# Revision 1.42  2004/07/23 10:46:14  sm
+# reparse request after creation
+# delete all internal structures, when opening new ca
+#
+# Revision 1.41  2004/07/19 14:10:15  sm
+# fixed bug (again) signing more request in a row
+#
 # Revision 1.40  2004/07/15 10:45:47  sm
 # removed references to create_mframe, always recreate only one list
 #

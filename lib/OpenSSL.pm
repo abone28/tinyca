@@ -1,6 +1,6 @@
 # Copyright (c) Stephan Martin <sm@sm-zone.net>
 #
-# $Id: OpenSSL.pm,v 1.41 2004/07/09 10:00:08 sm Exp $
+# $Id: OpenSSL.pm,v 1.45 2004/07/26 09:54:27 sm Exp $
 # 
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -54,16 +54,17 @@ sub newkey {
    my $self = shift;
    my $opts = { @_ };
 
-   my ($cmd, $ext, $c, $i, $box, $bar, $t);
+   my ($cmd, $ext, $c, $i, $box, $bar, $t, $param, $pid, $ret);
+
    if(defined($opts->{'algo'}) && $opts->{'algo'} eq "dsa") {
-      my $param = HELPERS::mktmp($self->{'tmp'}."/param");
+      $param = HELPERS::mktmp($self->{'tmp'}."/param");
       
       $cmd = "$self->{'bin'} dsaparam";
       $cmd .= " -out $param";
       $cmd .= " $opts->{'bits'}";
       my($rdfh, $wtfh);
       $ext = "$cmd\n\n";
-      open3($wtfh, $rdfh, $rdfh, $cmd);
+      $pid = open3($wtfh, $rdfh, $rdfh, $cmd);
       $t = gettext("Creating DSA key in progress...");
       ($box, $bar) = GUI::HELPERS::create_activity_bar($t);
       $i = 0;
@@ -75,6 +76,9 @@ sub newkey {
          }
       }
       $box->destroy();
+      waitpid($pid, 0);
+      $ret = $? >> 8;
+      return($ret, $ext) if($ret);
 
       $cmd = "$self->{'bin'} gendsa";
       $cmd .= " -des3";
@@ -94,7 +98,7 @@ sub newkey {
    $ENV{'SSLPASS'} = $opts->{'pass'};
    my($rdfh, $wtfh);
    $ext = "$cmd\n\n";
-   open3($wtfh, $rdfh, $rdfh, $cmd);
+   $pid = open3($wtfh, $rdfh, $rdfh, $cmd);
    $t = gettext("Creating RSA key in progress...");
    ($box, $bar) = GUI::HELPERS::create_activity_bar($t);
    $i = 0;
@@ -107,7 +111,12 @@ sub newkey {
    }
    $box->destroy();
 
-   my $ret = $? >> 8;
+   waitpid($pid, 0);
+   $ret = $? >> 8;
+
+   if(defined($param) && $param ne '') {
+      unlink($param);
+   }
    
    delete($ENV{'SSLPASS'});
 
@@ -118,9 +127,9 @@ sub signreq {
    my $self = shift;
    my $opts = { @_ };
 
-   my $ext;
+   my ($ext, $cmd, $pid, $ret);
 
-   my $cmd = "$self->{'bin'} ca -batch";
+   $cmd = "$self->{'bin'} ca -batch";
    $cmd .= " -passin env:SSLPASS -notext";
    $cmd .= " -config $opts->{'config'}";
    $cmd .= " -name $opts->{'caname'}" if($opts->{'caname'} ne "");
@@ -167,7 +176,7 @@ sub signreq {
    # print STDERR "DEBUG call cmd: $cmd\n";
       
    my($rdfh, $wtfh);
-   open3($wtfh, $rdfh, $rdfh, $cmd);
+   $pid = open3($wtfh, $rdfh, $rdfh, $cmd);
    $ext = "$cmd\n\n";
    while(<$rdfh>) {
       # print STDERR "DEBUG cmd returns: $_\n";
@@ -181,6 +190,7 @@ sub signreq {
          $ENV{'SUBJECTALTNAMEDNS'}   = 'dummy';
          $ENV{'SUBJECTALTNAMEEMAIL'} = 'dummy';
          $ENV{'EXTENDEDKEYUSAGE'}    = 'dummy';
+         waitpid($pid, 0);
          return(1, $ext);
       } elsif($_ =~ /trying to load CA private key/) {
          delete($ENV{'SSLPASS'});
@@ -191,6 +201,7 @@ sub signreq {
          $ENV{'SUBJECTALTNAMEDNS'}   = 'dummy';
          $ENV{'SUBJECTALTNAMEEMAIL'} = 'dummy';
          $ENV{'EXTENDEDKEYUSAGE'}    = 'dummy';
+         waitpid($pid, 0);
          return(2, $ext);
       } elsif($_ =~ /There is already a certificate for/) {
          delete($ENV{'SSLPASS'});
@@ -201,6 +212,7 @@ sub signreq {
          $ENV{'SUBJECTALTNAMEDNS'}   = 'dummy';
          $ENV{'SUBJECTALTNAMEEMAIL'} = 'dummy';
          $ENV{'EXTENDEDKEYUSAGE'}    = 'dummy';
+         waitpid($pid, 0);
          return(3, $ext);
       } elsif($_ =~ /bad ip address/) {
          delete($ENV{'SSLPASS'});
@@ -211,11 +223,12 @@ sub signreq {
          $ENV{'SUBJECTALTNAMEDNS'}   = 'dummy';
          $ENV{'SUBJECTALTNAMEEMAIL'} = 'dummy';
          $ENV{'EXTENDEDKEYUSAGE'}    = 'dummy';
+         waitpid($pid, 0);
          return(4, $ext);
       }
    }
-
-   my $ret = $? >> 8;
+   waitpid($pid, 0);
+   $ret = $? >> 8;
 
    delete($ENV{'SSLPASS'});
    $ENV{'NSSSLSERVERNAME'}     = 'dummy';
@@ -233,9 +246,9 @@ sub revoke {
    my $self = shift;
    my $opts = { @_ };
 
-   my $ext;
+   my ($ext, $cmd, $ret, $pid);
 
-   my $cmd = "$self->{'bin'} ca";
+   $cmd = "$self->{'bin'} ca";
    $cmd .= " -passin env:SSLPASS";
 
    $cmd .= " -config $opts->{'config'}";
@@ -248,22 +261,25 @@ sub revoke {
    $ENV{'SSLPASS'} = $opts->{'pass'};
    my($rdfh, $wtfh);
    $ext = "$cmd\n\n";
-   open3($wtfh, $rdfh, $rdfh, $cmd);
+   $pid = open3($wtfh, $rdfh, $rdfh, $cmd);
    while(<$rdfh>) {
       $ext .= $_;
       if($_ =~ /unable to load CA private key/) {
          delete($ENV{'SSLPASS'});
+         waitpid($pid, 0);
          return(1, $ext);
       } elsif($_ =~ /trying to load CA private key/) {
          delete($ENV{'SSLPASS'});
+         waitpid($pid, 0);
          return(2, $ext);
       } elsif($_ =~ /^ERROR:/) {
          delete($ENV{'SSLPASS'});
+         waitpid($pid, 0);
          return(3, $ext);
       }
    }
-
-   my $ret = $? >> 8;
+   waitpid($pid, 0);
+   $ret = $? >> 8;
    
    delete($ENV{'SSLPASS'});
 
@@ -274,9 +290,9 @@ sub newreq {
    my $self = shift;
    my $opts = { @_ };
 
-   my $ext;
+   my ($ext, $ret, $cmd, $pid);
 
-   my $cmd = "$self->{'bin'} req -new";
+   $cmd = "$self->{'bin'} req -new";
    $cmd .= " -keyform PEM";
    $cmd .= " -outform PEM";
    $cmd .= " -passin env:SSLPASS";
@@ -291,7 +307,7 @@ sub newreq {
    
    my($rdfh, $wtfh);
    $ext = "$cmd\n\n";
-   open3($wtfh, $rdfh, $rdfh, $cmd);
+   $pid = open3($wtfh, $rdfh, $rdfh, $cmd);
 
    foreach(@{$opts->{'dn'}}) {
       # print "DEBUG: add to dn: $_\n";
@@ -305,8 +321,8 @@ sub newreq {
    while(<$rdfh>) {
       $ext .= $_;
    }
-
-   my $ret = $? >> 8;
+   waitpid($pid, 0);
+   $ret = $? >> 8;
    
    delete($ENV{'SSLPASS'});
 
@@ -317,9 +333,9 @@ sub newcert {
    my $self = shift;
    my $opts = { @_ };
 
-   my $ext;
+   my ($ext, $cmd, $ret, $pid);
 
-   my $cmd = "$self->{'bin'} req -x509";
+   $cmd = "$self->{'bin'} req -x509";
    $cmd .= " -keyform PEM";
    $cmd .= " -outform PEM";
    $cmd .= " -passin env:SSLPASS";
@@ -335,12 +351,12 @@ sub newcert {
 
    my($rdfh, $wtfh);
    $ext = "$cmd\n\n";
-   open3($wtfh, $rdfh, $rdfh, $cmd);
+   $pid = open3($wtfh, $rdfh, $rdfh, $cmd);
    while(<$rdfh>) {
       $ext .= $_;
    }
-
-   my $ret = $? >> 8;
+   waitpid($pid, 0);
+   $ret = $? >> 8;
 
    delete($ENV{'SSLPASS'});
 
@@ -351,10 +367,10 @@ sub newcrl {
    my $self = shift;
    my $opts = { @_ };
 
-   my ($out, $ext);
+   my ($out, $ext, $tmpfile, $cmd, $ret, $pid, $crl);
 
-   my $tmpfile = HELPERS::mktmp($self->{'tmp'}."/crl");
-   my $cmd = "$self->{'bin'} ca -gencrl";
+   $tmpfile = HELPERS::mktmp($self->{'tmp'}."/crl");
+   $cmd = "$self->{'bin'} ca -gencrl";
    $cmd .= " -passin env:SSLPASS";
    $cmd .= " -config $opts->{'config'}";
 
@@ -364,26 +380,28 @@ sub newcrl {
    $ENV{'SSLPASS'} = $opts->{ 'pass'};
    my($rdfh, $wtfh);
    $ext = "$cmd\n\n";
-   open3($wtfh, $rdfh, $rdfh, $cmd);
+   $pid = open3($wtfh, $rdfh, $rdfh, $cmd);
    while(<$rdfh>) {
       $ext .= $_;
       # print STDERR "DEBUG: cmd return: $_";
       if($_ =~ /unable to load CA private key/) {
          delete($ENV{'SSLPASS'});
+         waitpid($pid, 0);
          return(1, $ext);
       } elsif($_ =~ /trying to load CA private key/) {
          delete($ENV{'SSLPASS'});
+         waitpid($pid, 0);
          return(2, $ext);
       }
    }
-
-   my $ret = $? >> 8;
+   waitpid($pid, 0);
+   $ret = $?>>8;
 
    delete($ENV{'SSLPASS'});
 
    return($ret, $ext) if($ret);
 
-   my $crl = $self->parsecrl($tmpfile, 1);
+   $crl = $self->parsecrl($tmpfile, 1);
    unlink( $tmpfile);
 
    $opts->{'format'} = 'PEM' if ( !defined( $opts->{ 'format'}));
@@ -506,7 +524,7 @@ sub parsecert {
    my ($self, $crlfile, $indexfile, $file, $force) = @_;
 
    my $tmp   = {};
-   my (@lines, $dn, $i, $c, $v, $k, $cmd, $crl, $time, $t, $ext, $ret);
+   my (@lines, $dn, $i, $c, $v, $k, $cmd, $crl, $time, $t, $ext, $ret, $pid);
 
    $time = time();
 
@@ -516,7 +534,7 @@ sub parsecert {
 
    # check if certificate is cached
    if($self->{'CACHE'}->{$file}) {
-      # print "DEBUG: use cached certificate\n";
+      # print "DEBUG: use cached certificate $file\n";
       return($self->{'CACHE'}->{$file});
    }
    # print "DEBUG: parse certificate $file\n";
@@ -599,13 +617,14 @@ sub parsecert {
    $cmd = "$self->{'bin'} x509 -noout -fingerprint -in $file";
    my($rdfh, $wtfh);
    $ext = "$cmd\n\n";
-   open3($wtfh, $rdfh, $rdfh, $cmd);
+   $pid = open3($wtfh, $rdfh, $rdfh, $cmd);
    while(<$rdfh>){
       $ext .= $_;
       ($k, $v) = split(/=/);
       $tmp->{'FINGERPRINTMD5'} = $v if($k =~ /MD5 Fingerprint/i);
       chomp($tmp->{'FINGERPRINTMD5'});
    }
+   waitpid($pid, 0);
    $ret = $? >> 8;
 
    if($ret) {
@@ -615,13 +634,14 @@ sub parsecert {
 
    $cmd = "$self->{'bin'} x509 -noout -fingerprint -sha1 -in $file";
    $ext = "$cmd\n\n";
-   open3($wtfh, $rdfh, $rdfh, $cmd);
+   $pid = open3($wtfh, $rdfh, $rdfh, $cmd);
    while(<$rdfh>){
       $ext .= $_;
       ($k, $v) = split(/=/);
       $tmp->{'FINGERPRINTSHA1'} = $v if($k =~ /SHA1 Fingerprint/i);
       chomp($tmp->{'FINGERPRINTSHA1'});
    }
+   waitpid($pid, 0);
    $ret = $? >> 8;
 
    if($ret) {
@@ -660,15 +680,21 @@ sub parsecert {
 }
 
 sub parsereq {
-   my ($self, $config, $file) = @_;
+   my ($self, $config, $file, $force) = @_;
 
    my $tmp    = {};
 
    my (@lines, $dn, $i, $c, $v, $k, $cmd, $t, $ext, $ret);
 
    # check if request is cached
-   if($self->{'CACHE'}->{$file}) {
+   if($self->{'CACHE'}->{$file} && !$force) {
+      # print STDERR "DEBUG return from CACHE $file\n";
       return($self->{'CACHE'}->{$file});
+   } elsif($force) {
+      # print STDERR "DEBUG delete from CACHE $file\n";
+      delete($self->{'CACHE'}->{$file});
+   } else {
+      # print STDERR "DEBUG parse into CACHE $file\n";
    }
 
    open(IN, $file) || do {
@@ -717,6 +743,7 @@ sub parsereq {
          $tmp->{'PK_ALGORITHM'} = $1;
       } elsif ($_ =~ /Modulus \((\d+) .*\)/i) {
          $tmp->{'KEYSIZE'} = $1;
+         # print STDERR "read keysize: $tmp->{'KEYSIZE'}\n";
       } elsif ($_ =~ /Subject.*: (.+)/i) {
          $tmp->{'DN'} = $1;
       } elsif ($_ =~ /Version: \d.*/i) {
@@ -741,14 +768,14 @@ sub convdata {
    my $self = shift;
    my $opts = { @_ };
    
-   my ($tmp, $ext, $ret);
-   my $file = HELPERS::mktmp($self->{'tmp'}."/data");
+   my ($tmp, $ext, $ret, $file, $pid, $cmd);
+   $file = HELPERS::mktmp($self->{'tmp'}."/data");
 
-   my $cmd = "$self->{'bin'} $opts->{'cmd'}";
+   $cmd = "$self->{'bin'} $opts->{'cmd'}";
    $cmd .= " -config $opts->{'config'}" if(defined($opts->{'config'}));
    $cmd .= " -inform $opts->{'inform'}";
    $cmd .= " -out \"$file\"";
-   if($opts->{'outform'} eq "TEXT") {
+   if($opts->{'outform'} eq 'TEXT') {
       $cmd .= " -text -noout";
    } else {
       $cmd .= " -outform $opts->{'outform'}";
@@ -756,16 +783,23 @@ sub convdata {
 
    my($rdfh, $wtfh);
    $ext = "$cmd\n\n";
-   open3($wtfh, $rdfh, $rdfh, $cmd);
+   $pid = open3($wtfh, $rdfh, $rdfh, $cmd);
    print $wtfh "$opts->{'data'}\n";
    while(<$rdfh>){
       $ext .= $_;
       # print STDERR "DEBUG: cmd ret: $_";
    };
+   waitpid($pid, 0);
+   $ret = $?>>8;
 
-   $ret = $? >> 8;
-
-   return($ret, undef, $ext) if($ret);
+   if(($ret != 0 && $opts->{'cmd'} ne 'crl') ||
+      ($ret != 0 && $opts->{'outform'} ne 'TEXT' && $opts->{'cmd'} eq 'crl') ||
+      ($ret != 1 && $opts->{'outform'} eq 'TEXT' && $opts->{'cmd'} eq 'crl')) { 
+      unlink($file);
+      return($ret, undef, $ext);
+   } else {
+      $ret = 0;
+   }
 
    open(IN, $file) || do {
       my $t = sprintf(gettext("Can't open file %s: %s"), $file, $!);
@@ -784,7 +818,7 @@ sub convkey {
    my $self = shift;
    my $opts = { @_ };
 
-   my ($tmp, $ext);
+   my ($tmp, $ext, $pid, $ret);
    my $file = HELPERS::mktmp($self->{'tmp'}."/key");
 
    my $cmd = "$self->{'bin'}";
@@ -810,7 +844,7 @@ sub convkey {
    
    my($rdfh, $wtfh);
    $ext = "$cmd\n\n";
-   open3($wtfh, $rdfh, $rdfh, $cmd);
+   $pid = open3($wtfh, $rdfh, $rdfh, $cmd);
    while(<$rdfh>) {
       $ext .= $_;
       if($_ =~ /unable to load key/) {
@@ -819,8 +853,8 @@ sub convkey {
          return(1, $ext);
       }
    }
-
-   my $ret = $? >> 8;
+   waitpid($pid, 0);
+   $ret = $? >> 8;
 
    delete($ENV{'SSLPASS'});
    delete($ENV{'SSLPASSOUT'});
@@ -840,7 +874,7 @@ sub genp12 {
    my $self = shift;
    my $opts = { @_ };
 
-   my($cmd, $ext);
+   my($cmd, $ext, $ret, $pid);
    
    $cmd = "$self->{'bin'} pkcs12 -export";
    $cmd .= " -out \"$opts->{'outfile'}\"";
@@ -854,7 +888,7 @@ sub genp12 {
    $ENV{'SSLPASS'} = $opts->{'passwd'};
    my($rdfh, $wtfh);
    $ext = "$cmd\n\n";
-   open3($wtfh, $rdfh, $rdfh, $cmd);
+   $pid = open3($wtfh, $rdfh, $rdfh, $cmd);
    while(<$rdfh>) {
       $ext .= $_;
       if($_ =~ /Error loading private key/) {
@@ -863,7 +897,8 @@ sub genp12 {
          return(1, $ext);
       }
    }
-   my $ret = $? >> 8;
+   waitpid($pid, 0);
+   $ret = $? >> 8;
 
    delete($ENV{'P12PASS'});
    delete($ENV{'SSLPASS'});

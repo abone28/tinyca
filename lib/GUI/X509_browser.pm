@@ -1,7 +1,7 @@
 # Copyright (c) Olaf Gellert <og@pre-secure.de> and
 #               Stephan Martin <sm@sm-zone.net>
 #
-# $Id: X509_browser.pm,v 1.10 2004/07/15 08:29:37 sm Exp $
+# $Id: X509_browser.pm,v 1.15 2004/07/26 09:54:28 sm Exp $
 # 
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -22,7 +22,6 @@ package GUI::X509_browser;
 
 use HELPERS;
 use GUI::HELPERS;
-use OpenSSL;
 use MIME::Base64;
 use GUI::X509_infobox;
 
@@ -36,56 +35,29 @@ set_locale Gtk;  # internationalize
 use POSIX;
 use Locale::gettext;
 
-my $ossldefault="/usr/bin/openssl";
 my $tmpdefault="/tmp";
 
 my $version = "0.1";
 my $true = 1;
 my $false = undef;
 
-
 sub new {
    my $that = shift;
    my $self = {};
+
+   $self->{'main'} = shift;
    my $mode = shift;
-   my $openssl = shift;
-   my $cert    = shift;
-   my $req     = shift;
-   
 
    my ($font, $fontfix);
 
    my $class = ref($that) || $that;
 
-   $self->{'main'} = shift;
 
    if ((defined $mode) && (($mode eq 'cert') || ($mode eq 'req'))) {
       $self->{'mode'}=$mode;
-      }
-    else {
+   } else {
       printf STDERR "No mode specified for X509browser\n";
       return undef;
-      }
-
-   if (defined $openssl) {
-     # printf STDERR "OpenSSL given on init.\n";
-     $self->{'OpenSSL'}=$openssl;
-     }
-   else {
-     # printf STDERR "Creating own OpenSSL object.\n";
-     $self->{'OpenSSL'}=OpenSSL->new($ossldefault, $tmpdefault);
-     }
-
-   if(defined($cert)) {
-      $self->{'CERT'} = $cert;
-   } else {
-      $self->{'CERT'} = CERT->new($self->{'OpenSSL'});
-   }
-
-   if(defined($req)) {
-      $self->{'REQ'} = $req;
-   } else {
-      $self->{'REQ'} = REQ->new();
    }
 
    # initialize fonts and styles
@@ -395,6 +367,8 @@ sub update {
   $self->{'actcrl'}=$crlfile;
   $self->{'actindex'}=$indexfile;
 
+  # print STDERR "DEBUG: set new dir: $self->{'actdir'}\n";
+
   if ($self->{'mode'} eq "cert") {
     update_cert($self, $directory, $crlfile, $indexfile, $force);
     }
@@ -412,7 +386,6 @@ sub update {
     update_info($self);
     }
 
-
   $self->{'browser'}->show_all();
   return $true;
 }
@@ -423,19 +396,19 @@ sub update_req {
 
     my ($ind);
 
-    $self->{'REQ'}->read_reqlist($directory, $crlfile, $indexfile, $force,
-          $self->{'main'});
+    $self->{'main'}->{'REQ'}->read_reqlist($directory, $crlfile, $indexfile,
+          $force, $self->{'main'});
 
     $self->{'x509clist'}->clear();
 
      $ind = 0;
-     foreach my $n (@{$self->{'REQ'}->{'reqlist'}}) {
+     foreach my $n (@{$self->{'main'}->{'REQ'}->{'reqlist'}}) {
        my ($name, $state) = split(/\%/, $n);
        my @line = split(/\:/, $name);
        my $row = $self->{'x509clist'}->append(@line);
        $self->{'x509clist'}->set_text($row, 7, $ind);
        $ind++;
-       }
+     }
      # now select the first row to display certificate informations
      $self->{'x509clist'}->select_row(0, 0);
 
@@ -446,13 +419,13 @@ sub update_cert {
 
     my ($ind);
 
-    $self->{'CERT'}->read_certlist($directory, $crlfile, $indexfile, $force,
-          $self->{'main'});
+    $self->{'main'}->{'CERT'}->read_certlist($directory, $crlfile, $indexfile,
+          $force, $self->{'main'});
 
     $self->{'x509clist'}->clear();
 
      $ind = 0;
-     foreach my $n (@{$self->{'CERT'}->{'certlist'}}) {
+     foreach my $n (@{$self->{'main'}->{'CERT'}->{'certlist'}}) {
        my ($name, $state) = split(/\%/, $n);
        my @line = split(/\:/, $name);
        my $row = $self->{'x509clist'}->append(@line);
@@ -473,41 +446,36 @@ sub update_cert {
 sub update_info {
     my ($self)=@_;
 
-    my ($title, $parsed, $itemname, $dn);
+    my ($title, $parsed, $dn);
 
-    $itemname=selection_fname($self);
-    $dn=selection_dn($self);
+    $dn = selection_dn($self);
 
-    if (defined $itemname) {
-      if ($self->{'mode'} eq 'cert') {
-        $parsed=$self->{'OpenSSL'}->parsecert(
-		$self->{'actcrl'},
-		$self->{'actindex'},
-		$itemname,
-		$false);
-        $title = gettext("Certificate Information");
-        }
-      else {
-        $parsed=$self->{'OpenSSL'}->parsereq(
-		$self->{'actconfig'},
-		$itemname);
-        $title = gettext("Request Information");
-        }
+    if (defined $dn) {
+       $dn = MIME::Base64::encode($dn, '');
 
-    defined($parsed) || GUI::HELPERS::print_error(gettext("Can't read file"));
+       if ($self->{'mode'} eq 'cert') { 
+          $parsed=$self->{'main'}->{'CERT'}->parse_cert($self->{'main'}, $dn,
+                $false);
+          $title = gettext("Certificate Information");
+       } else { 
+          $parsed = $self->{'main'}->{'REQ'}->parse_req($self->{'main'}, $dn,
+                $false);
+          $title = gettext("Request Information");
+       }
 
-    if(not defined($self->{'infobox'})) {
-       $self->{'infobox'}=Gtk::VBox->new();
-    }
+       defined($parsed) || GUI::HELPERS::print_error(gettext("Can't read file"));
 
-    # printf STDERR "DEBUG: Infowin: $self->{'infowin'}, infobox: $self->{'infobox'}\n";
-    $self->{'infowin'}->display($self->{'infobox'}, $parsed,
-	$self->{'mode'}, $title);
+       if(not defined($self->{'infobox'})) { 
+          $self->{'infobox'}=Gtk::VBox->new();
+       }
 
-    }
-  else {
+       # printf STDERR "DEBUG: Infowin: $self->{'infowin'}, infobox: $self->{'infobox'}\n";
+       $self->{'infowin'}->display($self->{'infobox'}, $parsed,
+             $self->{'mode'}, $title);
+
+    } else {
     # nothing selected
-    $self->{'infowin'}->hide();
+       $self->{'infowin'}->hide();
     }
 }
 
@@ -517,7 +485,7 @@ sub update_info {
 sub add_info {
   my $self = shift;
 
-  my ($row, $index, $parsed, $title, $cert, $status, $certname, $list);
+  my ($row, $index, $parsed, $title, $status, $list, $dn);
 
   if ((defined $self->{'infowin'}) && ($self->{'infowin'} ne "")) { 
      $self->{'infowin'}->hide();
@@ -532,32 +500,26 @@ sub add_info {
   if(defined($row)) { 
      if ($self->{'mode'} eq 'cert') { 
         $index=$self->{'x509clist'}->get_text($row, 8);
-        $list = $self->{'CERT'}->{'certlist'};
+        $list = $self->{'main'}->{'CERT'}->{'certlist'};
      } else { 
         $index=$self->{'x509clist'}->get_text($row, 7); 
-        $list = $self->{'REQ'}->{'reqlist'};
+        $list = $self->{'main'}->{'REQ'}->{'reqlist'};
      }
   }
 
   if (defined $index) {
-    ($cert, $status) = split(/\%/, $list->[$index]);
-    $certname=$cert;
-    $certname= MIME::Base64::encode($cert, '');
-    $certname=$self->{'actdir'}."/$certname".".pem";
-    if ($self->{'mode'} eq 'cert') {
-      $parsed=$self->{'OpenSSL'}->parsecert(
-		$self->{'actcrl'},
-		$self->{'actindex'},
-		$certname,
-		$false);
-      $title="Certificate Information";
-      }
-    else {
-      $parsed=$self->{'OpenSSL'}->parsereq(
-		$self->{'actconfig'},
-		$certname);
+    ($dn, $status) = split(/\%/, $list->[$index]);
+    $dn = MIME::Base64::encode($dn, '');
+
+    if ($self->{'mode'} eq 'cert') { 
+       $parsed = $self->{'main'}->{'CERT'}->parse_cert($self->{'main'}, $dn,
+             $false);
+       $title="Certificate Information";
+    } else {
+      $parsed = $self->{'main'}->{'REQ'}->parse_req($self->{'main'}, $dn,
+            $false);
       $title="Request Information";
-      }
+    }
 
     defined($parsed) || GUI::HELPERS::print_error(gettext("Can't read file"));
 
@@ -592,34 +554,25 @@ sub _fill_info {
 
    my ($index, $item, $status, $itemname, $parsed, $title, $list, $t);
 
-  # printf STDERR "Fill_Info: @_\n";
+   # print STDERR "DEBUG: fill_info: @_\n";
 
-  if (defined $self->{'infowin'}) {
-
-   if($mode eq 'cert') {
-      $index = $clist->get_text($row, 8);
-      $list =  $self->{'CERT'}->{'certlist'};
-   }elsif($mode eq 'req') {
-      $index = $clist->get_text($row, 7);
-      $list = $self->{'REQ'}->{'reqlist'};
-   }else {
+   if (defined $self->{'infowin'}) { 
+      if($mode eq 'cert') { 
+         $index = $clist->get_text($row, 8);
+         $list =  $self->{'main'}->{'CERT'}->{'certlist'};
+      }elsif($mode eq 'req') {
+         $index = $clist->get_text($row, 7);
+         $list = $self->{'main'}->{'REQ'}->{'reqlist'};
+      }else {
          $t = sprintf(gettext("Invalid mode for: _fill_info(): %s"), $mode);
          GUI::HELPERS::print_error($t);
-      return;
+         return;
+      }
+ 
+      if (defined $index) {
+         update_info($self);
+      }
    }
-
-  if (defined $index) {
-    ($item, $status) = split(/\%/, $list->[$index]);
-    $itemname= MIME::Base64::encode($item, '');
-    # $itemname=$item;
-    $itemname=$self->{'actdir'}."/$itemname".".pem";
-    # printf STDERR "Itemname: $itemname\n";
-    update_info($self);
-    
-    }
-
-  }
-
 }
 
 sub selection_fname {
@@ -635,11 +588,11 @@ sub selection_fname {
   $mode=$self->{'mode'};
   if ($mode eq 'req') {
     $index = $self->{'x509clist'}->get_text($row, 7);
-    $list = $self->{'REQ'}->{'reqlist'};
+    $list = $self->{'main'}->{'REQ'}->{'reqlist'};
     }
   elsif ($mode eq 'cert') {
     $index = $self->{'x509clist'}->get_text($row, 8);
-    $list = $self->{'CERT'}->{'certlist'};
+    $list = $self->{'main'}->{'CERT'}->{'certlist'};
     }
   else {
     GUI::HELPERS::print_error(
@@ -672,11 +625,11 @@ sub selection_dn {
   $mode=$self->{'mode'};
   if ($mode eq 'req') {
     $index = $self->{'x509clist'}->get_text($row, 7);
-    $list  = $self->{'REQ'}->{'reqlist'};
+    $list  = $self->{'main'}->{'REQ'}->{'reqlist'};
     }
   elsif ($mode eq 'cert') {
     $index = $self->{'x509clist'}->get_text($row, 8);
-    $list  = $self->{'CERT'}->{'certlist'};
+    $list  = $self->{'main'}->{'CERT'}->{'certlist'};
     }
   else {
     GUI::HELPERS::print_error(
@@ -772,11 +725,11 @@ sub selection_status {
   $mode=$self->{'mode'};
   if ($mode eq 'req') {
     $index = $self->{'x509clist'}->get_text($row, 7);
-    $list  = $self->{'REQ'}->{'reqlist'};
+    $list  = $self->{'main'}->{'REQ'}->{'reqlist'};
     }
   elsif ($mode eq 'cert') {
     $index = $self->{'x509clist'}->get_text($row, 8);
-    $list  = $self->{'CERT'}->{'certlist'};
+    $list  = $self->{'main'}->{'CERT'}->{'certlist'};
     }
   else {
     GUI::HELPERS::print_error(

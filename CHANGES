@@ -1,4 +1,10 @@
-$Id: CHANGES,v 1.15 2004/07/15 10:47:54 sm Exp $
+$Id: CHANGES,v 1.19 2004/08/05 07:56:10 sm Exp $
+
+version 0.6.5 (beta) - Thu Aug 05 2004
+   * added spanish translation
+     Thanks to Ramon Pons Vivanco <rpons@rinu.org>
+   * force (re)parsing a newly created request
+   * force delete of internal structures, when deleting a CA
 
 version 0.6.4 (beta) - Thu Jul 15 2004
    * fixed bug, showing wrong options for renewal of certificates

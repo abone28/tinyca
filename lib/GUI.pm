@@ -1,6 +1,6 @@
 # Copyright (c) Stephan Martin <sm@sm-zone.net>
 #
-# $Id: GUI.pm,v 1.96 2004/07/15 10:45:46 sm Exp $
+# $Id: GUI.pm,v 1.99 2004/07/23 17:44:00 sm Exp $
 # 
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -37,7 +37,7 @@ sub new {
 
    bless($self, $class);
 
-   $self->{'version'} = '0.6.4 (beta)';
+   $self->{'version'} = '0.6.5 (beta)';
 
    $self->{'words'} = GUI::WORDS->new();
 
@@ -121,7 +121,7 @@ sub new {
 # create/update the main frame with the notebooks
 #
 sub create_mframe {
-   my $self = shift;
+   my ($self, $force) = @_;
 
    my($parsed, $calabel, $caframe, $rows, $table, @fields, $text, @childs,
          $label, $cert_export, $cert_revoke, $cert_delete, $certlabel,
@@ -162,6 +162,18 @@ sub create_mframe {
 				 gettext("CA Information"));
 
    ### notebooktab for certificates (split info and buttons)
+
+   # delete old instance, force reinitialisation
+   if (defined($self->{'certbox'}) && $force) {
+      $self->{'certbox'}->destroy();
+      delete($self->{'certbox'});
+      $self->{'certbox'} = undef;
+      delete($self->{'certbrowser'}->{'OpenSSL'});
+      $self->{'certbrowser'}->{'OpenSSL'} = undef;
+      delete($self->{'certbrowser'});
+      $self->{'certbrowser'} = undef;
+   }
+
    if(not defined($self->{'certbox'})) {
       $self->{'certbox'} = Gtk::VBox->new(0, 0);
       
@@ -169,8 +181,7 @@ sub create_mframe {
       $self->{'nb'}->insert_page($self->{'certbox'}, $certlabel, 1);
 
       if (not defined ($self->{'certbrowser'})) {
-        $self->{'certbrowser'}=GUI::X509_browser->new('cert', 
-              $self->{'OpenSSL'}, $self->{'CERT'}, $self->{'REQ'}, $self);
+        $self->{'certbrowser'}=GUI::X509_browser->new($self, 'cert');
         $self->{'certbrowser'}->set_window($self->{'certbox'});
         $self->{'certbrowser'}->add_list($ca,
                                          $cadir."/certs",
@@ -178,12 +189,11 @@ sub create_mframe {
                                          $cadir."/index.txt");
         $self->{'certbrowser'}->add_info();
         # $self->{'certbrowser'}->destroy();
-        }
-      else {
+      } else {
       $self->{'certbrowser'}->update($cadir."/certs",
                                      $cadir."/crl/crl.pem",
                                      $cadir."/index.txt"); 
-        }
+      }
 
       # create popup menu
       if(not defined($self->{'certmenu'})) {
@@ -246,14 +256,25 @@ sub create_mframe {
    # now select the first row
    $self->{'keylist'}->select_row(0, 0);
 
+   # delete old instance, force reinitialisation
+   if (defined($self->{'reqbox'}) && $force) {
+      $self->{'reqbox'}->destroy();
+      delete($self->{'reqbox'});
+      $self->{'reqbox'} = undef;
+      delete($self->{'reqbrowser'}->{'OpenSSL'});
+      $self->{'reqbrowser'}->{'OpenSSL'} = undef;
+      delete($self->{'reqbrowser'});
+      $self->{'reqbrowser'} = undef;
+   }
+
    ### notebooktab for requests (split info and buttons)
    if(not defined($self->{'reqbox'})) {
       $self->{'reqbox'} = Gtk::VBox->new(0, 0);
       $reqlabel = Gtk::Label->new(gettext("Requests"));
       $self->{'nb'}->insert_page($self->{'reqbox'}, $reqlabel, 3);
+      
       if (not defined ($self->{'reqbrowser'})) {
-        $self->{'reqbrowser'}=GUI::X509_browser->new('req', 
-              $self->{'OpenSSL'}, $self->{'CERT'}, $self->{'REQ'}, $self);
+        $self->{'reqbrowser'}=GUI::X509_browser->new($self, 'req');
         $self->{'reqbrowser'}->set_window($self->{'reqbox'});
         $self->{'reqbrowser'}->add_list($ca,
                                          $cadir."/req",
@@ -3044,6 +3065,17 @@ sub update_keys {
 
 # 
 # $Log: GUI.pm,v $
+# Revision 1.99  2004/07/23 17:44:00  sm
+# force reread of request when overwriting an old one
+# removed the direct usage of 'OpenSSL.pm' in X509_browser, use correct
+# abstraction via 'REQ.pm' and 'CERT.pm'
+#
+# Revision 1.98  2004/07/19 13:20:10  sm
+# completeley reintialise the browser object when opening a new CA
+#
+# Revision 1.97  2004/07/19 12:16:21  sm
+# new version
+#
 # Revision 1.96  2004/07/15 10:45:46  sm
 # removed references to create_mframe, always recreate only one list
 #

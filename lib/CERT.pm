@@ -1,6 +1,6 @@
 # Copyright (c) Stephan Martin <sm@sm-zone.net>
 #
-# $Id: CERT.pm,v 1.30 2004/07/15 10:45:46 sm Exp $
+# $Id: CERT.pm,v 1.31 2004/07/23 17:50:51 sm Exp $
 # 
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -248,16 +248,22 @@ sub revoke_cert {
       GUI::HELPERS::set_cursor($main, 0);
       $t = gettext("Wrong CA password given\nRevoking the Certificate failed");
       GUI::HELPERS::print_warning($t, $ext);
+      delete($opts->{$_}) foreach(keys(%$opts));
+      $opts = undef;
       return;
    } elsif($ret eq 2) {
       GUI::HELPERS::set_cursor($main, 0);
       $t = gettext("CA Key not found\nRevoking the Certificate failed");
       GUI::HELPERS::print_warning($t, $ext);
+      delete($opts->{$_}) foreach(keys(%$opts));
+      $opts = undef;
       return;
    } elsif($ret) {
       GUI::HELPERS::set_cursor($main, 0);
       $t = gettext("Revoking the Certificate failed");
       GUI::HELPERS::print_warning($t, $ext);
+      delete($opts->{$_}) foreach(keys(%$opts));
+      $opts = undef;
       return;
    }
 
@@ -269,6 +275,9 @@ sub revoke_cert {
          );
 
    if (not -s $cadir."/crl/crl.pem" || $ret) { 
+      delete($opts->{$_}) foreach(keys(%$opts));
+      $opts = undef;
+
       GUI::HELPERS::set_cursor($main, 0);
       GUI::HELPERS::print_error(
             gettext("Generating a new Revocation List failed"), $ext);
@@ -285,6 +294,9 @@ sub revoke_cert {
                                   0);
 
    GUI::HELPERS::set_cursor($main, 0);
+
+   delete($opts->{$_}) foreach(keys(%$opts));
+   $opts = undef;
 
    return;
 }

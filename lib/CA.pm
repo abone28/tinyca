@@ -1,6 +1,6 @@
 # Copyright (c) Stephan Martin <sm@sm-zone.net>
 #
-# $Id: CA.pm,v 1.32 2004/07/08 20:18:21 sm Exp $
+# $Id: CA.pm,v 1.34 2004/07/23 10:46:14 sm Exp $
 # 
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -115,6 +115,7 @@ sub open_ca {
    if ((defined($self->{'actca'})) && 
        ($opts->{'name'} eq $self->{'actca'})) { 
       GUI::HELPERS::set_cursor($main, 0);
+      print STDERR "DEBUG: ca $opts->{'name'} already opened\n";
       return;
    }
 
@@ -146,7 +147,11 @@ sub open_ca {
    $main->{'REQ'}->{'lastread'}  = 0;
    $main->{'KEY'}->{'lastread'}  = 0;
 
-   $main->{'Openssl'} = undef;
+   delete($main->{'OpenSSL'}->{'CACHE'});
+   delete($main->{'CERT'}->{'OpenSSL'}->{'CACHE'});
+   delete($main->{'REQ'}->{'OpenSSL'}->{'CACHE'});
+   delete($main->{'OpenSSL'});
+
    $main->{'bar'}->set_status(gettext("  Initializing OpenSSL"));
    $main->{'OpenSSL'} = OpenSSL->new($main->{'init'}->{'opensslbin'},
                                      $main->{'tmpdir'});
@@ -154,9 +159,10 @@ sub open_ca {
    $index = $self->{'cadir'}."/index.txt";
 
    $main->{'bar'}->set_status(gettext("  Check for CA Version"));
-      while(Gtk->events_pending) {
-         Gtk->main_iteration;
-      }
+   while(Gtk->events_pending) {
+      Gtk->main_iteration;
+   }
+
    open(INDEX, "+<$index") || do {
       GUI::HELPERS::set_cursor($main, 0);
       GUI::HELPERS::print_error(gettext("Can't open index file: ".$!));
@@ -230,7 +236,7 @@ sub open_ca {
    while(Gtk->events_pending) {
       Gtk->main_iteration;
    }
-   $main->create_mframe();
+   $main->create_mframe(1);
 
    $main->{'bar'}->set_status(gettext("  Create Toolbar"));
    while(Gtk->events_pending) {
@@ -305,24 +311,17 @@ sub delete_ca {
       $main->{'nb'}->remove_page($i);
    }
 
-   $main->{'cabox'}->destroy() if(defined($main->{'cabox'}));
-   delete($main->{'cabox'});
+   delete($main->{'reqbrowser'});
+   delete($main->{'certbrowser'});
 
-   $main->{'reqbox'}->destroy() if(defined($main->{'reqbox'}));
-   delete($main->{'reqbox'});
-
-   $main->{'keybox'}->destroy() if(defined($main->{'keybox'}));
-   delete($main->{'keybox'});
-
-   $main->{'certbox'}->destroy() if(defined($main->{'certbox'}));
-   delete($main->{'certbox'});
+   delete($main->{'REQ'}->{'reqlist'});
+   delete($main->{'CERT'}->{'certlist'});
 
    foreach(@{$self->{'calist'}}) {
       next if $_ eq $name;
       push(@tmp, $_);
    }
    $self->{'calist'} = \@tmp;
-
 
    delete($self->{$name});
 
