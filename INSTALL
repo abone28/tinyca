@@ -8,16 +8,19 @@ $init->{'opensslbin'}   (location of your openssl binary)
 $init->{'templatedir'}  (location of the directory templates)
 $init->{'zipbin'}       (location of your zip binary)
 
-3. If you want to have german/spanish texts:
+3. If you want to have german/spanish/czech texts:
    Generate the file tinyca.mo from po/de.po:
    msgfmt po/de.po -o locale/de/LC_MESSAGES/tinyca.mo
    msgfmt po/es.po -o locale/es/LC_MESSAGES/tinyca.mo
+   msgfmt po/cz.po -o locale/cz/LC_MESSAGES/tinyca.mo
    or even more simple: call make in the directory po/
 
    If your locale is not set to german/spanish:
    export LC_ALL=de_DE
    or
    export LC_ALL=es_ES
+   or
+   export LC_ALL=cs_CZ
    before you call tinyca.
 
 4. Call tinyca, use it and report bugs :-))

@@ -1,5 +1,5 @@
 POTFILES=$(wildcard ../lib/*.pm) $(wildcard ../lib/GUI/*.pm) ../tinyca
-CATALOGS=de.mo es.mo
+CATALOGS=de.mo es.mo cs.mo
 
 all: $(CATALOGS)
 

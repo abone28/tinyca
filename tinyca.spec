@@ -1,6 +1,6 @@
 # spec file for package tinyca
 #
-# $Id: tinyca.spec,v 1.15 2004/08/05 08:08:19 sm Exp $
+# $Id: tinyca.spec,v 1.16 2004/08/09 19:40:51 sm Exp $
 #
 # Copyright (c) 2002 Stephan Martin
 # This file and all modifications and additions to the pristine
@@ -66,18 +66,22 @@ make -C po
 %install
 [ "$RPM_BUILD_ROOT" != "/" ] && [ -d $RPM_BUILD_ROOT ] && rm -rf $RPM_BUILD_ROOT;
 
+LANGUAGES="de es cs"
+
 mkdir -p $RPM_BUILD_ROOT%{bindir}
 mkdir -p $RPM_BUILD_ROOT%{libdir}
 mkdir -p $RPM_BUILD_ROOT%{libdir}/GUI
 mkdir -p $RPM_BUILD_ROOT%{templatesdir}
-mkdir -p $RPM_BUILD_ROOT%{localedir}/de/LC_MESSAGES/
-mkdir -p $RPM_BUILD_ROOT%{localedir}/es/LC_MESSAGES/
+
 install -m 644 lib/*.pm $RPM_BUILD_ROOT%{libdir}
 install -m 644 lib/GUI/*.pm $RPM_BUILD_ROOT%{libdir}/GUI/
 install -m 644 templates/openssl.cnf $RPM_BUILD_ROOT%{templatesdir}
 install -m 755 tinyca $RPM_BUILD_ROOT%{bindir}
-install -m 644 locale/de/LC_MESSAGES/tinyca.mo %{buildroot}%{localedir}/de/LC_MESSAGES/
-install -m 644 locale/es/LC_MESSAGES/tinyca.mo %{buildroot}%{localedir}/es/LC_MESSAGES/
+
+for LANG in $LANGUAGES; do
+   mkdir -p $RPM_BUILD_ROOT%{localedir}/$LANG/LC_MESSAGES/
+   install -m 644 locale/$LANG/LC_MESSAGES/tinyca.mo %{buildroot}%{localedir}/$LANG/LC_MESSAGES/
+done
 
 %if %suse_version > 820
 %suse_update_desktop_file -i %name Network Security
@@ -97,6 +101,8 @@ rm -rf %{buildroot}
 %endif
 
 %changelog
+* Fri Aug 13 2004 - sm@sm-zone.net
+- czech translation
 * Sun Jun 13 2004 - sm@sm-zone.net
 - gui polishing
 - code cleanup

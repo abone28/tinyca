@@ -1,6 +1,6 @@
 # Copyright (c) Stephan Martin <sm@sm-zone.net>
 #
-# $Id: GUI.pm,v 1.99 2004/07/23 17:44:00 sm Exp $
+# $Id: GUI.pm,v 1.101 2004/08/13 20:57:23 sm Exp $
 # 
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -37,7 +37,7 @@ sub new {
 
    bless($self, $class);
 
-   $self->{'version'} = '0.6.5 (beta)';
+   $self->{'version'} = '0.6.6 (beta)';
 
    $self->{'words'} = GUI::WORDS->new();
 
@@ -2369,7 +2369,9 @@ sub show_help {
 sub about {
    my $self = shift;
 
-   my $aboutdialog = Gnome::About->new(
+   my ($aboutdialog, $href, $label);
+
+   $aboutdialog = Gnome::About->new(
          'TinyCA', $self->{'version'}, 
          '(C) 2002-2004 Stephan Martin',
          'Stephan Martin <sm@sm-zone.net>', 
@@ -2380,7 +2382,24 @@ sub about {
    $aboutdialog->set_policy(1, 1, 0);
    $aboutdialog->set_modal(1);
 
-   my $href = Gnome::HRef->new (
+   $label = GUI::HELPERS::create_label( 
+         gettext("Translations contributed by").":", 'left', 0, 0);
+   $aboutdialog->vbox->pack_start($label, 1, 1, 0);
+
+   $label = GUI::HELPERS::create_label( 
+         gettext("Spanish: Ramon Pons Vivanco <rpons\@rinu.org>"),
+         'center', 0, 0); 
+   $aboutdialog->vbox->pack_start($label, 1, 1, 0);
+
+   $label = GUI::HELPERS::create_label( 
+         gettext("Czech: Robert Wolf <gentoo\@slave.umbr.cas.cz>"),
+         'center', 0, 0); 
+   $aboutdialog->vbox->pack_start($label, 1, 1, 0);
+
+   $label = GUI::HELPERS::create_label( " ", 'center', 0, 0);
+   $aboutdialog->vbox->pack_start($label, 1, 1, 0);
+
+   $href = Gnome::HRef->new (
          "http://tinyca.sm-zone.net/",
          "http://tinyca.sm-zone.net/");
    $aboutdialog->vbox->pack_start($href, 1, 1, 0);
@@ -3065,6 +3084,13 @@ sub update_keys {
 
 # 
 # $Log: GUI.pm,v $
+# Revision 1.101  2004/08/13 20:57:23  sm
+# added translators to about()
+#
+# Revision 1.100  2004/08/09 19:48:53  sm
+# added czech translation
+# new version
+#
 # Revision 1.99  2004/07/23 17:44:00  sm
 # force reread of request when overwriting an old one
 # removed the direct usage of 'OpenSSL.pm' in X509_browser, use correct
