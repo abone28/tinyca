@@ -1,6 +1,6 @@
 # Copyright (c) Stephan Martin <sm@sm-zone.net>
 #
-# $Id: TCONFIG.pm,v 1.9 2004/10/28 10:45:13 sm Exp $
+# $Id: TCONFIG.pm,v 1.11 2005/02/20 16:02:22 sm Exp $
 # 
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -187,12 +187,22 @@ sub show_configbox {
          $box);
    $main->{'radiobox'}->add($main->{'radio2'});
 
+   $main->{'radio3'} = Gtk::RadioButton->new(
+         gettext($main->{'words'}{'raw'}), $main->{'radio1'});
+   $main->{'radio3'}->signal_connect('toggled', \&GUI::CALLBACK::toggle_to_var_pref, 
+         \$main->{'TCONFIG'}->{'server_cert'}->{'subjectAltNameType'}, 'raw', 
+         $box);
+   $main->{'radiobox'}->add($main->{'radio3'});
+
    if($main->{'TCONFIG'}->{'server_cert'}->{'subjectAltNameType'} 
          eq 'ip') {
       $main->{'radio1'}->set_active(1)
    }elsif($main->{'TCONFIG'}->{'server_cert'}->{'subjectAltNameType'} 
          eq 'dns') {
       $main->{'radio2'}->set_active(1)
+   }elsif($main->{'TCONFIG'}->{'server_cert'}->{'subjectAltNameType'} 
+         eq 'raw') {
+      $main->{'radio3'}->set_active(1)
    }
 
    $combo = Gtk::Combo->new();
@@ -209,6 +219,7 @@ sub show_configbox {
         eq 'user') {
         $main->{'radio1'}->set_sensitive(1);
         $main->{'radio2'}->set_sensitive(1);
+        $main->{'radio3'}->set_sensitive(1);
 
         $combo->entry->set_text($main->{'words'}{'user'});
      }elsif($main->{'TCONFIG'}->{'server_cert'}->{'subjectAltName'} 
@@ -216,16 +227,19 @@ sub show_configbox {
         $combo->entry->set_text($main->{'words'}{'emailcopy'});
         $main->{'radio1'}->set_sensitive(0);
         $main->{'radio2'}->set_sensitive(0);
+        $main->{'radio3'}->set_sensitive(0);
      }elsif($main->{'TCONFIG'}->{'server_cert'}->{'subjectAltName'} 
         eq 'none') { 
         $combo->entry->set_text($main->{'words'}{'none'});
         $main->{'radio1'}->set_sensitive(0);
         $main->{'radio2'}->set_sensitive(0);
+        $main->{'radio3'}->set_sensitive(0);
      }
    } else { 
       $combo->entry->set_text($main->{'words'}{'none'});
       $main->{'radio1'}->set_sensitive(0);
       $main->{'radio2'}->set_sensitive(0);
+      $main->{'radio3'}->set_sensitive(0);
    }
    $combo->entry->signal_connect('changed', 
          \&GUI::CALLBACK::entry_to_var_san, 
@@ -234,7 +248,8 @@ sub show_configbox {
          $box, 
          $main->{words}, 
          $main->{'radio1'},  
-         $main->{'radio2'});
+         $main->{'radio2'},
+         $main->{'radio3'});
    $table->attach_defaults($combo, 1, 2, $rows-1, $rows);
    $rows++;
 
@@ -309,7 +324,7 @@ sub show_configbox {
       $main->{'radio2'}->set_sensitive(0);
    }
    $combo->entry->signal_connect('changed', 
-         \&GUI::CALLBACK::entry_to_var_san, 
+         \&GUI::CALLBACK::entry_to_var_key, 
          $combo->entry, 
          \$main->{'TCONFIG'}->{'server_cert'}->{'keyUsage'}, 
          $box, 
@@ -389,7 +404,7 @@ sub show_configbox {
       $main->{'radio2'}->set_sensitive(0);
    }
    $combo->entry->signal_connect('changed', 
-         \&GUI::CALLBACK::entry_to_var_san, 
+         \&GUI::CALLBACK::entry_to_var_key, 
          $combo->entry, 
          \$main->{'TCONFIG'}->{'server_cert'}->{'extendedKeyUsage'}, 
          $box, 
@@ -598,6 +613,14 @@ sub show_configbox {
          $box);
    $main->{'radiobox'}->add($main->{'radio3'});
 
+   $main->{'radio4'} = Gtk::RadioButton->new(
+         gettext($main->{'words'}{'raw'}), $main->{'radio1'});
+   $main->{'radio4'}->signal_connect('toggled', 
+         \&GUI::CALLBACK::toggle_to_var_pref, 
+         \$main->{'TCONFIG'}->{'client_cert'}->{'subjectAltNameType'}, 'raw', 
+         $box);
+   $main->{'radiobox'}->add($main->{'radio4'});
+
    if($main->{'TCONFIG'}->{'client_cert'}->{'subjectAltNameType'} 
          eq 'ip') {
       $main->{'radio1'}->set_active(1)
@@ -607,6 +630,9 @@ sub show_configbox {
    }elsif($main->{'TCONFIG'}->{'client_cert'}->{'subjectAltNameType'} 
          eq 'mail') {
       $main->{'radio3'}->set_active(1)
+   }elsif($main->{'TCONFIG'}->{'client_cert'}->{'subjectAltNameType'} 
+         eq 'raw') {
+      $main->{'radio4'}->set_active(1)
    }
 
    $combo = Gtk::Combo->new();
@@ -624,6 +650,7 @@ sub show_configbox {
         $main->{'radio1'}->set_sensitive(1);
         $main->{'radio2'}->set_sensitive(1);
         $main->{'radio3'}->set_sensitive(1);
+        $main->{'radio4'}->set_sensitive(1);
 
         $combo->entry->set_text($main->{'words'}{'user'});
      }elsif($main->{'TCONFIG'}->{'client_cert'}->{'subjectAltName'} 
@@ -631,6 +658,7 @@ sub show_configbox {
         $main->{'radio1'}->set_sensitive(0);
         $main->{'radio2'}->set_sensitive(0);
         $main->{'radio3'}->set_sensitive(0);
+        $main->{'radio4'}->set_sensitive(1);
 
         $combo->entry->set_text($main->{'words'}{'emailcopy'});
      }elsif($main->{'TCONFIG'}->{'client_cert'}->{'subjectAltName'} 
@@ -638,6 +666,7 @@ sub show_configbox {
         $main->{'radio1'}->set_sensitive(0);
         $main->{'radio2'}->set_sensitive(0);
         $main->{'radio3'}->set_sensitive(0);
+        $main->{'radio4'}->set_sensitive(1);
 
         $combo->entry->set_text($main->{'words'}{'none'});
      }
@@ -645,6 +674,7 @@ sub show_configbox {
       $main->{'radio1'}->set_sensitive(0);
       $main->{'radio2'}->set_sensitive(0);
       $main->{'radio3'}->set_sensitive(0);
+      $main->{'radio4'}->set_sensitive(1);
 
       $combo->entry->set_text($main->{'words'}{'none'});
    }
@@ -652,7 +682,7 @@ sub show_configbox {
          $combo->entry, 
          \$main->{'TCONFIG'}->{'client_cert'}->{'subjectAltName'}, 
          $box, $main->{words}, 
-         $main->{'radio1'},  $main->{'radio2'}, $main->{'radio3'});
+         $main->{'radio1'}, $main->{'radio2'}, $main->{'radio3'}, $main->{'radio4'});
    $table->attach_defaults($combo, 1, 2, $rows-1, $rows);
    $rows++;
 
@@ -721,7 +751,7 @@ sub show_configbox {
       $main->{'radio1'}->set_sensitive(0);
       $main->{'radio2'}->set_sensitive(0);
    }
-   $combo->entry->signal_connect('changed', \&GUI::CALLBACK::entry_to_var_san, 
+   $combo->entry->signal_connect('changed', \&GUI::CALLBACK::entry_to_var_key, 
          $combo->entry, \$main->{'TCONFIG'}->{'client_cert'}->{'keyUsage'}, 
          $box, $main->{words}, $main->{'radio1'},  $main->{'radio2'});
    $table->attach_defaults($combo, 1, 2, $rows-1, $rows);
@@ -798,7 +828,7 @@ sub show_configbox {
       $main->{'radio2'}->set_sensitive(0);
    }
    $combo->entry->signal_connect('changed', 
-         \&GUI::CALLBACK::entry_to_var_san, 
+         \&GUI::CALLBACK::entry_to_var_key, 
          $combo->entry, 
          \$main->{'TCONFIG'}->{'client_cert'}->{'extendedKeyUsage'}, 
          $box, 
@@ -1085,7 +1115,7 @@ sub show_configbox {
       $main->{'radio1'}->set_sensitive(0);
       $main->{'radio2'}->set_sensitive(0);
    }
-   $combo->entry->signal_connect('changed', \&GUI::CALLBACK::entry_to_var_san, 
+   $combo->entry->signal_connect('changed', \&GUI::CALLBACK::entry_to_var_key, 
          $combo->entry, \$main->{'TCONFIG'}->{'v3_ca'}->{'keyUsage'}, 
          $box, $main->{words}, $main->{'radio1'},  $main->{'radio2'});
    $table->attach_defaults($combo, 1, 2, $rows-1, $rows);
@@ -1204,7 +1234,6 @@ sub show_config_ca {
          basicConstraints
          issuerAltName
          nsComment
-         crlDistributionPoints
          nsCaRevocationUrl
          nsCaPolicyUrl
          nsRevocationUrl
@@ -1326,7 +1355,7 @@ sub show_config_ca {
       $main->{'radio1'}->set_sensitive(0);
       $main->{'radio2'}->set_sensitive(0);
    }
-   $combo->entry->signal_connect('changed', \&GUI::CALLBACK::entry_to_var_san, 
+   $combo->entry->signal_connect('changed', \&GUI::CALLBACK::entry_to_var_key, 
          $combo->entry, \$main->{'TCONFIG'}->{'v3_ca'}->{'keyUsage'}, 
          undef, $main->{words}, $main->{'radio1'},  $main->{'radio2'});
    $table->attach_defaults($combo, 1, 2, $rows-1, $rows);
@@ -1410,6 +1439,14 @@ sub show_config_ca {
 
 # 
 # $Log: TCONFIG.pm,v $
+# Revision 1.11  2005/02/20 16:02:22  sm
+# added patch for multiple subjectAltNames
+#
+# Revision 1.10  2005/02/13 21:04:07  sm
+# added multiple ou patch from arndt@uni-koblenz.de
+# removed CrlDistributionPoint for Root-CA
+# added detection for openssl 0.9.8
+#
 # Revision 1.9  2004/10/28 10:45:13  sm
 # added nsCertType "server, client" for OpenLDAAP replikation
 #

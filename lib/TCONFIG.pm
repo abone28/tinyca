@@ -1,6 +1,6 @@
 # Copyright (c) Stephan Martin <sm@sm-zone.net>
 #
-# $Id: TCONFIG.pm,v 1.23 2004/07/15 07:28:46 sm Exp $
+# $Id: TCONFIG.pm,v 1.24 2005/02/20 16:02:21 sm Exp $
 # 
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -127,6 +127,10 @@ sub init_config {
          $self->{'server_cert'}->{'subjectAltNameType'} = 'dns';
          $self->{'server_cert'}->{'subjectAltName'} = 'user';
       }elsif($self->{'server_cert'}->{'subjectAltName'}
+            =~ /ENV:.*RAW/) {
+         $self->{'server_cert'}->{'subjectAltNameType'} = 'raw';
+         $self->{'server_cert'}->{'subjectAltName'} = 'user';
+      }elsif($self->{'server_cert'}->{'subjectAltName'}
             eq 'email:copy') {
          $self->{'server_cert'}->{'subjectAltName'} = 'emailcopy';
          $self->{'server_cert'}->{'subjectAltNameType'} = 'ip';
@@ -149,6 +153,10 @@ sub init_config {
       }elsif($self->{'client_cert'}->{'subjectAltName'}
             =~ /ENV:.*EMAIL/) {
          $self->{'client_cert'}->{'subjectAltNameType'} = 'mail';
+         $self->{'client_cert'}->{'subjectAltName'} = 'user';
+      }elsif($self->{'client_cert'}->{'subjectAltName'}
+            =~ /ENV:.*RAW/) {
+         $self->{'client_cert'}->{'subjectAltNameType'} = 'raw';
          $self->{'client_cert'}->{'subjectAltName'} = 'user';
       }elsif($self->{'client_cert'}->{'subjectAltName'}
             eq 'email:copy') {
@@ -445,6 +453,8 @@ sub write_config {
                   print OUT "subjectAltName = \$ENV::SUBJECTALTNAMEDNS\n";
                } elsif($self->{$sect}->{'subjectAltNameType'} eq 'mail') {
                   print OUT "subjectAltName = \$ENV::SUBJECTALTNAMEEMAIL\n";
+               } elsif($self->{$sect}->{'subjectAltNameType'} eq 'raw') {
+                  print OUT "subjectAltName = \$ENV::SUBJECTALTNAMERAW\n";
                }
             } elsif($self->{$sect}->{'subjectAltName'} eq 'emailcopy') {
                print OUT "subjectAltName = email:copy\n";

@@ -1,6 +1,6 @@
 # Copyright (c) Stephan Martin <sm@sm-zone.net>
 #
-# $Id: REQ.pm,v 1.45 2004/10/03 08:08:28 sm Exp $
+# $Id: REQ.pm,v 1.46 2005/02/13 21:04:07 sm Exp $
 # 
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -84,8 +84,9 @@ sub get_req_create {
       if(defined $parsed->{'O'}) {
          $opts->{'O'} = $parsed->{'O'};
       }
-      if(defined $parsed->{'OU'}) {
-         $opts->{'OU'} = $parsed->{'OU'}->[0];
+      my $cc = 0;
+      foreach my $ou (@{$parsed->{'OU'}}) {
+         $opts->{'OU'}->[$cc++] = $ou;
       }
 
       $main->show_req_dialog($opts);
@@ -167,22 +168,22 @@ sub create_req {
       return;
    }
 
+   my @dn = ( $opts->{'C'}, $opts->{'ST'}, $opts->{'L'}, $opts->{'O'} );
+   if(ref($opts->{'OU'})) {
+      foreach my $ou (@{$opts->{'OU'}}) {
+      	push(@dn,$ou);
+      }
+   } else {
+      push(@dn, $opts->{'OU'});
+   }
+   @dn = (@dn, $opts->{'CN'}, $opts->{'EMAIL'}, '', '');
    ($ret, $ext) = $self->{'OpenSSL'}->newreq(
          'config'   => $main->{'CA'}->{$ca}->{'cnf'},
          'outfile'  => $reqfile,
          'keyfile'  => $keyfile,
          'digest'   => $opts->{'digest'},
          'pass'     => $opts->{'passwd'},
-         'dn'       => [ $opts->{'C'},
-                         $opts->{'ST'},
-                         $opts->{'L'},
-                         $opts->{'O'},
-                         $opts->{'OU'},
-                         $opts->{'CN'},
-                         $opts->{'EMAIL'},
-                         '',
-                         ''
-                       ],
+         'dn'       => \@dn,
          );
 
    if (not -s $reqfile || $ret) { 
@@ -737,6 +738,11 @@ sub parse_req {
 
 # 
 # $Log: REQ.pm,v $
+# Revision 1.46  2005/02/13 21:04:07  sm
+# added multiple ou patch from arndt@uni-koblenz.de
+# removed CrlDistributionPoint for Root-CA
+# added detection for openssl 0.9.8
+#
 # Revision 1.45  2004/10/03 08:08:28  sm
 # added import verification for ca certificate
 #

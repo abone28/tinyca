@@ -1,6 +1,6 @@
 # Copyright (c) Stephan Martin <sm@sm-zone.net>
 #
-# $Id: WORDS.pm,v 1.3 2004/10/28 10:45:14 sm Exp $
+# $Id: WORDS.pm,v 1.4 2005/02/20 16:02:22 sm Exp $
 # 
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -30,6 +30,7 @@ sub new {
     'critical'              => gettext("critical"),
     'noncritical'           => gettext("not critical"),
     'emailcopy'             => gettext("Copy Email"),
+    'raw'                   => gettext("raw"),
     'dns'                   => gettext("DNS Name"),
     'ip'                    => gettext("IP Address"),
     'mail'                  => gettext("Email"),
@@ -76,6 +77,7 @@ sub new {
     gettext("critical")                            => 'critical',
     gettext("not critical")                        => 'noncritical',
     gettext("Copy Email")                          => 'emailcopy',
+    gettext("raw")                          => 'raw',
     gettext("DNS Name")                            => 'dns',
     gettext("Email")                               => 'email',
     gettext("IP Address")                          => 'ip',

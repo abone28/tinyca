@@ -1,6 +1,6 @@
 # Copyright (c) Stephan Martin <sm@sm-zone.net>
 #
-# $Id: CA.pm,v 1.42 2004/11/08 11:35:47 sm Exp $
+# $Id: CA.pm,v 1.43 2005/02/13 21:04:06 sm Exp $
 # 
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -368,7 +368,10 @@ sub get_ca_create {
             $opts->{'O'} = $parsed->{'O'};
          }
          if(defined $parsed->{'OU'}) {
-            $opts->{'OU'} = $parsed->{'OU'}->[0];
+            my $cc = 0;
+            foreach my $ou (@{$parsed->{'OU'}}) {
+               $opts->{'OU'}->[$cc++] = $ou;
+            }
          }
       }
       
@@ -969,21 +972,23 @@ sub create_ca {
       return;
    }
 
+   my @dn = ( 
+         $opts->{'C'}, 
+         $opts->{'ST'}, 
+         $opts->{'L'}, 
+         $opts->{'O'}, 
+         $opts->{'OU'},
+         $opts->{'CN'}, 
+         $opts->{'EMAIL'}, 
+         '', 
+         '');
+
    ($ret, $ext) = $main->{'OpenSSL'}->newreq( 
          'config'  => $self->{$name}->{'cnf'},
          'outfile' => $self->{$name}->{'dir'}."/cacert.req",
          'digest'   => $opts->{'digest'},
          'pass'    => $opts->{'passwd'},
-         'dn'      => [ $opts->{'C'}, 
-                        $opts->{'ST'},
-                        $opts->{'L'},
-                        $opts->{'O'},
-                        $opts->{'OU'},
-                        $opts->{'CN'},
-                        $opts->{'EMAIL'},
-                        '',
-                        ''
-                        ],
+         'dn'      => \@dn,
          'keyfile' => $self->{$name}->{'dir'}."/cacert.key"
          );
 

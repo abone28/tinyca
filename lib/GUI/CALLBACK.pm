@@ -1,6 +1,6 @@
 # Copyright (c) Stephan Martin <sm@sm-zone.net>
 #
-# $Id: CALLBACK.pm,v 1.2 2004/07/09 10:00:08 sm Exp $
+# $Id: CALLBACK.pm,v 1.3 2005/02/20 16:02:22 sm Exp $
 # 
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -40,10 +40,43 @@ sub entry_to_var {
 }
 
 #
-# fill given var-reference with text from entry
+# fill given var-reference with text from entry subjectAltName
 # and set senitivity of togglebuttons
 #
 sub entry_to_var_san {
+   my ($widget, $entry, $var, $box, $words, $radio1, $radio2, $radio3, $radio4) = @_;
+
+   if(defined($words)) {
+      if(my $tmp = $words->{$entry->get_text()}) {
+         $$var = $tmp;
+      } else {
+         $$var = $entry->get_text();
+      }
+      if($$var eq 'user') {
+         $radio1->set_sensitive(1) if(defined($radio1));
+         $radio2->set_sensitive(1) if(defined($radio2));
+         $radio3->set_sensitive(1) if(defined($radio3));
+         $radio4->set_sensitive(1) if(defined($radio4));
+      }else{
+         $radio1->set_sensitive(0) if(defined($radio1));
+         $radio2->set_sensitive(0) if(defined($radio2));
+         $radio3->set_sensitive(0) if(defined($radio3));
+         $radio4->set_sensitive(0) if(defined($radio4));
+      }
+   }else{
+      $$var = $entry->get_text();
+   }
+
+   $box->set_modified(1) if(defined($box));
+
+   return;
+}
+
+#
+# fill given var-reference with text from entry subjectAltName
+# and set senitivity of togglebuttons
+#
+sub entry_to_var_key {
    my ($widget, $entry, $var, $box, $words, $radio1, $radio2, $radio3) = @_;
 
    if(defined($words)) {
@@ -56,12 +89,6 @@ sub entry_to_var_san {
          $radio1->set_sensitive(1) if(defined($radio1));
          $radio2->set_sensitive(1) if(defined($radio2));
          $radio3->set_sensitive(1) if(defined($radio3));
-#       }elsif($$var eq 'sig'|| $$var eq 'key' || $$var eq 'keysig' ||
-#              $$var eq 'keyCertSign' || $$var eq 'cRLSign' ||
-#              $$var eq 'keyCertSign, cRLSign') {
-#          $radio1->set_sensitive(1) if(defined($radio1));
-#          $radio2->set_sensitive(1) if(defined($radio2));
-#          $radio3->set_sensitive(1) if(defined($radio3));
       }else{
          $radio1->set_sensitive(0) if(defined($radio1));
          $radio2->set_sensitive(0) if(defined($radio2));
@@ -128,6 +155,9 @@ sub toggle_to_var_pref {
 
 # 
 # $Log: CALLBACK.pm,v $
+# Revision 1.3  2005/02/20 16:02:22  sm
+# added patch for multiple subjectAltNames
+#
 # Revision 1.2  2004/07/09 10:00:08  sm
 # added configuration for extendedKyUsage
 #

@@ -1,6 +1,6 @@
 # Copyright (c) Stephan Martin <sm@sm-zone.net>
 #
-# $Id: OpenSSL.pm,v 1.48 2004/11/08 08:07:42 sm Exp $
+# $Id: OpenSSL.pm,v 1.50 2005/02/20 16:02:21 sm Exp $
 # 
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -45,6 +45,8 @@ sub new {
       $self->{'version'} = "0.9.6";
    } elsif ($v =~ /0.9.7/) {
       $self->{'version'} = "0.9.7";
+   } elsif ($v =~ /0.9.8/) {
+      $self->{'version'} = "0.9.8";
    }
 
    bless($self, $class);
@@ -158,11 +160,13 @@ sub signreq {
    if($opts->{'subjaltname'} ne 'none' && 
          $opts->{'subjaltname'} ne 'emailcopy') {
       if($opts->{'subjaltnametype'} eq 'ip') {
-         $ENV{'SUBJECTALTNAMEIP'} = "IP:".$opts->{'subjaltname'};
+         $ENV{'SUBJECTALTNAMEIP'} = HELPERS::gen_subjectaltname_contents('IP:', $opts->{'subjaltname'});
       }elsif($opts->{'subjaltnametype'} eq 'dns') {
-         $ENV{'SUBJECTALTNAMEDNS'} = "DNS:".$opts->{'subjaltname'};
+         $ENV{'SUBJECTALTNAMEDNS'} = HELPERS::gen_subjectaltname_contents('DNS:', $opts->{'subjaltname'});
       }elsif($opts->{'subjaltnametype'} eq 'mail') {
-         $ENV{'SUBJECTALTNAMEEMAIL'} = "email:".$opts->{'subjaltname'};
+         $ENV{'SUBJECTALTNAMEEMAIL'} = HELPERS::gen_subjectaltname_contents('email:', $opts->{'subjaltname'});
+      }elsif($opts->{'subjaltnametype'} eq 'raw') {
+         $ENV{'SUBJECTALTNAMERAW'} = HELPERS::gen_subjectaltname_contents(undef, $opts->{'subjaltname'});
       }
    }
    if($opts->{'extendedkeyusage'} ne 'none') { 
@@ -189,6 +193,7 @@ sub signreq {
          $ENV{'SUBJECTALTNAMEIP'}    = 'dummy';
          $ENV{'SUBJECTALTNAMEDNS'}   = 'dummy';
          $ENV{'SUBJECTALTNAMEEMAIL'} = 'dummy';
+         $ENV{'SUBJECTALTNAMERAW'}   = 'dummy';
          $ENV{'EXTENDEDKEYUSAGE'}    = 'dummy';
          waitpid($pid, 0);
          return(1, $ext);
@@ -200,6 +205,7 @@ sub signreq {
          $ENV{'SUBJECTALTNAMEIP'}    = 'dummy';
          $ENV{'SUBJECTALTNAMEDNS'}   = 'dummy';
          $ENV{'SUBJECTALTNAMEEMAIL'} = 'dummy';
+         $ENV{'SUBJECTALTNAMERAW'}   = 'dummy';
          $ENV{'EXTENDEDKEYUSAGE'}    = 'dummy';
          waitpid($pid, 0);
          return(2, $ext);
@@ -211,6 +217,7 @@ sub signreq {
          $ENV{'SUBJECTALTNAMEIP'}    = 'dummy';
          $ENV{'SUBJECTALTNAMEDNS'}   = 'dummy';
          $ENV{'SUBJECTALTNAMEEMAIL'} = 'dummy';
+         $ENV{'SUBJECTALTNAMERAW'}   = 'dummy';
          $ENV{'EXTENDEDKEYUSAGE'}    = 'dummy';
          waitpid($pid, 0);
          return(3, $ext);
@@ -222,6 +229,7 @@ sub signreq {
          $ENV{'SUBJECTALTNAMEIP'}    = 'dummy';
          $ENV{'SUBJECTALTNAMEDNS'}   = 'dummy';
          $ENV{'SUBJECTALTNAMEEMAIL'} = 'dummy';
+         $ENV{'SUBJECTALTNAMERAW'}   = 'dummy';
          $ENV{'EXTENDEDKEYUSAGE'}    = 'dummy';
          waitpid($pid, 0);
          return(4, $ext);
@@ -237,6 +245,7 @@ sub signreq {
    $ENV{'SUBJECTALTNAMEIP'}    = 'dummy';
    $ENV{'SUBJECTALTNAMEDNS'}   = 'dummy';
    $ENV{'SUBJECTALTNAMEEMAIL'} = 'dummy';
+   $ENV{'SUBJECTALTNAMERAW'}   = 'dummy';
    $ENV{'EXTENDEDKEYUSAGE'}    = 'dummy';
 
    return($ret, $ext);
@@ -685,12 +694,15 @@ sub parsecert {
          }
       }
      
+      if (defined($tmp->{'SERIAL'})) {
       foreach my $revoked (@{$crl->{'LIST'}}) {
-         #print STDERR "DEBUG: check $tmp->{'SERIAL'} $revoked->{'SERIAL'}\n";
+           #print STDERR "DEBUG: check tmp: $tmp->{'SERIAL'}\n";
+           #print STDERR "DEBUG: check revoked: $revoked->{'SERIAL'}\n";
          next if ($tmp->{'SERIAL'} ne $revoked->{'SERIAL'});
          if ($tmp->{'SERIAL'} eq $revoked->{'SERIAL'}) {
             $tmp->{'STATUS'} = gettext("REVOKED");
          }
+      }
       }
    } else {
       $tmp->{'STATUS'} = gettext("UNDEFINED");

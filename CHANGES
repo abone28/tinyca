@@ -1,4 +1,12 @@
-$Id: CHANGES,v 1.23 2004/12/05 18:54:11 sm Exp $
+$Id: CHANGES,v 1.25 2005/02/20 16:02:21 sm Exp $
+version 0.6.8 (beta) - Sun Feb 20 2004
+   * added detection for openssl 0.9.8
+   * removed crlDistributionPoint for Root-CA
+   * added patch for multiple OUs 
+     Thanks to Uwe Arndt <arndt@uni-koblenz.de>
+   * added patch for multiple subjectAltName extensions
+     Thanks to Peter Marschall <peter@adpm.de>
+
 version 0.6.7 (beta) - Mon Dec  5 2004
    * added import functionality
 

@@ -1,6 +1,6 @@
 #!/usr/bin/perl -w
 #
-# $Id: tinyca,v 1.23 2004/09/30 19:52:34 sm Exp $
+# $Id: tinyca,v 1.24 2005/02/20 16:07:48 sm Exp $
 #
 # Copyright (c) Stephan Martin <sm@sm-zone.net>
 #
@@ -26,7 +26,7 @@ use strict;
 use Gtk;
 use Gnome;
 set_locale Gtk;
-Gnome->init('TinyCA', '0.6.7');
+Gnome->init('TinyCA', '0.6.8');
 
 use MIME::Base64;
 

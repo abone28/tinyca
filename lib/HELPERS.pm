@@ -1,7 +1,7 @@
 # Copyright (c) Olaf Gellert <og@pre-secure.de> and
 #               Stephan Martin <sm@sm-zone.net>
 #
-# $Id: HELPERS.pm,v 1.10 2004/07/15 09:01:05 sm Exp $
+# $Id: HELPERS.pm,v 1.12 2005/02/20 16:02:21 sm Exp $
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -45,7 +45,11 @@ sub gen_name {
       if($opts->{$_} ne '.' && not ref($opts->{$_})) {
          $name .= $opts->{$_};
       } elsif (ref($opts->{$_})) {
-         $name .= $opts->{$_}->[0];
+         if(defined($opts->{$_}->[0])) {
+            $name .= $opts->{$_}->[0];
+         } else {
+            $name .= " ";
+         }
       } else {
          $name .= " ";
       }
@@ -216,6 +220,43 @@ sub write_export_dir {
    return($dir);
 }
 
+#
+# generate contents for subjectAltName
+#
+sub gen_subjectaltname_contents($@)
+{
+my $type = shift || '';
+my @input = map { split/,\s*|\s+/, $_ } @_; # split on ',' and ' '
+my %output = ();        # uniq on the fly
+
+  if ($type) {	# type given => use that one for all
+    foreach my $elem (@input) {
+      $output{$type.$elem} = 1;
+    }
+  }
+  else {	# no type => use heuristigcs to guess type per element
+    foreach my $elem (@input) {
+      if ($elem =~ s/^(ip:|dns:)(.*)/$2/i) {
+        $type = uc($1);
+      } elsif ($elem =~ s/^(email:)(.*)/$2/i) {
+        $type = lc($1);
+      } else {
+        if ($elem =~ /^\d+\.\d+\.\d+\.\d+$/) {	# it's an IP address
+          $type = 'IP:';
+        }
+        elsif ($elem =~ /^.+\@.+\.\w+$/) {	# it's a mail address
+          $type = 'email:';
+        }
+        else {
+          $type = 'DNS:'			# otherwise it's a DNS name
+        }
+      }
+      $output{$type.$elem} = 1;
+    }  
+  }
+  return(wantarray ? keys(%output) : join(', ', keys(%output)));
+}
+
 1
 
 __END__
@@ -232,6 +273,7 @@ HELPERS - helper functions for TinyCA, doing small jobs not related to the GUI
    $tmpnam  = HELPERS::mktmp($base);
    $dnhash  = HELPERS::parse_dn($dnstring);
    $exthash = HELPERS::parse_extensions($mode, $lines);
+   $subjaltname = HELPERS::gen_subjectaltname_contents($type, @list);
    
    exit_clean($retcode);
 
@@ -304,10 +346,52 @@ given in $retcode.
 
 =back
 
+=head2 $main->HELPERS::get_export_dir()
+
+=over 1
+
+Get last used export directory.
+
+=back
+
+=head2 $main->HELPERS::write_export-dir($dir)
+
+=over 1
+
+Store last used export directory
+
+=back
+
+=head2 HELPERS::gen_subjectaltname_contents($type, @list)
+
+=over 1
+
+Generate a string suitable for the use as subjhectAltname contets for OpenSSL.
+
+If $Type is not empty create the contents of that type only,
+otherwise use either the type prefix of the list elements or
+the following heuristics to find the type for the appropriate elements:
+
+If the element looks like an IP address in dotted quad notation set
+then treat it as one.
+If the element contains a '@' followed by a '.' and a sequence of letters
+then treat the element as an email address.
+In all other cases treat it as a DNS name.
+
+=back
+
 =cut
 
 #
 # $Log: HELPERS.pm,v $
+# Revision 1.12  2005/02/20 16:02:21  sm
+# added patch for multiple subjectAltNames
+#
+# Revision 1.11  2005/02/13 21:04:07  sm
+# added multiple ou patch from arndt@uni-koblenz.de
+# removed CrlDistributionPoint for Root-CA
+# added detection for openssl 0.9.8
+#
 # Revision 1.10  2004/07/15 09:01:05  sm
 # added hack to avoid busy cursor after exit
 #

@@ -1,6 +1,6 @@
 # Copyright (c) Stephan Martin <sm@sm-zone.net>
 #
-# $Id: GUI.pm,v 1.111 2004/11/27 16:56:10 sm Exp $
+# $Id: GUI.pm,v 1.114 2005/02/20 16:07:48 sm Exp $
 # 
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -37,7 +37,7 @@ sub new {
 
    bless($self, $class);
 
-   $self->{'version'} = '0.6.7 (beta)';
+   $self->{'version'} = '0.6.8 (beta)';
 
    $self->{'words'} = GUI::WORDS->new();
 
@@ -1256,7 +1256,12 @@ sub show_req_dialog {
          $button_ok, $button_cancel);
 
    # table for request data
-   $reqtable = Gtk::Table->new(1, 13, 0);
+   my $cc=0;
+   my $ous = 1;
+   if(defined($opts->{'OU'})) {
+      $ous = @{$opts->{'OU'}} - 1;
+   }
+   $reqtable = Gtk::Table->new(1, 13 + $ous, 0);
    $reqtable->set_col_spacing(0, 7);
    $box->vbox->add($reqtable);
 
@@ -1291,8 +1296,15 @@ sub show_req_dialog {
    $entry = GUI::HELPERS::entry_to_table(gettext("Organization Name (eg. company):"),
          \$opts->{'O'}, $reqtable, 10, 1);
 
-   $entry = GUI::HELPERS::entry_to_table(gettext("Organizational Unit Name (eg. section):"),
-         \$opts->{'OU'}, $reqtable, 11, 1);
+   if(defined($opts->{'OU'})) {
+      foreach my $ou (@{$opts->{'OU'}}) {
+         $entry = GUI::HELPERS::entry_to_table(gettext("Organizational Unit Name (eg. section):"),
+            \$ou, $reqtable, 11 + $cc++, 1);
+      }
+   } else {
+      $entry = GUI::HELPERS::entry_to_table(gettext("Organizational Unit Name (eg. section):"),
+            \$opts->{'OU'}, $reqtable, 11, 1);
+   }
 
    $label = GUI::HELPERS::create_label(gettext("Keylength").":", 'left', 0, 0);
    $reqtable->attach_defaults($label, 0, 1, 13, 14);
@@ -1662,71 +1674,6 @@ sub show_ca_export_dialog {
 
    return;
 }
-# 
-# #
-# # get password for renewal of Certificate
-# #
-# sub show_cert_renew_dialog {
-#    my ($self, $opts) = @_;
-# 
-#    my ($box, $button_ok, $button_cancel, $label, $table, $entry, $radiobox,
-#          $key1, $key2);
-# 
-#    $button_ok     = Gnome::Stock->button('Button_Ok');
-#    $button_ok->signal_connect('clicked', 
-#          sub { $self->{'CERT'}->get_renew_cert($self, $opts, $box) });
-# 
-#    $button_cancel = Gnome::Stock->button('Button_Cancel');
-#    $button_cancel->signal_connect('clicked', 
-#          sub { $box->destroy() });
-# 
-#    $box = GUI::HELPERS::dialog_box(
-#          gettext("Renew Certificate"), 
-#          gettext("Renew Certificate"),
-#          $button_ok, $button_cancel);
-# 
-#    $label = GUI::HELPERS::create_label(
-#          gettext("The CA passphrase is needed for signing the Request"),
-#          'center', 1, 0);
-#    $box->vbox->add($label);
-# 
-#    # small table for data
-#    $table = Gtk::Table->new(1, 2, 0);
-#    $table->set_col_spacing(0, 10);
-#    $box->vbox->add($table);
-# 
-#    $entry = GUI::HELPERS::entry_to_table(gettext("CA Password:"),
-#          \$opts->{'passwd'}, $table, 0, 0);
-#    $entry->grab_focus();
-# 
-#    $entry = GUI::HELPERS::entry_to_table(gettext("Valid for (Days):"),
-#          \$opts->{'days'}, $table, 1, 1);
-# 
-#    $label = GUI::HELPERS::create_label(
-#          gettext("Type of Certificate:"), 'left', 1, 0);
-#    $box->vbox->add($label);
-#    
-#    $radiobox = Gtk::HBox->new(0, 0);
-#    $key1 = Gtk::RadioButton->new(gettext("Server"));
-#    $key1->set_active(1) 
-#       if(defined($opts->{'type'}) && $opts->{'type'} eq 'server');
-#    $key1->signal_connect('toggled',
-#          \&GUI::CALLBACK::toggle_to_var,\$opts->{'type'}, 'server');
-#    $radiobox->add($key1);
-# 
-#    $key2 = Gtk::RadioButton->new(gettext("Client"), $key1);
-#    $key2->set_active(1) 
-#       if(defined($opts->{'type'}) && $opts->{'type'} eq 'client');
-#    $key2->signal_connect('toggled',
-#          \&GUI::CALLBACK::toggle_to_var,\$opts->{'type'}, 'client');
-#    $radiobox->add($key2);
-# 
-#    $box->vbox->add($radiobox);
-# 
-#    $box->show_all();
-#          
-#    return;
-# }
 
 #
 # get password for exporting keys
@@ -2103,6 +2050,9 @@ sub show_req_sign_dialog {
          }elsif($self->{TCONFIG}->{'server_cert'}->{'subjectAltNameType'} 
                eq 'dns'){
             $t = gettext("Subject alternative name (DNS Name):");
+         }elsif($self->{TCONFIG}->{'server_cert'}->{'subjectAltNameType'} 
+               eq 'raw'){
+            $t = gettext("Subject alternative name (raw):");
          }
          $entry = GUI::HELPERS::entry_to_table($t,
                \$opts->{'subjectAltName'}, $table, $rows, 1);
@@ -2146,6 +2096,9 @@ sub show_req_sign_dialog {
          }elsif($self->{TCONFIG}->{'client_cert'}->{'subjectAltNameType'} 
                eq 'mail'){
             $t = gettext("Subject alternative name (eMail Address):");
+         }elsif($self->{TCONFIG}->{'client_cert'}->{'subjectAltNameType'} 
+               eq 'raw'){
+            $t = gettext("Subject alternative name (raw):");
          }
          $entry = GUI::HELPERS::entry_to_table($t,
                \$opts->{'subjectAltName'}, $table, $rows, 1);
@@ -2173,7 +2126,8 @@ sub show_req_sign_dialog {
       }
    }
 
-   if($self->{'OpenSSL'}->{'version'} eq "0.9.7") {
+   if(($self->{'OpenSSL'}->{'version'} eq "0.9.7") ||
+      ($self->{'OpenSSL'}->{'version'} eq "0.9.8")) {
       $radiobox = Gtk::HBox->new(0, 0);
       $key1 = Gtk::RadioButton->new(gettext("Yes"));
       $key1->set_active(1);
@@ -2291,8 +2245,8 @@ sub show_ca_dialog {
          \$opts->{'O'}, $catable, 6, 1);
 
    $entry = GUI::HELPERS::entry_to_table(
-         gettext("Organizational Unit Name (eg. section):"),
-         \$opts->{'OU'}, $catable, 7, 1);
+      gettext("Organizational Unit Name (eg. section):"),
+      \$opts->{'OU'}, $catable, 7, 1);
 
    $entry = GUI::HELPERS::entry_to_table(
          gettext("eMail Address").":",
@@ -3239,350 +3193,3 @@ sub update_keys {
 }
 
 1
-
-# 
-# $Log: GUI.pm,v $
-# Revision 1.111  2004/11/27 16:56:10  sm
-# fixed warning, when keytype is undefined.
-#
-# Revision 1.110  2004/11/08 11:19:26  sm
-# added generation of index.txt during import
-#
-# Revision 1.109  2004/11/05 14:42:50  sm
-# first working import function
-#
-# Revision 1.108  2004/10/28 15:05:15  sm
-# import improvements
-#
-# Revision 1.107  2004/10/10 16:33:23  sm
-# renamed some vars for clarity
-#
-# Revision 1.106  2004/10/03 08:08:28  sm
-# added import verification for ca certificate
-#
-# Revision 1.105  2004/09/30 20:18:15  sm
-# added check for selected ca files and dirs
-#
-# Revision 1.103  2004/09/28 16:13:19  sm
-# don't include ca cert into pkcs12, if not selected
-#
-# Revision 1.102  2004/09/26 20:17:03  sm
-# added import dialog
-#
-# Revision 1.101  2004/08/13 20:57:23  sm
-# added translators to about()
-#
-# Revision 1.100  2004/08/09 19:48:53  sm
-# added czech translation
-# new version
-#
-# Revision 1.99  2004/07/23 17:44:00  sm
-# force reread of request when overwriting an old one
-# removed the direct usage of 'OpenSSL.pm' in X509_browser, use correct
-# abstraction via 'REQ.pm' and 'CERT.pm'
-#
-# Revision 1.98  2004/07/19 13:20:10  sm
-# completeley reintialise the browser object when opening a new CA
-#
-# Revision 1.97  2004/07/19 12:16:21  sm
-# new version
-#
-# Revision 1.96  2004/07/15 10:45:46  sm
-# removed references to create_mframe, always recreate only one list
-#
-# Revision 1.95  2004/07/15 08:29:37  sm
-# changed fixed font
-#
-# Revision 1.94  2004/07/15 07:13:01  sm
-# added extendedKeyUsage for client certs
-#
-# Revision 1.93  2004/07/09 10:00:07  sm
-# added configuration for extendedKyUsage
-#
-# Revision 1.92  2004/07/08 20:18:21  sm
-# remeber last used export directory
-#
-# Revision 1.91  2004/07/08 14:28:06  sm
-# store export path in file
-#
-# Revision 1.90  2004/07/08 13:47:36  sm
-# use the same tmpdir for everything
-#
-# Revision 1.89  2004/07/08 13:36:50  sm
-# changed default export directory to users home
-#
-# Revision 1.88  2004/07/08 12:36:47  sm
-# corrected module path for X509_*
-# Thanks to aleksander.adamowski@altkom.pl
-#
-# Revision 1.87  2004/07/08 11:20:38  sm
-# added revocation reason for openssl 0.9.7
-#
-# Revision 1.86  2004/07/08 10:19:08  sm
-# added busy mouse-pointer
-# use correct configuration when renewing certificate
-#
-# Revision 1.85  2004/07/07 13:52:59  sm
-# added dropdown menu to create_cert and sign_req buttons
-#
-# Revision 1.84  2004/07/05 20:19:53  sm
-# removed uninitialized value, when no ca is opened
-#
-# Revision 1.83  2004/07/02 07:34:09  sm
-# added show_ca_details
-#
-# Revision 1.82  2004/06/23 16:46:10  sm
-# faster reread after revoking a certificate
-#
-# Revision 1.81  2004/06/18 13:56:46  sm
-# added possibility to show_details() via doubleclick
-#
-# Revision 1.80  2004/06/17 09:59:51  sm
-# use CERT/REQ for lists
-#
-# Revision 1.79  2004/06/16 13:46:53  sm
-# corrected version
-#
-# Revision 1.78  2004/06/16 13:42:49  sm
-# added noemailDN
-#
-# Revision 1.77  2004/06/16 07:36:50  sm
-# added changes again
-#
-# Revision 1.76  2004/06/15 13:15:55  arasca
-# Browsing of certificates and requests moved to new class X509_browser.
-#
-# Revision 1.73  2004/06/07 13:11:28  sm
-# simplifications for translations, added WORDS.pm
-#
-# Revision 1.72  2004/06/07 11:59:21  sm
-# fixed translations
-#
-# Revision 1.71  2004/06/06 21:52:44  arasca
-# Moved _create_detail_tree from X509_infobox to GUI.pm
-#
-# Revision 1.70  2004/06/06 16:03:56  arasca
-# moved infobox (display of cert and req information at bottom of
-# tinyca GUI) into extra class.
-#
-# Revision 1.69  2004/06/02 06:49:45  sm
-# added status to "Validity" tree also
-#
-# Revision 1.68  2004/05/28 07:54:43  sm
-# removed debug messages
-#
-# Revision 1.67  2004/05/28 07:53:50  sm
-# changed detail_table to more nice view
-#
-# Revision 1.66  2004/05/27 11:07:59  sm
-# small code cleanup
-#
-# Revision 1.65  2004/05/27 10:51:04  sm
-# removed unneeded functions
-#
-# Revision 1.64  2004/05/27 07:02:00  sm
-# changed detail tree to ctree
-#
-# Revision 1.63  2004/05/26 14:02:06  sm
-# implemented tree for certificate/request details
-#
-# Revision 1.62  2004/05/26 12:21:20  sm
-# added sha1 fingerprint
-#
-# Revision 1.61  2004/05/26 10:30:37  sm
-# increased version
-#
-# Revision 1.60  2004/05/26 10:28:32  sm
-# added extended errormessages to every call of openssl
-#
-# Revision 1.59  2004/05/26 07:25:47  sm
-# moved print_* to GUI::HELPERS.pm
-#
-# Revision 1.58  2004/05/25 14:43:27  sm
-# added textfiled to warning dialog
-#
-# Revision 1.57  2004/05/25 14:17:14  arasca
-# Started to reduce strong dependencies from OpenSSL on main object
-#
-# Revision 1.56  2004/05/23 18:26:36  sm
-# structural changes
-#
-# Revision 1.55  2004/05/22 14:24:24  sm
-# increased version
-#
-# Revision 1.54  2004/05/11 18:33:58  sm
-# corrected generation of exportfile names
-#
-# Revision 1.52  2004/05/06 19:44:53  sm
-# new version
-#
-# Revision 1.51  2004/05/06 19:22:23  sm
-# added display and export for DSA and RSA keys
-#
-# Revision 1.49  2004/05/05 20:59:42  sm
-# added configuration for CA
-#
-# Revision 1.47  2004/05/04 20:34:58  sm
-# added patches from Olaf Gellert <og@pre-secure.de> for selecting the Digest
-#
-# Revision 1.46  2004/05/03 19:54:32  sm
-# added CA configuraation tab
-#
-# Revision 1.42  2003/10/03 11:17:47  sm
-# correctly import/show details of requests without x509 extensions
-#
-# Revision 1.41  2003/10/01 21:36:37  sm
-# added critical to gettext()
-#
-# Revision 1.40  2003/10/01 21:24:30  sm
-# changed version to 0.5.4
-#
-# Revision 1.39  2003/10/01 20:55:23  sm
-# changed order of some options
-#
-# Revision 1.38  2003/10/01 20:51:27  sm
-# removed nsCaRevocationUrl from non-CA configuration
-#
-# Revision 1.37  2003/10/01 20:48:42  sm
-# configure nsRenewalUrl and set during signing
-#
-# Revision 1.36  2003/10/01 19:51:02  sm
-# don't show toggle buttons if keyUsage is 'none'
-#
-# Revision 1.35  2003/10/01 13:57:42  sm
-# configure nsRevocationUrl and ask during signing
-#
-# Revision 1.34  2003/10/01 13:08:30  sm
-# removed subjectAltName from standard options
-#
-# Revision 1.33  2003/10/01 13:04:30  sm
-# configure keyUsage for client
-#
-# Revision 1.32  2003/10/01 13:01:02  sm
-# check if propertybox is already created before activating options
-#
-# Revision 1.31  2003/10/01 12:42:47  sm
-# configure subjectAltName for client and ask during signing
-#
-# Revision 1.30  2003/09/30 20:14:43  sm
-# configure nsCertType for client
-#
-# Revision 1.29  2003/09/30 19:42:31  sm
-# configure keyUsage
-#
-# Revision 1.28  2003/09/29 17:02:39  sm
-# configure subjectAltName and set during signing
-#
-# Revision 1.27  2003/09/28 19:46:45  sm
-# configure subjectAltName
-#
-# Revision 1.26  2003/09/28 19:44:09  sm
-# configure subjectAltName
-#
-# Revision 1.25  2003/09/22 20:23:39  sm
-# configure subjectAltName
-#
-# Revision 1.24  2003/09/22 16:10:38  sm
-# version 0.5.3
-#
-# Revision 1.23  2003/09/22 16:09:42  sm
-# removed Typo
-#
-# Revision 1.22  2003/09/02 19:38:43  sm
-# change nsSslServerName when signing
-#
-# Revision 1.21  2003/09/02 13:54:16  sm
-# fixed bug: configuration can't be saved
-#
-# Revision 1.20  2003/09/02 13:17:27  sm
-# added detection of PKCS#10
-#
-# Revision 1.19  2003/08/28 13:14:46  sm
-# added renewal of certificates
-#
-# Revision 1.18  2003/08/27 21:34:05  sm
-# some more errorhandling
-#
-# Revision 1.17  2003/08/26 17:02:08  sm
-# added focus
-#
-# Revision 1.16  2003/08/26 15:04:08  sm
-# tooltips/accelarators
-#
-# Revision 1.15  2003/08/26 14:02:17  sm
-# dynamic width of right mouse menu
-#
-# Revision 1.14  2003/08/26 13:19:02  sm
-# added sorting to clist
-#
-# Revision 1.13  2003/08/26 13:00:09  sm
-# changed some window parameters
-#
-# Revision 1.12  2003/08/22 20:36:56  sm
-# code cleanup
-#
-# Revision 1.9  2003/08/19 15:48:32  sm
-# code cleanup
-#
-# Revision 1.7  2003/08/17 17:26:19  sm
-# added contect menus in lists
-#
-# Revision 1.5  2003/08/16 22:05:24  sm
-# first release with Gtk-Perl
-#
-# Revision 1.3  2003/08/13 20:38:51  sm
-# functionality done
-#
-# Revision 1.2  2003/08/13 19:39:36  sm
-# rewrite for Gtk
-#
-# Revision 1.20  2003/07/04 23:21:25  sm
-# changed version
-#
-# Revision 1.19  2003/07/04 22:58:58  sm
-# first round of the translation is done
-#
-# Revision 1.18  2003/07/03 20:59:03  sm
-# a lot of gettext() inserted
-#
-# Revision 1.17  2003/07/03 07:30:01  sm
-# inserted a lot of gettext()
-#
-# Revision 1.16  2003/06/30 22:35:30  sm
-# changed version
-#
-# Revision 1.15  2003/06/30 22:33:18  sm
-# added conversion of index.txt
-#
-# Revision 1.14  2003/06/26 23:28:35  sm
-# added zip functions
-#
-# Revision 1.13  2003/06/26 20:44:31  sm
-# added zip patch from ludwig.nussel@suse.de
-#
-# Revision 1.12  2003/06/23 21:31:17  sm
-# changed version
-#
-# Revision 1.11  2003/06/23 21:16:29  sm
-# automatically change filename and buttonstatus during export
-#
-# Revision 1.10  2003/06/23 20:11:29  sm
-# some new texts from ludwig.nussel@suse.de
-#
-# Revision 1.9  2003/06/19 21:46:43  sm
-# change button status dynamically
-#
-# Revision 1.7  2003/06/19 13:52:03  sm
-# made default_crl_days configurable and some more usability stuff
-#
-# Revision 1.4  2002/10/07 17:33:58  sm
-# added horizontal scrollbar to listings
-# modified some dialogs (open, delete,...)
-#
-# Revision 1.3  2002/10/04 15:15:46  sm
-# increased version
-#
-# Revision 1.2  2002/09/27 19:54:50  sm
-# Increased version
-#
-# 
