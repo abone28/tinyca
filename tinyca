@@ -1,6 +1,6 @@
 #!/usr/bin/perl -w
 #
-# $Id: tinyca,v 1.17 2004/06/07 13:11:28 sm Exp $
+# $Id: tinyca,v 1.20 2004/07/08 13:36:50 sm Exp $
 #
 # Copyright (c) Stephan Martin <sm@sm-zone.net>
 #
@@ -26,7 +26,7 @@ use strict;
 use Gtk;
 use Gnome;
 set_locale Gtk;
-Gnome->init('TinyCA', '0.6.3');
+Gnome->init('TinyCA', '0.6.4');
 
 use MIME::Base64;
 
@@ -40,8 +40,9 @@ use HELPERS;
 use GUI::TCONFIG;
 use GUI::HELPERS;
 use GUI::CALLBACK;
-use GUI::X509_infobox;
 use GUI::WORDS;
+use GUI::X509_infobox;
+use GUI::X509_browser;
 use CERT;
 use REQ;
 use KEY;
@@ -78,7 +79,8 @@ if(not -d $init->{'templatedir'}) {
 }
 
 # location for CA files
-$init->{'basedir'} = $ENV{HOME}."/.TinyCA";
+$init->{'basedir'}   = $ENV{HOME}."/.TinyCA";
+$init->{'exportdir'} = $ENV{HOME};
 
 umask(0077);
 

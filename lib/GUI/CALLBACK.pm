@@ -1,6 +1,6 @@
 # Copyright (c) Stephan Martin <sm@sm-zone.net>
 #
-# $Id: CALLBACK.pm,v 1.1 2004/05/23 18:27:13 sm Exp $
+# $Id: CALLBACK.pm,v 1.2 2004/07/09 10:00:08 sm Exp $
 # 
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -47,17 +47,21 @@ sub entry_to_var_san {
    my ($widget, $entry, $var, $box, $words, $radio1, $radio2, $radio3) = @_;
 
    if(defined($words)) {
-      $$var = $words->{$entry->get_text()};
-      if($$var eq 'user') {
+      if(my $tmp = $words->{$entry->get_text()}) {
+         $$var = $tmp;
+      } else {
+         $$var = $entry->get_text();
+      }
+      if(($$var ne '') && ($$var ne 'none')) {
          $radio1->set_sensitive(1) if(defined($radio1));
          $radio2->set_sensitive(1) if(defined($radio2));
          $radio3->set_sensitive(1) if(defined($radio3));
-      }elsif($$var eq 'sig'|| $$var eq 'key' || $$var eq 'keysig' ||
-             $$var eq 'keyCertSign' || $$var eq 'cRLSign' ||
-             $$var eq 'keyCertSign, cRLSign') {
-         $radio1->set_sensitive(1) if(defined($radio1));
-         $radio2->set_sensitive(1) if(defined($radio2));
-         $radio3->set_sensitive(1) if(defined($radio3));
+#       }elsif($$var eq 'sig'|| $$var eq 'key' || $$var eq 'keysig' ||
+#              $$var eq 'keyCertSign' || $$var eq 'cRLSign' ||
+#              $$var eq 'keyCertSign, cRLSign') {
+#          $radio1->set_sensitive(1) if(defined($radio1));
+#          $radio2->set_sensitive(1) if(defined($radio2));
+#          $radio3->set_sensitive(1) if(defined($radio3));
       }else{
          $radio1->set_sensitive(0) if(defined($radio1));
          $radio2->set_sensitive(0) if(defined($radio2));
@@ -124,6 +128,9 @@ sub toggle_to_var_pref {
 
 # 
 # $Log: CALLBACK.pm,v $
+# Revision 1.2  2004/07/09 10:00:08  sm
+# added configuration for extendedKyUsage
+#
 # Revision 1.1  2004/05/23 18:27:13  sm
 # initial checkin
 # structural changes

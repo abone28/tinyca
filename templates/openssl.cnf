@@ -80,7 +80,7 @@ commonName              = supplied
 emailAddress            = optional
 
 [ req ]
-default_bits		= 2048
+default_bits		= 4096
 default_keyfile 	= privkey.pem
 distinguished_name	= req_distinguished_name
 attributes		= req_attributes
@@ -138,7 +138,7 @@ nsComment = "TinyCA Generated Certificate"
 subjectKeyIdentifier=hash
 authorityKeyIdentifier=keyid:always,issuer:always
 basicConstraints = critical,CA:true
-keyUsage = cRLSign, keyCertSign
+keyUsage = keyCertSign, cRLSign
 nsCertType = sslCA, emailCA
 subjectAltName=email:copy
 issuerAltName=issuer:copy

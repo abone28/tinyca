@@ -1,8 +1,23 @@
-$Id: CHANGES,v 1.11 2004/06/16 08:38:33 sm Exp $
+$Id: CHANGES,v 1.15 2004/07/15 10:47:54 sm Exp $
+
+version 0.6.4 (beta) - Thu Jul 15 2004
+   * fixed bug, showing wrong options for renewal of certificates
+   * fixed bug creating requests via rightclick directly after creating a new CA
+     (thanks to wbx@openbsd.de)
+   * fixed bug which added ugly empty box to cert/req page
+   * fixed bug with wrong openssl.conf during startup (server-cert with
+     ca-extensions)
+     (thanks to bernhard.dawuidow@tronicplanet.de)
+   * fixed ca-config dialog during creation of root-ca (drop-downs)
+     (thanks to X_KurJ@viessmann.com)
+   * revocation reason can be given with openssl 0.9.7
+   * changed default exportdir to users home
+   * remeber exportdir from last export
+   * added possibility to set the extension extendedKeyUsage 
+   * added possibility to leave email out of the subject dn (0.9.7)
 
 version 0.6.3 (beta) - Wed Jun 16 2004
    * fixed bug which made it impossible to create new requests
-   * added noemailDN
 
 version 0.6.2 (beta) - Sun Jun 13 2004
    * added new look for some functions

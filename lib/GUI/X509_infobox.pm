@@ -1,7 +1,7 @@
 # Copyright (c) Olaf Gellert <og@pre-secure.de> and
 #               Stephan Martin <sm@sm-zone.net>
 #
-# $Id: X509_infobox.pm,v 1.5 2004/06/09 13:48:29 sm Exp $
+# $Id: X509_infobox.pm,v 1.6 2004/07/08 12:36:48 sm Exp $
 # 
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -18,7 +18,7 @@
 # Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111, USA.
 
 use strict;
-package X509_infobox;
+package GUI::X509_infobox;
 
 use HELPERS;
 use GUI::HELPERS;

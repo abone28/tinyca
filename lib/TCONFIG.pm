@@ -1,6 +1,6 @@
 # Copyright (c) Stephan Martin <sm@sm-zone.net>
 #
-# $Id: TCONFIG.pm,v 1.20 2004/05/26 07:48:36 sm Exp $
+# $Id: TCONFIG.pm,v 1.23 2004/07/15 07:28:46 sm Exp $
 # 
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -181,6 +181,23 @@ sub init_config {
          $self->{$sect}->{'nsRenewalUrl'} = 'none';
       }
       
+      # store extendedKeyUsage information
+      if(defined($self->{$sect}->{'extendedKeyUsage'})) {
+         if($self->{$sect}->{'extendedKeyUsage'} =~ /critical/) {
+            $self->{$sect}->{'extendedKeyUsageType'} = 'critical';
+            $self->{$sect}->{'extendedKeyUsage'} =~ s/critical\s*,\s*//;
+         }else {
+            $self->{$sect}->{'extendedKeyUsageType'} = 'noncritical';
+         }
+         if($self->{$sect}->{'extendedKeyUsage'} 
+               =~ /ENV:/) {
+            $self->{$sect}->{'extendedKeyUsage'} = 'user';
+         }
+      }else {
+         $self->{$sect}->{'extendedKeyUsage'} = 'none';
+         $self->{$sect}->{'extendedKeyUsageType'} = 'noncritical';
+      }
+      
       # store keyUsage information
       if(defined($self->{$sect}->{'keyUsage'})) {
          if($self->{$sect}->{'keyUsage'} =~ /critical/) {
@@ -215,11 +232,16 @@ sub init_config {
       }
    }
 
-   # hack to add new section to openssl.cnd, if old config
+   # hack to add new section to openssl.cnf, if old config
    if(not defined($self->{'ca_ca'})) {
       $self->{'ca_ca'} = $self->{'server_ca'};
       $self->{'ca_ca'}->{'x509_extensions'} = "v3_ca";
+      $self->{'server_ca'}->{'x509_extensions'} = "server_cert";
 
+      $self->write_config($main, $ca);
+   }
+   if($self->{'server_ca'}->{'x509_extensions'} eq "v3_ca") {
+      $self->{'server_ca'}->{'x509_extensions'} = "server_cert";
       $self->write_config($main, $ca);
    }
 
@@ -452,6 +474,26 @@ sub write_config {
             }elsif($self->{$sect}->{'keyUsage'} eq 'none') {
                ;# do nothing
             }
+         }
+         if(defined($self->{$sect}->{'extendedKeyUsage'})) {
+            if(($self->{$sect}->{'extendedKeyUsage'} ne 'none') &&
+               ($self->{$sect}->{'extendedKeyUsage'} ne '')) {
+               if($self->{$sect}->{'extendedKeyUsage'} eq 'user') {
+                 if($self->{$sect}->{'extendedKeyUsageType'} eq 'critical') {
+                     print OUT "extendedKeyUsage = critical, \$ENV::EXTENDEDKEYUSAGE\n";
+                 } else {
+                     print OUT "extendedKeyUsage = \$ENV::EXTENDEDKEYUSAGE\n";
+                 }
+               } else { 
+                  if($self->{$sect}->{'extendedKeyUsageType'} eq 'critical') { 
+                     print OUT "extendedKeyUsage = critical, $self->{$sect}->{'extendedKeyUsage'}\n";
+                  } else {
+                     print OUT "extendedKeyUsage = $self->{$sect}->{'extendedKeyUsage'}\n";
+                  }
+               }
+           } elsif ($self->{$sect}->{'extendedKeyUsage'} eq 'none') {
+              ;# do nothing
+           }
          }
       } elsif(($sect eq "server_ca") ||
               ($sect eq "client_ca") ||

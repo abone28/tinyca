@@ -1,6 +1,6 @@
 # Copyright (c) Stephan Martin <sm@sm-zone.net>
 #
-# $Id: OpenSSL.pm,v 1.36 2004/06/08 16:23:30 sm Exp $
+# $Id: OpenSSL.pm,v 1.41 2004/07/09 10:00:08 sm Exp $
 # 
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -54,14 +54,27 @@ sub newkey {
    my $self = shift;
    my $opts = { @_ };
 
-   my ($cmd, $ext);
+   my ($cmd, $ext, $c, $i, $box, $bar, $t);
    if(defined($opts->{'algo'}) && $opts->{'algo'} eq "dsa") {
       my $param = HELPERS::mktmp($self->{'tmp'}."/param");
       
       $cmd = "$self->{'bin'} dsaparam";
       $cmd .= " -out $param";
       $cmd .= " $opts->{'bits'}";
-      system($cmd);
+      my($rdfh, $wtfh);
+      $ext = "$cmd\n\n";
+      open3($wtfh, $rdfh, $rdfh, $cmd);
+      $t = gettext("Creating DSA key in progress...");
+      ($box, $bar) = GUI::HELPERS::create_activity_bar($t);
+      $i = 0;
+      while(defined($c = getc($rdfh))) {
+         $ext .= $c;
+         $bar->update(($i++%100)/100);
+         while(Gtk->events_pending) {
+            Gtk->main_iteration;
+         }
+      }
+      $box->destroy();
 
       $cmd = "$self->{'bin'} gendsa";
       $cmd .= " -des3";
@@ -82,9 +95,17 @@ sub newkey {
    my($rdfh, $wtfh);
    $ext = "$cmd\n\n";
    open3($wtfh, $rdfh, $rdfh, $cmd);
-   while(<$rdfh>) {
-      $ext .= $_;
+   $t = gettext("Creating RSA key in progress...");
+   ($box, $bar) = GUI::HELPERS::create_activity_bar($t);
+   $i = 0;
+   while(defined($c = getc($rdfh))) {
+      $ext .= $c;
+      $bar->update(($i++%100)/100);
+      while(Gtk->events_pending) {
+         Gtk->main_iteration;
+      }
    }
+   $box->destroy();
 
    my $ret = $? >> 8;
    
@@ -100,7 +121,7 @@ sub signreq {
    my $ext;
 
    my $cmd = "$self->{'bin'} ca -batch";
-   $cmd .= " -passin env:SSLPASS";
+   $cmd .= " -passin env:SSLPASS -notext";
    $cmd .= " -config $opts->{'config'}";
    $cmd .= " -name $opts->{'caname'}" if($opts->{'caname'} ne "");
    $cmd .= " -in \"$opts->{'reqfile'}\"";
@@ -135,6 +156,9 @@ sub signreq {
          $ENV{'SUBJECTALTNAMEEMAIL'} = "email:".$opts->{'subjaltname'};
       }
    }
+   if($opts->{'extendedkeyusage'} ne 'none') { 
+      $ENV{'EXTENDEDKEYUSAGE'} = $opts->{'extendedkeyusage'};
+   }
 
    if(defined($opts->{'noemaildn'}) && $opts->{'noemaildn'}) {
       $cmd .= " -noemailDN";
@@ -156,6 +180,7 @@ sub signreq {
          $ENV{'SUBJECTALTNAMEIP'}    = 'dummy';
          $ENV{'SUBJECTALTNAMEDNS'}   = 'dummy';
          $ENV{'SUBJECTALTNAMEEMAIL'} = 'dummy';
+         $ENV{'EXTENDEDKEYUSAGE'}    = 'dummy';
          return(1, $ext);
       } elsif($_ =~ /trying to load CA private key/) {
          delete($ENV{'SSLPASS'});
@@ -165,6 +190,7 @@ sub signreq {
          $ENV{'SUBJECTALTNAMEIP'}    = 'dummy';
          $ENV{'SUBJECTALTNAMEDNS'}   = 'dummy';
          $ENV{'SUBJECTALTNAMEEMAIL'} = 'dummy';
+         $ENV{'EXTENDEDKEYUSAGE'}    = 'dummy';
          return(2, $ext);
       } elsif($_ =~ /There is already a certificate for/) {
          delete($ENV{'SSLPASS'});
@@ -174,6 +200,7 @@ sub signreq {
          $ENV{'SUBJECTALTNAMEIP'}    = 'dummy';
          $ENV{'SUBJECTALTNAMEDNS'}   = 'dummy';
          $ENV{'SUBJECTALTNAMEEMAIL'} = 'dummy';
+         $ENV{'EXTENDEDKEYUSAGE'}    = 'dummy';
          return(3, $ext);
       } elsif($_ =~ /bad ip address/) {
          delete($ENV{'SSLPASS'});
@@ -183,6 +210,7 @@ sub signreq {
          $ENV{'SUBJECTALTNAMEIP'}    = 'dummy';
          $ENV{'SUBJECTALTNAMEDNS'}   = 'dummy';
          $ENV{'SUBJECTALTNAMEEMAIL'} = 'dummy';
+         $ENV{'EXTENDEDKEYUSAGE'}    = 'dummy';
          return(4, $ext);
       }
    }
@@ -196,6 +224,7 @@ sub signreq {
    $ENV{'SUBJECTALTNAMEIP'}    = 'dummy';
    $ENV{'SUBJECTALTNAMEDNS'}   = 'dummy';
    $ENV{'SUBJECTALTNAMEEMAIL'} = 'dummy';
+   $ENV{'EXTENDEDKEYUSAGE'}    = 'dummy';
 
    return($ret, $ext);
 }
@@ -212,6 +241,10 @@ sub revoke {
    $cmd .= " -config $opts->{'config'}";
    $cmd .= " -revoke $opts->{'infile'}";
 
+   if($opts->{'reason'} ne 'none') {
+      $cmd .= " -crl_reason $opts->{'reason'}";
+   }
+
    $ENV{'SSLPASS'} = $opts->{'pass'};
    my($rdfh, $wtfh);
    $ext = "$cmd\n\n";
@@ -224,6 +257,9 @@ sub revoke {
       } elsif($_ =~ /trying to load CA private key/) {
          delete($ENV{'SSLPASS'});
          return(2, $ext);
+      } elsif($_ =~ /^ERROR:/) {
+         delete($ENV{'SSLPASS'});
+         return(3, $ext);
       }
    }
 
@@ -379,6 +415,7 @@ sub parsecrl {
    if($self->{'CACHE'}->{$file} && not $force) {
       return($self->{'CACHE'}->{$file});
    }
+   delete($self->{'CACHE'}->{$file});
 
    open(IN, $file) || do {
       $t = sprintf(gettext("Can't open CRL '%s': %s"), $file, $!);
@@ -447,6 +484,7 @@ sub parsecrl {
          if($lines[$i] =~ /Revocation Date: (.*)/i ) {
             $t->{'DATE'} = $1;
             $i++;
+            #print STDERR "read CRL: $t->{'SERIAL'}\n";
             push(@{$tmp->{'LIST'}}, $t);
          } else {
             $t = sprintf("CRL seems to be corrupt: %s\n", $file);
@@ -474,12 +512,14 @@ sub parsecert {
 
    $force && delete($self->{'CACHE'}->{$file});
 
+   #print STDERR "DEBUG: got force $force\n";
+
    # check if certificate is cached
    if($self->{'CACHE'}->{$file}) {
-      #  print "DEBUG: use cached certificate\n";
+      # print "DEBUG: use cached certificate\n";
       return($self->{'CACHE'}->{$file});
    }
-   #print "DEBUG: parse certificate\n";
+   # print "DEBUG: parse certificate $file\n";
 
    open(IN, $file) || do {
       $t = sprintf("Can't open Certificate '%s': %s", $file, $!);
@@ -591,9 +631,8 @@ sub parsecert {
 
    $tmp->{'EXPDATE'} = _get_date( $tmp->{'NOTAFTER'});
 
-   $crl = $self->parsecrl( 
-	 $crlfile
-         );
+   $crl = $self->parsecrl($crlfile, 1);
+   #print STDERR "DEBUG: parsed crl $crlfile : $crl\n";
 
    defined($crl) || GUI::HELPERS::print_error(gettext("Can't read CRL"));
 
@@ -608,6 +647,7 @@ sub parsecert {
    }
    
    foreach my $revoked (@{$crl->{'LIST'}}) {
+      #print STDERR "DEBUG: check $tmp->{'SERIAL'} vs $revoked->{'SERIAL'}\n";
       next if ($tmp->{'SERIAL'} ne $revoked->{'SERIAL'});
       if ($tmp->{'SERIAL'} eq $revoked->{'SERIAL'}) {
          $tmp->{'STATUS'} = gettext("REVOKED");

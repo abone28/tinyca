@@ -1,6 +1,6 @@
 # Copyright (c) Stephan Martin <sm@sm-zone.net>
 #
-# $Id: HELPERS.pm,v 1.10 2004/06/09 13:48:29 sm Exp $
+# $Id: HELPERS.pm,v 1.12 2004/07/08 10:19:08 sm Exp $
 # 
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -316,6 +316,39 @@ sub toggle_textfield {
    return;
 }
 
+sub create_activity_bar {
+   my ($t) = @_;
+
+   my $box = Gnome::MessageBox->new($t, 'info');
+
+   my $bar = Gtk::ProgressBar->new();
+      $bar->set_activity_mode(1);
+      $bar->set_activity_step(3);
+
+   $box->vbox->add($bar);
+
+   $box->show_all();
+
+   return($box, $bar);
+}
+
+#
+# set curser busy
+#
+sub set_cursor {
+   my $main = shift;
+   my $busy = shift;
+
+   if($busy) {
+      $main->{'rootwin'}->set_cursor($main->{'busycursor'});
+   } else {
+      $main->{'rootwin'}->set_cursor($main->{'cursor'});
+   }
+   while(Gtk->events_pending) {
+      Gtk->main_iteration;
+   }
+}
+
 1
 
 __END__
@@ -334,6 +367,7 @@ GUI
  GUI::HELPERS::print_error($text, $ext);
  GUI::HELPERS::sort_clist($clist, $col);
  GUI::HELPERS::toggle_textfield($box, $ext);
+ GUI::HELPERS::set_cursor($main, $busy);
 
  $box   = GUI::HELPERS::dialog_box(
        $title, $text, $button1, $button2);
@@ -440,9 +474,26 @@ The function returns the reference to the new created entry.
 
 =back
 
+=head2 GUI::HELPERS::set_cursor($main, $busy);
+
+=over 1
+
+sets the actual cursor to busy or back to normal. The value of $busy is
+boolean.
+This functions returns nothing;
+
+=back
+
 =cut
 # 
 # $Log: HELPERS.pm,v $
+# Revision 1.12  2004/07/08 10:19:08  sm
+# added busy mouse-pointer
+# use correct configuration when renewing certificate
+#
+# Revision 1.11  2004/07/02 07:36:52  sm
+# added statusbar during key creation
+#
 # Revision 1.10  2004/06/09 13:48:29  sm
 # fixed all calls to OpenSSL containing $main
 # fixed callbacks with wrong $words reference

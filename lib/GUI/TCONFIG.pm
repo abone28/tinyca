@@ -1,6 +1,6 @@
 # Copyright (c) Stephan Martin <sm@sm-zone.net>
 #
-# $Id: TCONFIG.pm,v 1.5 2004/06/09 13:48:29 sm Exp $
+# $Id: TCONFIG.pm,v 1.8 2004/07/15 07:18:53 sm Exp $
 # 
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -125,6 +125,7 @@ sub show_configbox {
          nsRenewalUrl
          subjectAltName
          keyUsage
+         extendedkeyUsage
          );
 
    @options_ca = qw(
@@ -246,7 +247,8 @@ sub show_configbox {
    $table->attach_defaults($label, 0, 1, $rows-1, $rows);
 
    $main->{'radiobox'} = Gtk::HBox->new(0, 0);
-   $main->{'radio1'} = Gtk::RadioButton->new(gettext($main->{'words'}{'critical'}));
+   $main->{'radio1'} = Gtk::RadioButton->new(
+         gettext($main->{'words'}{'critical'}));
    if($main->{'TCONFIG'}->{'server_cert'}->{'keyUsageType'} eq 'critical') {
       $main->{'radio1'}->set_active(1)
    }
@@ -310,6 +312,86 @@ sub show_configbox {
          \&GUI::CALLBACK::entry_to_var_san, 
          $combo->entry, 
          \$main->{'TCONFIG'}->{'server_cert'}->{'keyUsage'}, 
+         $box, 
+         $main->{words}, $main->{'radio1'},  
+         $main->{'radio2'});
+   $table->attach_defaults($combo, 1, 2, $rows-1, $rows);
+   $rows++;
+
+   $table->attach_defaults($main->{'radiobox'}, 1, 2, $rows-1, $rows);
+   $rows++;
+
+   # special option extendedKeyUsage
+   $label = GUI::HELPERS::create_label(
+         gettext("Extended Key Usage (extendedKeyUsage):"), 'left', 0, 0);
+   $table->attach_defaults($label, 0, 1, $rows-1, $rows);
+
+   $main->{'radiobox'} = Gtk::HBox->new(0, 0);
+   $main->{'radio1'} = Gtk::RadioButton->new(
+         gettext($main->{'words'}{'critical'}));
+   if($main->{'TCONFIG'}->{'server_cert'}->{'extendedKeyUsageType'} eq 'critical') {
+      $main->{'radio1'}->set_active(1)
+   }
+   $main->{'radio1'}->signal_connect('toggled', 
+         \&GUI::CALLBACK::toggle_to_var_pref, 
+         \$main->{'TCONFIG'}->{'server_cert'}->{'extendedKeyUsageType'}, 
+         'critical', 
+         $box);
+   $main->{'radiobox'}->add($main->{'radio1'});
+
+   $main->{'radio2'} = Gtk::RadioButton->new(
+         gettext($main->{'words'}{'noncritical'}), $main->{'radio1'});
+   if($main->{'TCONFIG'}->{'server_cert'}->{'extendedKeyUsageType'} eq 'noncritical') {
+      $main->{'radio2'}->set_active(1)
+   }
+   $main->{'radio2'}->signal_connect('toggled', 
+         \&GUI::CALLBACK::toggle_to_var_pref, 
+         \$main->{'TCONFIG'}->{'server_cert'}->{'extendedKeyUsageType'}, 
+         'noncritical', 
+         $box);
+   $main->{'radiobox'}->add($main->{'radio2'});
+
+   $combo = Gtk::Combo->new();
+   @combostrings = (
+         $main->{'words'}{'none'}, 
+         $main->{'words'}{'user'});
+   
+   if((defined($main->{'TCONFIG'}->{'server_cert'}->{'extendedKeyUsage'})) &&
+      ($main->{'TCONFIG'}->{'server_cert'}->{'extendedKeyUsage'} ne 'none') &&
+      ($main->{'TCONFIG'}->{'server_cert'}->{'extendedKeyUsage'} ne '')) {
+      push(@combostrings, 
+            $main->{'TCONFIG'}->{'server_cert'}->{'extendedKeyUsage'});
+   }
+   
+   $combo->set_popdown_strings(@combostrings);
+   $combo->set_use_arrows(1);
+   $combo->set_value_in_list(0, 0);
+
+   if(defined($main->{'TCONFIG'}->{'server_cert'}->{'extendedKeyUsage'})) {
+     if($main->{'TCONFIG'}->{'server_cert'}->{'extendedKeyUsage'} 
+        ne 'none') {
+        $main->{'radio1'}->set_sensitive(1);
+        $main->{'radio2'}->set_sensitive(1);
+
+        if($main->{'TCONFIG'}->{'server_cert'}->{'extendedKeyUsage'} eq 'user'){
+           $combo->entry->set_text($main->{'words'}{'user'});
+        } else {
+           $combo->entry->set_text($main->{'TCONFIG'}->{'server_cert'}->{'extendedKeyUsage'});
+        }
+     } else {
+        $combo->entry->set_text($main->{'words'}{'none'});
+        $main->{'radio1'}->set_sensitive(0);
+        $main->{'radio2'}->set_sensitive(0);
+     }
+   } else { 
+      $combo->entry->set_text($main->{'words'}{'none'});
+      $main->{'radio1'}->set_sensitive(0);
+      $main->{'radio2'}->set_sensitive(0);
+   }
+   $combo->entry->signal_connect('changed', 
+         \&GUI::CALLBACK::entry_to_var_san, 
+         $combo->entry, 
+         \$main->{'TCONFIG'}->{'server_cert'}->{'extendedKeyUsage'}, 
          $box, 
          $main->{words}, $main->{'radio1'},  
          $main->{'radio2'});
@@ -644,6 +726,86 @@ sub show_configbox {
    $table->attach_defaults($main->{'radiobox'}, 1, 2, $rows-1, $rows);
    $rows++;
 
+   # special option extendedKeyUsage
+   $label = GUI::HELPERS::create_label(
+         gettext("Extended Key Usage (extendedKeyUsage):"), 'left', 0, 0);
+   $table->attach_defaults($label, 0, 1, $rows-1, $rows);
+
+   $main->{'radiobox'} = Gtk::HBox->new(0, 0);
+   $main->{'radio1'} = Gtk::RadioButton->new(
+         gettext($main->{'words'}{'critical'}));
+   if($main->{'TCONFIG'}->{'client_cert'}->{'extendedKeyUsageType'} eq 'critical') {
+      $main->{'radio1'}->set_active(1)
+   }
+   $main->{'radio1'}->signal_connect('toggled', 
+         \&GUI::CALLBACK::toggle_to_var_pref, 
+         \$main->{'TCONFIG'}->{'client_cert'}->{'extendedKeyUsageType'}, 
+         'critical', 
+         $box);
+   $main->{'radiobox'}->add($main->{'radio1'});
+
+   $main->{'radio2'} = Gtk::RadioButton->new(
+         gettext($main->{'words'}{'noncritical'}), $main->{'radio1'});
+   if($main->{'TCONFIG'}->{'client_cert'}->{'extendedKeyUsageType'} eq 'noncritical') {
+      $main->{'radio2'}->set_active(1)
+   }
+   $main->{'radio2'}->signal_connect('toggled', 
+         \&GUI::CALLBACK::toggle_to_var_pref, 
+         \$main->{'TCONFIG'}->{'client_cert'}->{'extendedKeyUsageType'}, 
+         'noncritical', 
+         $box);
+   $main->{'radiobox'}->add($main->{'radio2'});
+
+   $combo = Gtk::Combo->new();
+   @combostrings = (
+         $main->{'words'}{'none'}, 
+         $main->{'words'}{'user'});
+   
+   if((defined($main->{'TCONFIG'}->{'client_cert'}->{'extendedKeyUsage'})) &&
+      ($main->{'TCONFIG'}->{'client_cert'}->{'extendedKeyUsage'} ne 'none') &&
+      ($main->{'TCONFIG'}->{'client_cert'}->{'extendedKeyUsage'} ne '')) {
+      push(@combostrings, 
+            $main->{'TCONFIG'}->{'client_cert'}->{'extendedKeyUsage'});
+   }
+   
+   $combo->set_popdown_strings(@combostrings);
+   $combo->set_use_arrows(1);
+   $combo->set_value_in_list(0, 0);
+
+   if(defined($main->{'TCONFIG'}->{'client_cert'}->{'extendedKeyUsage'})) {
+     if($main->{'TCONFIG'}->{'client_cert'}->{'extendedKeyUsage'} 
+        ne 'none') {
+        $main->{'radio1'}->set_sensitive(1);
+        $main->{'radio2'}->set_sensitive(1);
+
+        if($main->{'TCONFIG'}->{'client_cert'}->{'extendedKeyUsage'} eq 'user'){
+           $combo->entry->set_text($main->{'words'}{'user'});
+        } else {
+           $combo->entry->set_text($main->{'TCONFIG'}->{'client_cert'}->{'extendedKeyUsage'});
+        }
+     } else {
+        $combo->entry->set_text($main->{'words'}{'none'});
+        $main->{'radio1'}->set_sensitive(0);
+        $main->{'radio2'}->set_sensitive(0);
+     }
+   } else { 
+      $combo->entry->set_text($main->{'words'}{'none'});
+      $main->{'radio1'}->set_sensitive(0);
+      $main->{'radio2'}->set_sensitive(0);
+   }
+   $combo->entry->signal_connect('changed', 
+         \&GUI::CALLBACK::entry_to_var_san, 
+         $combo->entry, 
+         \$main->{'TCONFIG'}->{'client_cert'}->{'extendedKeyUsage'}, 
+         $box, 
+         $main->{words}, $main->{'radio1'},  
+         $main->{'radio2'});
+   $table->attach_defaults($combo, 1, 2, $rows-1, $rows);
+   $rows++;
+
+   $table->attach_defaults($main->{'radiobox'}, 1, 2, $rows-1, $rows);
+   $rows++;
+
    # special option nsCerttype
    $label = GUI::HELPERS::create_label(
          gettext("Netscape Certificate Type (nsCertType):"), 'left', 0, 0);
@@ -811,18 +973,12 @@ sub show_configbox {
      if($main->{'TCONFIG'}->{'v3_ca'}->{'subjectAltName'} 
         eq 'emailcopy') { 
         $combo->entry->set_text($main->{'words'}{'emailcopy'});
-        $main->{'radio1'}->set_sensitive(0);
-        $main->{'radio2'}->set_sensitive(0);
      }elsif($main->{'TCONFIG'}->{'v3_ca'}->{'subjectAltName'} 
         eq 'none') { 
         $combo->entry->set_text($main->{'words'}{'none'});
-        $main->{'radio1'}->set_sensitive(0);
-        $main->{'radio2'}->set_sensitive(0);
      }
    } else { 
       $combo->entry->set_text($main->{'words'}{'none'});
-      $main->{'radio1'}->set_sensitive(0);
-      $main->{'radio2'}->set_sensitive(0);
    }
    $combo->entry->signal_connect('changed', \&GUI::CALLBACK::entry_to_var_san, 
          $combo->entry, \$main->{'TCONFIG'}->{'v3_ca'}->{'subjectAltName'}, 
@@ -1037,13 +1193,11 @@ sub show_config_ca {
    my ($main, $opts, $mode) = @_;
 
    my(@options, $key, $box, $button_ok, $button_cancel, $table, $label,
-         $entry, $rows);
+         $entry, $rows, $combo, @combostrings);
 
    @options = qw(
          authorityKeyIdentifier
          basicConstraints
-         keyUsage
-         nsCertType
          issuerAltName
          nsComment
          crlDistributionPoints
@@ -1105,6 +1259,136 @@ sub show_config_ca {
    $table = Gtk::Table->new($rows, 2, 0);
    $box->vbox->add($table);
 
+   # special option keyUsage
+   $label = GUI::HELPERS::create_label(
+         gettext("Key Usage (keyUsage):"), 'left', 0, 0);
+   $table->attach_defaults($label, 0, 1, $rows-1, $rows);
+
+   $main->{'radiobox'} = Gtk::HBox->new(0, 0);
+   $main->{'radio1'} = Gtk::RadioButton->new(
+         gettext($main->{'words'}{'critical'}));
+   if($main->{'TCONFIG'}->{'v3_ca'}->{'keyUsageType'} eq 'critical') {
+      $main->{'radio1'}->set_active(1)
+   }
+   $main->{'radio1'}->signal_connect('toggled', 
+         \&GUI::CALLBACK::toggle_to_var_pref, 
+         \$main->{'TCONFIG'}->{'v3_ca'}->{'keyUsageType'}, 'critical');
+   $main->{'radiobox'}->add($main->{'radio1'});
+
+   $main->{'radio2'} = Gtk::RadioButton->new(
+         gettext($main->{'words'}{'noncritical'}), $main->{'radio1'});
+   if($main->{'TCONFIG'}->{'v3_ca'}->{'keyUsageType'} eq 'noncritical') {
+      $main->{'radio2'}->set_active(1)
+   }
+   $main->{'radio2'}->signal_connect('toggled', 
+         \&GUI::CALLBACK::toggle_to_var_pref, 
+         \$main->{'TCONFIG'}->{'v3_ca'}->{'keyUsageType'}, 'noncritical');
+   $main->{'radiobox'}->add($main->{'radio2'});
+
+   $combo = Gtk::Combo->new();
+   @combostrings = ($main->{'words'}{'none'}, 
+                    $main->{'words'}{'keyCertSign'}, 
+                    $main->{'words'}{'cRLSign'}, 
+                    $main->{'words'}{'keyCertSign, cRLSign'});
+   $combo->set_popdown_strings(@combostrings);
+   $combo->set_use_arrows(1);
+   $combo->set_value_in_list(1, 0);
+
+   if(defined($main->{'TCONFIG'}->{'v3_ca'}->{'keyUsage'})) {
+     if($main->{'TCONFIG'}->{'v3_ca'}->{'keyUsage'} 
+        ne 'none') {
+        $main->{'radio1'}->set_sensitive(1);
+        $main->{'radio2'}->set_sensitive(1);
+
+        if($main->{'TCONFIG'}->{'v3_ca'}->{'keyUsage'} eq 'keyCertSign') {
+           $combo->entry->set_text($main->{'words'}{'keyCertSign'});
+        }elsif($main->{'TCONFIG'}->{'v3_ca'}->{'keyUsage'} eq 'cRLSign') {
+           $combo->entry->set_text($main->{'words'}{'cRLSign'});
+        }elsif($main->{'TCONFIG'}->{'v3_ca'}->{'keyUsage'} eq 
+                                                 'keyCertSign, cRLSign') {
+           $combo->entry->set_text($main->{'words'}{'keyCertSign, cRLSign'});
+        }else {
+           $combo->entry->set_text($main->{'words'}{'none'});
+           $main->{'radio1'}->set_sensitive(0);
+           $main->{'radio2'}->set_sensitive(0);
+        }
+     }else {
+        $combo->entry->set_text($main->{'words'}{'none'});
+        $main->{'radio1'}->set_sensitive(0);
+        $main->{'radio2'}->set_sensitive(0);
+     }
+   } else { 
+      $combo->entry->set_text($main->{'words'}{'none'});
+      $main->{'radio1'}->set_sensitive(0);
+      $main->{'radio2'}->set_sensitive(0);
+   }
+   $combo->entry->signal_connect('changed', \&GUI::CALLBACK::entry_to_var_san, 
+         $combo->entry, \$main->{'TCONFIG'}->{'v3_ca'}->{'keyUsage'}, 
+         undef, $main->{words}, $main->{'radio1'},  $main->{'radio2'});
+   $table->attach_defaults($combo, 1, 2, $rows-1, $rows);
+   $rows++;
+
+   $table->attach_defaults($main->{'radiobox'}, 1, 2, $rows-1, $rows);
+   $rows++;
+
+   # special option nsCerttype
+   $label = GUI::HELPERS::create_label(
+         gettext("Netscape Certificate Type (nsCertType):"), 'left', 0, 0);
+   $table->attach_defaults($label, 0, 1, $rows-1, $rows);
+
+   $combo = Gtk::Combo->new();
+   @combostrings = ($main->{'words'}{'none'}, 
+                    $main->{'words'}{'emailCA'},
+                    $main->{'words'}{'sslCA'},
+                    $main->{'words'}{'objCA'},
+                    $main->{'words'}{'sslCA, emailCA'},
+                    $main->{'words'}{'sslCA, objCA'},
+                    $main->{'words'}{'emailCA, objCA'},
+                    $main->{'words'}{'sslCA, emailCA, objCA'} 
+                    );
+   $combo->set_popdown_strings(@combostrings);
+   $combo->set_use_arrows(1);
+   $combo->set_value_in_list(1, 0);
+   if(defined($main->{'TCONFIG'}->{'v3_ca'}->{'nsCertType'})) {
+      $combo->entry->set_text(
+            $main->{'words'}{$main->{'TCONFIG'}->{'v3_ca'}->{'nsCertType'}});
+   } else {
+      $combo->entry->set_text($main->{'words'}{'none'});
+   }
+   $combo->entry->signal_connect('changed', \&GUI::CALLBACK::entry_to_var, 
+         $combo->entry, \$main->{'TCONFIG'}->{'v3_ca'}->{'nsCertType'}, 
+         undef, $main->{words});
+   $table->attach_defaults($combo, 1, 2, $rows-1, $rows);
+   $rows++;
+
+   # special option subjectAltName
+   $label = GUI::HELPERS::create_label(
+         gettext("Subject alternative name (subjectAltName):"), 'left', 0, 0);
+   $table->attach_defaults($label, 0, 1, $rows-1, $rows);
+
+   $combo = Gtk::Combo->new();
+   @combostrings = ($main->{'words'}{'none'}, $main->{'words'}{'emailcopy'});
+   $combo->set_popdown_strings(@combostrings);
+   $combo->set_use_arrows(1);
+   $combo->set_value_in_list(1, 0);
+
+   if(defined($main->{'TCONFIG'}->{'v3_ca'}->{'subjectAltName'})) {
+     if($main->{'TCONFIG'}->{'v3_ca'}->{'subjectAltName'} 
+        eq 'emailcopy') { 
+        $combo->entry->set_text($main->{'words'}{'emailcopy'});
+     }elsif($main->{'TCONFIG'}->{'v3_ca'}->{'subjectAltName'} 
+        eq 'none') { 
+        $combo->entry->set_text($main->{'words'}{'none'});
+     }
+   } else { 
+      $combo->entry->set_text($main->{'words'}{'none'});
+   }
+   $combo->entry->signal_connect('changed', \&GUI::CALLBACK::entry_to_var_san, 
+         $combo->entry, \$main->{'TCONFIG'}->{'v3_ca'}->{'subjectAltName'}, 
+         undef, $main->{words});
+   $table->attach_defaults($combo, 1, 2, $rows-1, $rows);
+   $rows++;
+
    foreach $key (@options) {
       $entry = GUI::HELPERS::entry_to_table("$key:",
             \$main->{'TCONFIG'}->{'v3_ca'}->{$key}, $table, $rows-1, 1);
@@ -1122,6 +1406,15 @@ sub show_config_ca {
 
 # 
 # $Log: TCONFIG.pm,v $
+# Revision 1.8  2004/07/15 07:18:53  sm
+# added extendedKeyUsage for client certs
+#
+# Revision 1.7  2004/07/09 10:00:08  sm
+# added configuration for extendedKyUsage
+#
+# Revision 1.6  2004/07/07 13:08:39  sm
+# added better configuration to inital ca dialog
+#
 # Revision 1.5  2004/06/09 13:48:29  sm
 # fixed all calls to OpenSSL containing $main
 # fixed callbacks with wrong $words reference

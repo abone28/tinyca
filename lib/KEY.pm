@@ -1,6 +1,6 @@
 # Copyright (c) Stephan Martin <sm@sm-zone.net>
 #
-# $Id: KEY.pm,v 1.16 2004/06/09 13:48:29 sm Exp $
+# $Id: KEY.pm,v 1.20 2004/07/15 10:45:47 sm Exp $
 # 
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -53,7 +53,7 @@ sub get_del_key {
 
    $keyname = MIME::Base64::encode($key, '');
 
-   $keyfile = $main->{'CA'}->{$ca}->{'dir'}."/keys/".$keyname.".pem";
+   $keyfile = $main->{'cadir'}."/keys/".$keyname.".pem";
 
    if(not -s $keyfile) {
       GUI::HELPERS::print_warning(gettext("Key file not found:".$keyfile));
@@ -73,7 +73,7 @@ sub del_key {
 
    unlink($file);
 
-   $main->create_mframe();
+   $main->update_keys();
 
    return;
 }
@@ -87,7 +87,7 @@ sub read_keylist {
    my ($f, $modt, $tmp, $ca, $keydir, $keylist);
 
    $ca     = $main->{'CA'}->{'actca'};
-   $keydir = $main->{'CA'}->{$ca}->{'dir'}."/keys";
+   $keydir = $main->{'cadir'}."/keys";
    $keylist = [];
 
    $modt = (stat($keydir))[9];
@@ -148,17 +148,17 @@ sub get_export_key {
 
       $opts->{'keyname'}  = MIME::Base64::encode($opts->{'key'}, '');
       $opts->{'keyfile'}  = 
-         $main->{'CA'}->{$ca}->{'dir'}."/keys/".$opts->{'keyname'}.".pem";
+         $main->{'cadir'}."/keys/".$opts->{'keyname'}.".pem";
       
       # set some defaults
       $opts->{'nopass'}  = 0;
       $opts->{'format'}  = 'PEM';
       if((defined($email)) && $email ne '' && $email ne ' ') {
-         $opts->{'outfile'} = "/tmp/$email-key.pem";
+         $opts->{'outfile'} = "$main->{'exportdir'}/$email-key.pem";
       }elsif((defined($cn)) && $cn ne '' && $cn ne ' ') {
-         $opts->{'outfile'} = "/tmp/$cn-key.pem";
+         $opts->{'outfile'} = "$main->{'exportdir'}/$cn-key.pem";
       }else{
-         $opts->{'outfile'} = "/tmp/key.pem";
+         $opts->{'outfile'} = "$main->{'exportdir'}/key.pem";
       }
 
       $main->show_export_dialog($opts, 'key');
@@ -226,6 +226,9 @@ sub get_export_key {
       print OUT $out;
       close(OUT);
 
+      $main->{'exportdir'} = HELPERS::write_export_dir($main, 
+            $opts->{'outfile'});
+
       $t = sprintf(gettext("Key succesfully exported to %s"), 
             $opts->{'outfile'});
       GUI::HELPERS::print_info($t);
@@ -233,10 +236,12 @@ sub get_export_key {
 
    } elsif ($opts->{'format'} eq 'P12') {
       $opts->{'certfile'} = 
-         $main->{'CA'}->{$ca}->{'dir'}."/certs/".$opts->{'keyname'}.".pem";
-      $opts->{'cafile'}   = $main->{'CA'}->{$ca}->{'dir'}."/cacert.pem";
-      if (-f $main->{'CA'}->{$ca}->{'dir'}."/cachain.pem") {
-        $opts->{'cafile'} = $main->{'CA'}->{$ca}->{'dir'}."/cachain.pem";
+         $main->{'cadir'}."/certs/".$opts->{'keyname'}.".pem";
+      $opts->{'cafile'}   = 
+         $main->{'cadir'}."/cacert.pem";
+
+      if (-f $main->{'cadir'}."/cachain.pem") {
+        $opts->{'cafile'} = $main->{'cadir'}."/cachain.pem";
       }
 
       if(not -s $opts->{'certfile'}) {
@@ -274,6 +279,9 @@ sub get_export_key {
          return;
       }
 
+      $main->{'exportdir'} = HELPERS::write_export_dir($main, 
+            $opts->{'outfile'});
+
       $t = sprintf(gettext("Certificate and Key successfully exported to %s"), 
             $opts->{'outfile'});
       GUI::HELPERS::print_info($t, $ext);
@@ -281,7 +289,7 @@ sub get_export_key {
 
    } elsif ($opts->{'format'} eq "ZIP") {
       $opts->{'certfile'} = 
-         $main->{'CA'}->{$ca}->{'dir'}."/certs/".$opts->{'keyname'}.".pem";
+         $main->{'cadir'}."/certs/".$opts->{'keyname'}.".pem";
       if(not -s $opts->{'certfile'}) {
          $t = gettext("Certificate is necessary for export as Zip file");
          $t .= "\n";
@@ -293,10 +301,9 @@ sub get_export_key {
       $opts->{'parsed'} = 
          $main->{'CERT'}->parse_cert($main, $opts->{'keyname'});
 
-      my $tmpdir    = $main->{'init'}->{'basedir'}."/tmp";
-      my $tmpcert   = "$tmpdir/cert.pem";
-      my $tmpkey    = "$tmpdir/key.pem";
-      my $tmpcacert = "$tmpdir/cacert.pem";
+      my $tmpcert   = "$main->{'tmpdir'}/cert.pem";
+      my $tmpkey    = "$main->{'tmpdir'}/key.pem";
+      my $tmpcacert = "$main->{'tmpdir'}/cacert.pem";
 
       open(OUT, ">$tmpcert") || do {
          GUI::HELPERS::print_warning(gettext("Can't create temporary file"));
@@ -324,7 +331,7 @@ sub get_export_key {
 
       # store cacert in temporary location
       {
-      $opts->{'cafile'} = $main->{'CA'}->{$ca}->{'dir'}."/cacert.pem";
+      $opts->{'cafile'} = $main->{'cadir'}."/cacert.pem";
       open(IN, "<$opts->{'cafile'}") || do {
          GUI::HELPERS::print_warning(gettext("Can't read CA certificate"));
          return;
@@ -341,14 +348,16 @@ sub get_export_key {
       }
 
       unlink($opts->{'outfile'});
-      system($main->{'init'}->{'zipbin'}, '-j', $opts->{'outfile'}, $tmpcacert, 
-             $tmpkey, $tmpcert);
+      system($main->{'init'}->{'zipbin'}, '-j', $opts->{'outfile'},
+            $tmpcacert, $tmpkey, $tmpcert); 
       my $ret = $? >> 8;
 
       if(not -s $opts->{'outfile'} || $ret) {
          GUI::HELPERS::print_warning(gettext("Generating Zip file failed"));
       } else {
-         $t = sprintf(
+         $main->{'exportdir'} = HELPERS::write_export_dir($main, 
+               $opts->{'outfile'});
+         $t = sprintf( 
                gettext("Certificate and Key successfully exported to %s"), 
                $opts->{'outfile'});
          GUI::HELPERS::print_info($t);
@@ -406,6 +415,18 @@ sub _check_key {
 
 #
 # $Log: KEY.pm,v $
+# Revision 1.20  2004/07/15 10:45:47  sm
+# removed references to create_mframe, always recreate only one list
+#
+# Revision 1.19  2004/07/08 20:18:21  sm
+# remeber last used export directory
+#
+# Revision 1.18  2004/07/08 13:47:36  sm
+# use the same tmpdir for everything
+#
+# Revision 1.17  2004/07/08 13:36:50  sm
+# changed default export directory to users home
+#
 # Revision 1.16  2004/06/09 13:48:29  sm
 # fixed all calls to OpenSSL containing $main
 # fixed callbacks with wrong $words reference

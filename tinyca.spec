@@ -1,6 +1,6 @@
 # spec file for package tinyca
 #
-# $Id: tinyca.spec,v 1.13 2004/06/13 13:26:53 sm Exp $
+# $Id: tinyca.spec,v 1.14 2004/07/08 16:13:09 sm Exp $
 #
 # Copyright (c) 2002 Stephan Martin
 # This file and all modifications and additions to the pristine
@@ -15,19 +15,19 @@
 %define	templatesdir	%{_datadir}/TinyCA/templates
 %define	localedir	%{_datadir}/TinyCA/locale/
 
-Name:		tinyca
-URL:		http://tinyca.sm-zone.net/
-Group:		Productivity/Networking/Security
-License:	GPL
+Name:       tinyca
+URL:        http://tinyca.sm-zone.net/
+Group:      Productivity/Networking/Security
+License:	   GPL
 Requires:	perl perl-Gtk-Perl perl-MIME-Base64
 Packager:	Stephan Martin <sm@sm-zone.net>
-Version:	@version@
-Release:	0
-Source0:	%{name}-%{version}.tar.gz
-Source1:	%{name}.desktop
-Summary:	A Graphical Tool for Managing a Certification Authority
-BuildArch:	noarch
-BuildRoot:	%{_tmppath}/%{name}-%{version}-build
+Version:    @version@
+Release:    0
+Source0:    %{name}-%{version}.tar.gz
+Source1:    %{name}.desktop
+Summary:	   Graphical Tool for Managing a Certification Authority
+BuildArch:  noarch
+BuildRoot:  %{_tmppath}/%{name}-%{version}-build
 
 %description 
 TinyCA is a graphical tool written in Perl/Gtk to manage a small
@@ -54,7 +54,7 @@ Authors:
 Stephan Martin <sm@sm-zone.net>
 
 %prep
-%setup -n TinyCA
+%setup
 
 %build
 # Configure pristine source

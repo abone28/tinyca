@@ -1,6 +1,6 @@
 # Copyright (c) Stephan Martin <sm@sm-zone.net>
 #
-# $Id: REQ.pm,v 1.29 2004/06/15 12:19:33 sm Exp $
+# $Id: REQ.pm,v 1.40 2004/07/15 10:45:47 sm Exp $
 # 
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -28,6 +28,8 @@ sub new {
    my $class = ref($that) || $that;
 
    my $self = {};
+
+   $self->{'OpenSSL'} = shift;
 
    bless($self, $class);
 }
@@ -57,7 +59,7 @@ sub get_req_create {
          $t = sprintf(gettext("Strange value for 'opts': %s"), $opts);
          GUI::HELPERS::print_error($t);
       }
-      $opts->{'bits'}   = 2048;
+      $opts->{'bits'}   = 4096;
       $opts->{'digest'} = 'sha1';
       $opts->{'algo'}   = 'rsa';
       if(defined($opts) && $opts eq "sign") {
@@ -141,14 +143,17 @@ sub get_req_create {
 sub create_req {
    my ($self, $main, $opts) = @_;
 
-   my($reqfile, $keyfile, $ca, $ret, $ext);
+   my($reqfile, $keyfile, $ca, $ret, $ext, $cadir);
 
-   $ca   = $main->{'CA'}->{'actca'};
+   GUI::HELPERS::set_cursor($main, 1);
+   
+   $ca    = $main->{'CA'}->{'actca'};
+   $cadir = $main->{'CA'}->{$ca}->{'dir'};
 
-   $reqfile = $main->{'CA'}->{$ca}->{'dir'}."/req/".$opts->{'reqname'}.".pem";
-   $keyfile = $main->{'CA'}->{$ca}->{'dir'}."/keys/".$opts->{'reqname'}.".pem";
+   $reqfile = $cadir."/req/".$opts->{'reqname'}.".pem";
+   $keyfile = $cadir."/keys/".$opts->{'reqname'}.".pem";
          
-   ($ret, $ext) = $main->{'OpenSSL'}->newkey(
+   ($ret, $ext) = $self->{'OpenSSL'}->newkey(
          'algo'    => $opts->{'algo'},
          'bits'    => $opts->{'bits'},
          'outfile' => $keyfile,
@@ -157,11 +162,12 @@ sub create_req {
 
    if (not -s $keyfile || $ret) { 
       unlink($keyfile);
+      GUI::HELPERS::set_cursor($main, 0);
       GUI::HELPERS::print_warning(gettext("Generating key failed"), $ext);
       return;
    }
 
-   ($ret, $ext) = $main->{'OpenSSL'}->newreq(
+   ($ret, $ext) = $self->{'OpenSSL'}->newreq(
          'config'   => $main->{'CA'}->{$ca}->{'cnf'},
          'outfile'  => $reqfile,
          'keyfile'  => $keyfile,
@@ -182,11 +188,19 @@ sub create_req {
    if (not -s $reqfile || $ret) { 
       unlink($keyfile);
       unlink($reqfile);
+      GUI::HELPERS::set_cursor($main, 0);
       GUI::HELPERS::print_warning(gettext("Generating Request failed"), $ext);
       return;
    }
 
-   $main->create_mframe();
+   $main->{'reqbrowser'}->update($cadir."/req",
+                                 $cadir."/crl/crl.pem",
+                                 $cadir."/index.txt",
+                                 0); 
+
+   $main->update_keys();
+
+   GUI::HELPERS::set_cursor($main, 0);
 
    if($opts->{'sign'}) {
       $opts->{'reqfile'} = $reqfile;
@@ -203,23 +217,24 @@ sub create_req {
 sub get_del_req {
    my ($self, $main) = @_;
 
-   my($reqname, $req, $reqfile, $row, $ind, $ca);
+   my($reqname, $req, $reqfile, $row, $ind, $ca, $cadir);
 
-   $ca   = $main->{'CA'}->{'actca'};
+   $ca    = $main->{'reqbrowser'}->selection_caname();
+   $cadir = $main->{'reqbrowser'}->selection_cadir();
 
-   $row = $main->{'reqlist'}->selection(); 
-   $ind = $main->{'reqlist'}->get_text($row, 7);
+   if(not(defined($reqfile))) {
+      $req = $main->{'reqbrowser'}->selection_dn(); 
 
-   if(not defined($ind)) {
-      GUI::HELPERS::print_info(gettext("Please select a Request first"));
-      return;
+
+      if(not defined($req)) {
+         GUI::HELPERS::print_info(gettext("Please select a Request first"));
+         return;
+      }
+
+      $reqname = MIME::Base64::encode($req, '');
+      $reqfile = $cadir."/req/".$reqname.".pem";
+
    }
-
-   $req = $self->{'reqlist'}->[$ind];
-
-   $reqname = MIME::Base64::encode($req, '');
-
-   $reqfile = $main->{'CA'}->{$ca}->{'dir'}."/req/".$reqname.".pem";
 
    if(not -s $reqfile) {
       GUI::HELPERS::print_warning(gettext("Request file not found"));
@@ -237,20 +252,31 @@ sub get_del_req {
 sub del_req {
    my ($self, $main, $file) = @_;
 
+   my ($ca, $cadir);
+
+   GUI::HELPERS::set_cursor($main, 1);
+
    unlink($file);
 
-   $main->create_mframe();
+   $ca    = $main->{'reqbrowser'}->selection_caname();
+   $cadir = $main->{'reqbrowser'}->selection_cadir();
+
+   $main->{'reqbrowser'}->update($cadir."/req",
+                                 $cadir."/crl/crl.pem",
+                                 $cadir."/index.txt",
+                                 0); 
+
+   GUI::HELPERS::set_cursor($main, 0);
 
    return;
 }
 
 sub read_reqlist {
-   my ($self, $main) = @_;
+   my ($self, $reqdir, $crlfile, $indexfile, $force, $main) = @_;
 
-   my ($f, $modt, $d, $ca, $reqdir, $reqlist);
+   my ($f, $modt, $d, $reqlist, $c, $p, $t);
 
-   $ca     = $main->{'CA'}->{'actca'};
-   $reqdir = $main->{'CA'}->{$ca}->{'dir'}."/req";
+   GUI::HELPERS::set_cursor($main, 1);
 
    $reqlist = [];
 
@@ -258,13 +284,21 @@ sub read_reqlist {
 
    if(defined($self->{'lastread'}) &&
       $self->{'lastread'} >= $modt) {  
+      GUI::HELPERS::set_cursor($main, 0);
       return(0);
    }
 
    opendir(DIR, $reqdir) || do {
+      GUI::HELPERS::set_cursor($main, 0);
       GUI::HELPERS::print_warning(gettext("Can't open Request directory"));
       return(0);
    };
+
+   while($f = readdir(DIR)) { 
+      next if $f =~ /^\./;
+      $c++;
+   }
+   rewinddir(DIR);
 
    while($f = readdir(DIR)) {
       next if $f =~ /^\./;
@@ -273,13 +307,32 @@ sub read_reqlist {
       next if not defined($d);
       next if $d eq "";
       push(@{$reqlist}, $d);
+
+      if(defined($main)) {
+         $t = sprintf(gettext("   Read Request: %s"), $d);
+         $main->{'bar'}->set_status($t);
+         $p += 100/$c;
+         $main->{'bar'}->set_progress($p/100);
+         while(Gtk->events_pending) {
+            Gtk->main_iteration;
+         }
+         select(undef, undef, undef, 0.025);
+      }
    }
    @{$reqlist} = sort(@{$reqlist});
    closedir(DIR);
 
+   delete($self->{'reqlist'});
    $self->{'reqlist'} = $reqlist;
 
    $self->{'lastread'} = time();
+
+   if(defined($main)) {
+      $main->{'bar'}->set_progress(0);
+   }
+
+   GUI::HELPERS::set_cursor($main, 0);
+
    return(1);  # got new list
 }
 
@@ -289,37 +342,32 @@ sub read_reqlist {
 sub get_sign_req {
    my ($self, $main, $opts, $box) = @_;
 
-   my($row, $ind, $time, $parsed, $ca, $ext, $ret);
-
-   $ca   = $main->{'CA'}->{'actca'};
+   my($time, $parsed, $ca, $cadir, $ext, $ret);
 
    $box->destroy() if(defined($box));
    
    $time = time();
+   $ca    = $main->{'reqbrowser'}->selection_caname();
+   $cadir = $main->{'reqbrowser'}->selection_cadir();
 
    if(not(defined($opts->{'reqfile'}))) {
-      $row = $main->{'reqlist'}->selection(); 
-      $ind = $main->{'reqlist'}->get_text($row, 7);
+      $opts->{'req'} = $main->{'reqbrowser'}->selection_dn(); 
 
-      if(not defined($ind)) {
+      if(not defined($opts->{'req'})) {
          GUI::HELPERS::print_info(gettext("Please select a Request first"));
          return;
       }
 
-      $opts->{'req'} = $self->{'reqlist'}->[$ind];
-
       $opts->{'reqname'} = MIME::Base64::encode($opts->{'req'}, '');
+      $opts->{'reqfile'} = $cadir."/req/".$opts->{'reqname'}.".pem";
+   }
 
-      $opts->{'reqfile'} =
-         $main->{'CA'}->{$ca}->{'dir'}."/req/".$opts->{'reqname'}.".pem";
-
-      if(not -s $opts->{'reqfile'}) {
+   if(not -s $opts->{'reqfile'}) {
          GUI::HELPERS::print_warning(gettext("Request file not found"));
          return;
       }
-   }
    
-   if((-s $main->{'CA'}->{$ca}->{'dir'}."/certs/".$opts->{'reqname'}.".pem") &&
+   if((-s $cadir."/certs/".$opts->{'reqname'}.".pem") &&
       (!(defined($opts->{'overwrite'})) || ($opts->{'overwrite'} ne 'true'))) {
       $main->show_cert_overwrite_confirm($opts);
       return;
@@ -355,12 +403,16 @@ sub get_sign_req {
 sub sign_req {
    my ($self, $main, $opts) = @_;
 
-   my($serial, $certout, $certfile, $certfile2, $ca, $ret, $t, $ext);
+   my($serial, $certout, $certfile, $certfile2, $ca, $cadir, $ret, $t, $ext);
 
-   $ca = $main->{'CA'}->{'actca'};
+   GUI::HELPERS::set_cursor($main, 1);
 
-   $serial = $main->{'CA'}->{$ca}->{'dir'}."/serial";
+   $ca    = $main->{'reqbrowser'}->selection_caname();
+   $cadir = $main->{'reqbrowser'}->selection_cadir();
+
+   $serial = $cadir."/serial";
    open(IN, "<$serial") || do {
+      GUI::HELPERS::set_cursor($main, 0);
       GUI::HELPERS::print_warning(gettext("Can't read serial"));
       return;
    };
@@ -384,84 +436,114 @@ sub sign_req {
        $opts->{'subjectAltNameType'} = 
           $main->{TCONFIG}->{$opts->{'type'}.'_cert'}->{'subjectAltNameType'};
    }
+   if(not defined($opts->{'extendedKeyUsage'})) {
+      $opts->{'extendedKeyUsage'}     = 'none';
+      $opts->{'extendedKeyUsageType'} = 'none';
+   } else {
+      $opts->{'extendedKeyUsageType'} = 
+         $main->{TCONFIG}->{$opts->{'type'}.'_cert'}->{'extendedKeyUsageType'};
+   }
 
    if(defined($opts->{'mode'}) && $opts->{'mode'} eq "sub") {
-      ($ret, $ext) = $main->{'OpenSSL'}->signreq(
-            'mode'            => $opts->{'mode'},
-            'config'          => $main->{'CA'}->{$ca}->{'cnf'},
-            'reqfile'         => $opts->{'reqfile'},
-            'keyfile'         => $opts->{'keyfile'},
-            'cacertfile'      => $opts->{'cacertfile'},
-            'outdir'          => $opts->{'outdir'},
-            'days'            => $opts->{'days'},
-            'parentpw'        => $opts->{'parentpw'},
-            'caname'          => "ca_ca",
-            'revocationurl'   => $opts->{'nsRevocationUrl'},
-            'renewalurl'      => $opts->{'nsRenewalUrl'},
-            'subjaltname'     => $opts->{'subjectAltName'},
-            'subjaltnametype' => $opts->{'subjectAltNameType'},
-            'noemaildn'       => $opts->{'noemaildn'}
+      ($ret, $ext) = $self->{'OpenSSL'}->signreq(
+            'mode'                 => $opts->{'mode'},
+            'config'               => $main->{'CA'}->{$ca}->{'cnf'},
+            'reqfile'              => $opts->{'reqfile'},
+            'keyfile'              => $opts->{'keyfile'},
+            'cacertfile'           => $opts->{'cacertfile'},
+            'outdir'               => $opts->{'outdir'},
+            'days'                 => $opts->{'days'},
+            'parentpw'             => $opts->{'parentpw'},
+            'caname'               => "ca_ca",
+            'revocationurl'        => $opts->{'nsRevocationUrl'},
+            'renewalurl'           => $opts->{'nsRenewalUrl'},
+            'subjaltname'          => $opts->{'subjectAltName'},
+            'subjaltnametype'      => $opts->{'subjectAltNameType'},
+            'extendedkeyusage'     => $opts->{'extendedKeyUsage'},
+            'extendedkeyusagetype' => $opts->{'extendedKeyUsageType'},
+            'noemaildn'            => $opts->{'noemaildn'}
             );
    } else {
-      ($ret, $ext) = $main->{'OpenSSL'}->signreq(
-            'config'          => $main->{'CA'}->{$ca}->{'cnf'},
-            'reqfile'         => $opts->{'reqfile'},
-            'days'            => $opts->{'days'},
-            'pass'            => $opts->{'passwd'},
-            'caname'          => $opts->{'type'}."_ca",
-            'sslservername'   => $opts->{'nsSslServerName'},
-            'revocationurl'   => $opts->{'nsRevocationUrl'},
-            'renewalurl'      => $opts->{'nsRenewalUrl'},
-            'subjaltname'     => $opts->{'subjectAltName'},
-            'subjaltnametype' => $opts->{'subjectAltNameType'},
-            'noemaildn'       => $opts->{'noemaildn'}
+      ($ret, $ext) = $self->{'OpenSSL'}->signreq(
+            'config'               => $main->{'CA'}->{$ca}->{'cnf'},
+            'reqfile'              => $opts->{'reqfile'},
+            'days'                 => $opts->{'days'},
+            'pass'                 => $opts->{'passwd'},
+            'caname'               => $opts->{'type'}."_ca",
+            'sslservername'        => $opts->{'nsSslServerName'},
+            'revocationurl'        => $opts->{'nsRevocationUrl'},
+            'renewalurl'           => $opts->{'nsRenewalUrl'},
+            'subjaltname'          => $opts->{'subjectAltName'},
+            'subjaltnametype'      => $opts->{'subjectAltNameType'},
+            'extendedkeyusage'     => $opts->{'extendedKeyUsage'},
+            'extendedkeyusagetype' => $opts->{'extendedKeyUsageType'},
+            'noemaildn'            => $opts->{'noemaildn'}
             );
 
    }
+
+   GUI::HELPERS::set_cursor($main, 0);
 
    if($ret eq 1) {
       $t = gettext("Wrong CA password given\nSigning of the Request failed");
       GUI::HELPERS::print_warning($t, $ext);
+      delete($opts->{$_}) foreach(keys(%$opts));
+      $opts = undef;
       return;
    } elsif($ret eq 2) {
       $t = gettext("CA Key not found\nSigning of the Request failed");
       GUI::HELPERS::print_warning($t, $ext);
+      delete($opts->{$_}) foreach(keys(%$opts));
+      $opts = undef;
       return;
    } elsif($ret eq 3) {
       $t = gettext("Certificate already existing\nSigning of the Request failed");
       GUI::HELPERS::print_warning($t, $ext);
+      delete($opts->{$_}) foreach(keys(%$opts));
+      $opts = undef;
       return;
    } elsif($ret eq 4) {
       $t = gettext("Invalid IP Address given\nSigning of the Request failed");
       GUI::HELPERS::print_warning($t, $ext);
+      delete($opts->{$_}) foreach(keys(%$opts));
+      $opts = undef;
       return;
    } elsif($ret) {
       GUI::HELPERS::print_warning(
             gettext("Signing of the Request failed"), $ext);
+      delete($opts->{$_}) foreach(keys(%$opts));
+      $opts = undef;
       return($ret, $ext);
    }
 
    if(defined($opts->{'mode'}) && $opts->{'mode'} eq "sub") {
-      $certout  = $main->{'CA'}->{$ca}->{'dir'}."/newcerts/".$serial.".pem";
+      $certout  = $cadir."/newcerts/".$serial.".pem";
       $certfile = $opts->{'outfile'};
-      $certfile2 = $main->{'CA'}->{$ca}->{'dir'}."/certs/".$opts->{'reqname'}.".pem";
+      $certfile2 = $cadir."/certs/".$opts->{'reqname'}.".pem";
    } else {
-      $certout  = $main->{'CA'}->{$ca}->{'dir'}."/newcerts/".$serial.".pem";
-      $certfile = $main->{'CA'}->{$ca}->{'dir'}."/certs/".$opts->{'reqname'}.".pem";
+      $certout  = $cadir."/newcerts/".$serial.".pem";
+      $certfile = $cadir."/certs/".$opts->{'reqname'}.".pem";
+      #print STDERR "DEBUG: write certificate to: ".$cadir."/certs/".$opts->{'reqname'}.".pem";
    }
 
    if (not -s $certout) {
          GUI::HELPERS::print_warning(
                gettext("Signing of the Request failed"), $ext);
+         delete($opts->{$_}) foreach(keys(%$opts));
+         $opts = undef;
          return;
    }
 
    open(IN, "<$certout") || do {
       GUI::HELPERS::print_warning(gettext("Can't read Certificate file"));
+      delete($opts->{$_}) foreach(keys(%$opts));
+      $opts = undef;
       return;
    };
    open(OUT, ">$certfile") || do {
       GUI::HELPERS::print_warning(gettext("Can't write Certificate file"));
+      delete($opts->{$_}) foreach(keys(%$opts));
+      $opts = undef;
       return;
    };
    print OUT while(<IN>);
@@ -470,6 +552,8 @@ sub sign_req {
       close OUT;
       open(OUT, ">$certfile2") || do {
          GUI::HELPERS::print_warning(gettext("Can't write Certificate file"));
+         delete($opts->{$_}) foreach(keys(%$opts));
+         $opts = undef;
          return;
       };
       seek(IN, 0, 0);
@@ -481,16 +565,27 @@ sub sign_req {
    GUI::HELPERS::print_info(
          gettext("Request signed succesfully.\nCertificate created"), $ext);
    
-   # force reread of certlist
-   $main->{'CERT'}->read_certlist($main, 1);
+   GUI::HELPERS::set_cursor($main, 1);
 
-   $main->create_mframe();
+   $main->{'CERT'}->reread_cert($main, 
+         MIME::Base64::decode($opts->{'reqname'}));
+   
+   $main->{'certbrowser'}->update($cadir."/certs",
+                                  $cadir."/crl/crl.pem",
+                                  $cadir."/index.txt",
+                                  0);
+
+   $opts = undef;
+   delete($opts->{$_}) foreach(keys(%$opts));
+   $opts = undef;
+
+   GUI::HELPERS::set_cursor($main, 0);
      
    return($ret, $ext);
 }
 
 #
-# get informations/verifications to import reuest from file
+# get informations/verifications to import request from file
 #
 sub get_import_req {
    my ($self, $main, $opts, $box) = @_;
@@ -536,7 +631,7 @@ sub get_import_req {
    }
 
    if($format eq "DER") {
-      ($ret, $der, $ext) = $opts->{'in'} = $main->{'OpenSSL'}->convdata(
+      ($ret, $der, $ext) = $opts->{'in'} = $self->{'OpenSSL'}->convdata(
             'cmd'     => 'req',
             'data'    => $opts->{'in'},
             'inform'  => 'DER',
@@ -550,7 +645,7 @@ sub get_import_req {
       }
 
       $opts->{'tmpfile'} = 
-         HELPERS::mktmp($main->{'OpenSSL'}->{'tmp'}."/import");
+         HELPERS::mktmp($self->{'OpenSSL'}->{'tmp'}."/import");
    
       open(TMP, ">$opts->{'tmpfile'}") || do {
          GUI::HELPERS::print_warning( gettext("Can't create temporary file: %s: %s"),
@@ -562,7 +657,7 @@ sub get_import_req {
       $file = $opts->{'tmpfile'};
    }
 
-   $parsed = $main->{'OpenSSL'}->parsereq(
+   $parsed = $self->{'OpenSSL'}->parsereq(
 			$main->{'CA'}->{$ca}->{'cnf'},
 			$file);
    
@@ -582,19 +677,24 @@ sub get_import_req {
 sub import_req {
    my ($self, $main, $opts, $parsed, $box) = @_;
 
+   my ($ca, $cadir);
+
    $box->destroy() if(defined($box));
+
+   GUI::HELPERS::set_cursor($main, 1);
    
-   my $ca = $main->{'CA'}->{'actca'};
+   $ca    = $main->{'reqbrowser'}->selection_caname();
+   $cadir = $main->{'reqbrowser'}->selection_cadir();
 
    $opts->{'name'} = HELPERS::gen_name($parsed);
    
    $opts->{'reqname'} = MIME::Base64::encode($opts->{'name'}, '');
 
-   $opts->{'reqfile'} = 
-      $main->{'CA'}->{$ca}->{'dir'}."/req/".$opts->{'reqname'}.".pem";
+   $opts->{'reqfile'} = $cadir."/req/".$opts->{'reqname'}.".pem";
 
    open(OUT, ">$opts->{'reqfile'}") || do {
       unlink($opts->{'tmpfile'});
+      GUI::HELPERS::set_cursor($main, 0);
       GUI::HELPERS::print_warning(gettext("Can't open output file: %s: %s"),
             $opts->{'reqfile'}, $!);
       return;
@@ -602,7 +702,12 @@ sub import_req {
    print OUT $opts->{'in'};
    close OUT;
 
-   $main->create_mframe();
+   $main->{'reqbrowser'}->update($cadir."/req",
+                                 $cadir."/crl/crl.pem",
+                                 $cadir."/index.txt",
+                                 0);
+
+   GUI::HELPERS::set_cursor($main, 0);
 
    return;
 }
@@ -612,13 +717,17 @@ sub parse_req {
    
    my ($parsed, $ca, $reqfile, $req);
 
+   GUI::HELPERS::set_cursor($main, 1);
+
    $ca = $main->{'CA'}->{'actca'};
 
    $reqfile = $main->{'CA'}->{$ca}->{'dir'}."/req/".$name.".pem";
 
-   $parsed = $main->{'OpenSSL'}->parsereq(
+   $parsed = $self->{'OpenSSL'}->parsereq(
 			$main->{'CA'}->{$ca}->{'cnf'},
 			$reqfile);
+
+   GUI::HELPERS::set_cursor($main, 0);
 
    return($parsed);
 }
@@ -627,6 +736,35 @@ sub parse_req {
 
 # 
 # $Log: REQ.pm,v $
+# Revision 1.40  2004/07/15 10:45:47  sm
+# removed references to create_mframe, always recreate only one list
+#
+# Revision 1.39  2004/07/09 10:00:08  sm
+# added configuration for extendedKyUsage
+#
+# Revision 1.38  2004/07/08 10:19:08  sm
+# added busy mouse-pointer
+# use correct configuration when renewing certificate
+#
+# Revision 1.37  2004/07/05 20:30:55  sm
+# fixed bug, when creating to request directly after creating a new ca
+#
+# Revision 1.36  2004/07/02 07:34:47  sm
+# set default bits to 4096
+#
+# Revision 1.35  2004/06/23 16:48:24  sm
+# added statusbar
+# faster reread of reqlist
+#
+# Revision 1.34  2004/06/17 10:01:07  sm
+# use CERT/REQ for lists
+#
+# Revision 1.31  2004/06/16 13:43:22  sm
+# added noemailDN
+#
+# Revision 1.30  2004/06/15 13:15:56  arasca
+# Browsing of certificates and requests moved to new class X509_browser.
+#
 # Revision 1.29  2004/06/15 12:19:33  sm
 # fixed bug creating new requests
 #

@@ -1,6 +1,6 @@
 # Copyright (c) Stephan Martin <sm@sm-zone.net>
 #
-# $Id: GUI.pm,v 1.75 2004/06/13 13:40:33 sm Exp $
+# $Id: GUI.pm,v 1.96 2004/07/15 10:45:46 sm Exp $
 # 
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -37,32 +37,37 @@ sub new {
 
    bless($self, $class);
 
-   $self->{'version'} = '0.6.3 (beta)';
+   $self->{'version'} = '0.6.4 (beta)';
 
    $self->{'words'} = GUI::WORDS->new();
+
+   $self->{'exportdir'}        = $self->{'init'}->{'exportdir'};
+   $self->{'basedir'}          = $self->{'init'}->{'basedir'};
+   $self->{'tmpdir'}           = $self->{'basedir'}."/tmp";
+   $self->{'init'}->{'tmpdir'} = $self->{'basedir'}."/tmp";
 
    # initialize CA object
    $self->{'CA'} = CA->new($self->{'init'});
 
    # initialize OpenSSL object
    $self->{'OpenSSL'} = OpenSSL->new($self->{'init'}->{'opensslbin'},
-				     $self->{'init'}->{'basedir'}."/tmp");
+				     $self->{'tmpdir'});
 
    # initialize CERT object
-   $self->{'CERT'} = CERT->new();
+   $self->{'CERT'} = CERT->new($self->{'OpenSSL'});
 
    # initialize KEY object
    $self->{'KEY'} = KEY->new();
 
    # initialize REQ object
-   $self->{'REQ'} = REQ->new();
+   $self->{'REQ'} = REQ->new($self->{'OpenSSL'});
 
    # initialize CONFIG object
    $self->{'TCONFIG'} = TCONFIG->new();
 
    # initialize fonts and styles
    my $fontfix = Gtk::Gdk::Font->fontset_load(
-         "-adobe-courier-medium-r-normal--*-120-*-*-*-*-*-*"
+         "-adobe-courier-medium-r-normal--*-100-*-*-*-*-*-*"
          );
    if(defined($fontfix)) {
       $self->{'stylefix'} = Gtk::Style->new();
@@ -70,6 +75,13 @@ sub new {
    } else {
       $self->{'stylefix'} = undef;
    }
+
+#   Gtk::Rc->parse_string(
+#'style "default"
+#{
+#  fontset = "-*-helvetica-medium-r-normal--11-*,-*-fixed-medium-r-normal--11-*"
+#}
+#widget_class "*" style "default"');
 
    $self->{'stylered'} = Gtk::Style->new();
    $self->{'stylered'}->fg('normal', Gtk::Gdk::Color->parse_color('red'));
@@ -85,6 +97,10 @@ sub new {
    $self->{'mw'}->set_default_size(800, 600);
    $self->{'mw'}->signal_connect( 'delete_event', 
          sub { HELPERS::exit_clean() });
+
+   $self->{'busycursor'} = Gtk::Gdk::Cursor->new(150);
+   $self->{'cursor'}     = Gtk::Gdk::Cursor->new(68);
+   $self->{'rootwin'}    = Gtk::Gdk->ROOT_PARENT();
    
    $self->create_nb();
    $self->{'mw'}->set_contents($self->{'nb'});
@@ -94,6 +110,9 @@ sub new {
    $self->create_toolbar('startup');
 
    $self->create_bar();
+
+
+   $self->{'rootwin'}->set_cursor($self->{'cursor'});
 
    $self;
 }
@@ -111,7 +130,9 @@ sub create_mframe {
 
    return if not defined($self->{'CA'}->{'actca'});
    return if $self->{'CA'}->{'actca'} eq "";
-   my $ca = $self->{'CA'}->{'actca'};
+
+   my $ca    = $self->{'CA'}->{'actca'};
+   my $cadir = $self->{'CA'}->{'cadir'};
 
    $parsed = $self->{'CERT'}->parse_cert( $self, 'CA');
 
@@ -134,96 +155,51 @@ sub create_mframe {
    }
 
    # frame for CA informations
-   $self->{'cainfobox'} = X509_infobox->new();
+   $self->{'cainfobox'} = GUI::X509_infobox->new();
    $self->{'cainfobox'}->display($self->{'cabox'},
 				 $parsed,
 				 'cacert',
 				 gettext("CA Information"));
 
    ### notebooktab for certificates (split info and buttons)
-   @certtitles = (gettext("Common Name"),
-         gettext("eMail Address"),
-         gettext("Organizational Unit"),
-         gettext("Organization"),
-         gettext("Location"),
-         gettext("State"),
-         gettext("Country"), 
-         gettext("Status"),
-         "index");
-
    if(not defined($self->{'certbox'})) {
       $self->{'certbox'} = Gtk::VBox->new(0, 0);
+      
       $certlabel = Gtk::Label->new(gettext("Certificates"));
       $self->{'nb'}->insert_page($self->{'certbox'}, $certlabel, 1);
 
-      # pane for list (top) and cert infos (bottom)
-      $self->{'certpane'} = Gtk::VPaned->new();
-      $self->{'certpane'}->set_handle_size(10);
-      $self->{'certpane'}->set_gutter_size(8);
-      $self->{'certpane'}->set_position(250);
-      $self->{'certbox'}->add($self->{'certpane'});
-   
-      # now the list
-      $certlistwin = Gtk::ScrolledWindow->new(undef, undef);
-      $certlistwin->set_policy('automatic', 'automatic');
-      $self->{'certpane'}->pack1($certlistwin, 1, 1);
-      
-      $self->{'certlist'} = Gtk::CList->new_with_titles(@certtitles);
-      $self->{'certlist'}->set_sort_column (0);
-      $self->{'certlist'}->signal_connect('click_column', 
-            \&GUI::HELPERS::sort_clist);
-
-      for(my $i = 0; $i < 7; $i++) {
-         $self->{'certlist'}->set_column_auto_resize ($i, 1);
-      }
-      $self->{'certlist'}->signal_connect('select_row', 
-            \&_fill_info, $self, 'cert' );
-      $self->{'certlist'}->signal_connect('button_release_event', 
-            \&_show_cert_menu, $self);
-      $self->{'certlist'}->set_column_visibility(8, 0);
-      $certlistwin->add($self->{'certlist'});
-
-      # add a vbox for the certificate information
-      $self->{'certinfo'} = Gtk::VBox->new();
-      $self->{'certpane'}->pack2($self->{'certinfo'}, 0, 0);
-      $self->{'certinfobox'}= X509_infobox->new();
+      if (not defined ($self->{'certbrowser'})) {
+        $self->{'certbrowser'}=GUI::X509_browser->new('cert', 
+              $self->{'OpenSSL'}, $self->{'CERT'}, $self->{'REQ'}, $self);
+        $self->{'certbrowser'}->set_window($self->{'certbox'});
+        $self->{'certbrowser'}->add_list($ca,
+                                         $cadir."/certs",
+                                         $cadir."/crl/crl.pem",
+                                         $cadir."/index.txt");
+        $self->{'certbrowser'}->add_info();
+        # $self->{'certbrowser'}->destroy();
+        }
+      else {
+      $self->{'certbrowser'}->update($cadir."/certs",
+                                     $cadir."/crl/crl.pem",
+                                     $cadir."/index.txt"); 
+        }
 
       # create popup menu
-      _create_cert_menu($self);
+      if(not defined($self->{'certmenu'})) {
+         _create_cert_menu($self);
+      }
+      $self->{'certbrowser'}->set_contextfunc(
+            \&_show_cert_menu, 'button_release_event', $self);
+      $self->{'certbrowser'}->set_contextfunc(
+            \&_show_details_wrapper, 'button_press_event', $self, 'cert');
 
    } else {
-      $self->{'certlist'}->clear();
-      # add a vbox for the certificate information
-      if(defined($self->{'certinfo'})) {
-         $self->{'certinfo'}->destroy();
-         $self->{'certinfo'} = Gtk::VBox->new();
-         $self->{'certpane'}->pack2($self->{'certinfo'}, 0, 0);
-         }
-      if(defined($self->{'certinfobox'})) {
-         $self->{'certinfobox'}->hide();
-         $self->{'certinfobox'}= X509_infobox->new();
-      }
-      # $self->{'certbox'} = Gtk::VBox->new( 0, 0 );
+      $self->{'certbrowser'}->update($cadir."/certs",
+                                     $cadir."/crl/crl.pem",
+                                     $cadir."/index.txt"); 
    }
 
-   $self->{'CERT'}->read_certlist($self);
-
-   my $ind = 0;
-   foreach my $n (@{$self->{'CERT'}->{'certlist'}}) {
-      my ($name, $state) = split(/\%/, $n);
-      my @line = split(/\:/, $name);
-      my $row = $self->{'certlist'}->append(@line);
-      $self->{'certlist'}->set_text($row, 7, $state);
-      if($state eq gettext("VALID")) {
-         $self->{'certlist'}->set_cell_style($row, 7, $self->{'stylegreen'});
-      } else {
-         $self->{'certlist'}->set_cell_style($row, 7, $self->{'stylered'});
-      }
-      $self->{'certlist'}->set_text($row, 8, $ind);
-      $ind++;
-   }
-   # now select the first row to display certificate informations
-   $self->{'certlist'}->select_row(0, 0);
 
    ### notebooktab for keys (split info and buttons)
    @keytitles = (gettext("Common Name"),
@@ -260,103 +236,50 @@ sub create_mframe {
             \&_show_key_menu, $self);
 
       # create popup menu
-      _create_key_menu($self);
-
-   } else {
-      $self->{'keylist'}->clear();
+      if(not defined($self->{'keymenu'})) {
+         _create_key_menu($self);
+      }
    }
 
-   $self->{'KEY'}->read_keylist($self);
-
-   $ind = 0;
-   foreach my $n (@{$self->{'KEY'}->{'keylist'}}) {
-      my ($name, $type) = split(/\%/, $n);
-      my @line = split(/\:/, $name);
-      my $row = $self->{'keylist'}->append(@line);
-      $self->{'keylist'}->set_text($row, 7, $type);
-      $self->{'keylist'}->set_text($row, 8, $ind);
-      $ind++;
-   }
+   $self->update_keys();
+   
    # now select the first row
    $self->{'keylist'}->select_row(0, 0);
 
    ### notebooktab for requests (split info and buttons)
-   @reqtitles = (gettext("Common Name"),
-         gettext("eMail Address"),
-         gettext("Organizational Unit"),
-         gettext("Organization"),
-         gettext("Location"),
-         gettext("State"),
-         gettext("Country"), 
-         "index");
-
    if(not defined($self->{'reqbox'})) {
       $self->{'reqbox'} = Gtk::VBox->new(0, 0);
       $reqlabel = Gtk::Label->new(gettext("Requests"));
       $self->{'nb'}->insert_page($self->{'reqbox'}, $reqlabel, 3);
-
-      # pane for list (top) and request infos (bottom)
-      $self->{'reqpane'} = Gtk::VPaned->new();
-      $self->{'reqpane'}->set_handle_size(10);
-      $self->{'reqpane'}->set_gutter_size(8);
-      $self->{'reqpane'}->set_position(280);
-      $self->{'reqbox'}->add($self->{'reqpane'});
-   
-      # now the list
-      $reqlistwin = Gtk::ScrolledWindow->new(undef, undef);
-      $reqlistwin->set_policy('automatic', 'automatic');
-      $self->{'reqpane'}->pack1($reqlistwin, 1, 1);
-      
-      $self->{'reqlist'} = Gtk::CList->new_with_titles(@reqtitles);
-      $self->{'reqlist'}->set_sort_column (0);
-      $self->{'reqlist'}->signal_connect('click_column', 
-            \&GUI::HELPERS::sort_clist);
-
-      for(my $i = 0; $i < 6; $i++) {
-         $self->{'reqlist'}->set_column_auto_resize ($i, 1);
-      }
-      $self->{'reqlist'}->signal_connect('select_row', 
-            \&_fill_info, $self, 'req' );
-      $self->{'reqlist'}->signal_connect('button_release_event', 
-            \&_show_req_menu, $self);
-      $self->{'reqlist'}->set_column_visibility(7, 0);
-      $reqlistwin->add($self->{'reqlist'});
-
-      # add a vbox for the certificate information
-      $self->{'reqinfo'} = Gtk::VBox->new();
-      $self->{'reqpane'}->pack2($self->{'reqinfo'}, 0, 0);
-      $self->{'reqinfobox'}= X509_infobox->new();
+      if (not defined ($self->{'reqbrowser'})) {
+        $self->{'reqbrowser'}=GUI::X509_browser->new('req', 
+              $self->{'OpenSSL'}, $self->{'CERT'}, $self->{'REQ'}, $self);
+        $self->{'reqbrowser'}->set_window($self->{'reqbox'});
+        $self->{'reqbrowser'}->add_list($ca,
+                                         $cadir."/req",
+                                         $cadir."/crl/crl.pem",
+                                         $cadir."/index.txt");
+        $self->{'reqbrowser'}->add_info();
+        # $self->{'reqbrowser'}->destroy();
+        }
+      else {
+      $self->{'reqbrowser'}->update($cadir."/req",
+                                    $cadir."/crl/crl.pem",
+                                    $cadir."/index.txt"); 
+        }
 
       # create popup menu
       _create_req_menu($self);
+      $self->{'reqbrowser'}->set_contextfunc(
+            \&_show_req_menu, 'button_release_event', $self);
+      $self->{'reqbrowser'}->set_contextfunc(
+            \&_show_details_wrapper, 'button_press_event', $self, 'req');
 
    } else {
-      $self->{'reqlist'}->clear();
-      # add a vbox for the certificate information
-      if(defined($self->{'reqinfo'})) {
-         $self->{'reqinfo'}->destroy();
-         $self->{'reqinfo'} = Gtk::VBox->new();
-         $self->{'reqpane'}->pack2($self->{'reqinfo'}, 0, 0);
-         }
-      if(defined($self->{'reqinfobox'})) {
-         $self->{'reqinfobox'}->hide();
-         $self->{'reqinfobox'}= X509_infobox->new();
-      }
-      # $self->{'reqbox'} = Gtk::VBox->new( 0, 0 );
+      $self->{'reqbrowser'}->update($cadir."/req",
+                                    $cadir."/crl/crl.pem",
+                                    $cadir."/index.txt"); 
    }
-
-   $self->{'REQ'}->read_reqlist($self);
-
-   $ind = 0;
-   foreach my $n (@{$self->{'REQ'}->{'reqlist'}}) {
-      my ($name, $state) = split(/\%/, $n);
-      my @line = split(/\:/, $name);
-      my $row = $self->{'reqlist'}->append(@line);
-      $self->{'reqlist'}->set_text($row, 7, $ind);
-      $ind++;
-   }
-   # now select the first row to display certificate informations
-   $self->{'reqlist'}->select_row(0, 0);
 
    $self->{'nb'}->show_all();
    $self->{'nb'}->signal_connect('switch_page', \&_act_toolbar, $self);
@@ -383,7 +306,7 @@ sub create_nb {
 sub create_bar {
    my $self = shift;
    
-   $self->{'bar'} = Gnome::AppBar->new(1,1, "user");
+   $self->{'bar'} = Gnome::AppBar->new(1,1,"user");
    $self->{'bar'}->set_status("   Watch out...");
    $self->{'mw'}->set_statusbar($self->{'bar'});
 
@@ -398,23 +321,25 @@ sub _act_toolbar {
    my $mode = 'startup';
    my $t;
 
-   if ($page_num == 0) {
-      $mode = 'ca';
-      $t = gettext("  Actual CA: %s");
-   } elsif ($page_num == 1) {
-      $mode = 'cert';
-      $t = gettext("  Actual CA: %s - Certificates");
-   } elsif ($page_num == 2) {
-      $mode = 'key';
-      $t = gettext("  Actual CA: %s - Keys");
-   } elsif ($page_num == 3) {
-      $mode = 'req';
-      $t = gettext("  Actual CA: %s - Requests");
+   if(defined($self->{'CA'}->{'actca'})) {
+      if ($page_num == 0) {
+         $mode = 'ca';
+         $t = gettext("  Actual CA: %s");
+      } elsif ($page_num == 1) {
+         $mode = 'cert';
+         $t = gettext("  Actual CA: %s - Certificates");
+      } elsif ($page_num == 2) {
+         $mode = 'key';
+         $t = gettext("  Actual CA: %s - Keys");
+      } elsif ($page_num == 3) {
+         $mode = 'req';
+         $t = gettext("  Actual CA: %s - Requests");
+      }
+   
+      $t = sprintf($t, $self->{'CA'}->{'actca'});
+   
+      $self->{'bar'}->set_status($t);
    }
-
-   $t = sprintf($t, $self->{'CA'}->{'actca'});
-
-   $self->{'bar'}->set_status($t);
 
    $self->create_toolbar($mode);
 }
@@ -492,6 +417,17 @@ sub create_toolbar {
 
    
    if($mode eq 'ca') {
+      # View certificate extensions
+      ($icon, $mask) = Gnome::Stock->pixmap_gdk('Search', 'GPixmap');
+      $iconw = Gtk::Pixmap->new($icon, $mask);
+
+      $item = $self->{'toolbar'}->append_item(
+            gettext("Details"),
+            gettext("Show X.509 Extensions of the CA Certificate"),
+            'Private',
+            $iconw);
+      $item->signal_connect('clicked', 
+            sub { $self->show_details('CA') });
    
       # Create SubCA
       ($icon, $mask) = Gnome::Stock->pixmap_gdk('New', 'GPixmap');
@@ -542,7 +478,7 @@ sub create_toolbar {
          $item->signal_connect('clicked', 
                sub { $self->{'CA'}->export_ca_chain($self)});
       }
-   
+
    } elsif($mode eq 'cert') {
       
       # View certificate extensions
@@ -569,31 +505,23 @@ sub create_toolbar {
       $item->signal_connect('clicked', 
             sub { $self->show_text('cert') });
 
-      # Create Certificate
+      # Create Certificate (Server)
       ($icon, $mask) = Gnome::Stock->pixmap_gdk('New', 'GPixmap');
       $iconw = Gtk::Pixmap->new($icon, $mask);
 
       $item = $self->{'toolbar'}->append_item(
-            gettext("Server"),
-            gettext("Generate new Key and Request and Sign as Server Certificate"),
+            gettext("New"),
+            gettext("Generate new Key and Request and Sign as Certificate"),
             'Private',
             $iconw);
-      $item->signal_connect('clicked', 
-            sub { my $opts = {};
-                  $self->{'REQ'}->get_req_create($self, "signserver") });
 
-      # Create Certificate
-      ($icon, $mask) = Gnome::Stock->pixmap_gdk('New', 'GPixmap');
-      $iconw = Gtk::Pixmap->new($icon, $mask);
+      if(not(defined($self->{'newcertmenu'}))) {
+         _create_create_cert_menu($self);
+      }
 
-      $item = $self->{'toolbar'}->append_item(
-            gettext("Client"),
-            gettext("Generate new Key and Request and Sign as Client Certificate"),
-            'Private',
-            $iconw);
-      $item->signal_connect('clicked', 
-            sub { my $opts = {};
-                  $self->{'REQ'}->get_req_create($self, "signclient") });
+      $item->signal_connect('clicked',
+            sub { $self->{'newcertmenu'}->popup( 
+               undef, undef, 0, 1, undef); });
       
       # Export certificate
       ($icon, $mask) = Gnome::Stock->pixmap_gdk('Save', 'GPixmap');
@@ -628,8 +556,14 @@ sub create_toolbar {
             gettext("Renew selected Certificate"),
             'Private',
             $iconw);
+
+      if(not defined($self->{'renewcertmenu'})) {
+         _create_renew_cert_menu($self);
+      }
+
       $item->signal_connect('clicked', 
-            sub { $self->{'CERT'}->get_renew_cert($self) });
+            sub { $self->{'renewcertmenu'}->popup(
+               undef, undef, 0, 1, undef); });
 
       # Delete certificate
       ($icon, $mask) = Gnome::Stock->pixmap_gdk('Trash', 'GPixmap');
@@ -724,28 +658,17 @@ sub create_toolbar {
       $iconw = Gtk::Pixmap->new($icon, $mask);
 
       $item = $self->{'toolbar'}->append_item(
-            gettext("Server"),
-            gettext("Sign Certificate Request/Create Server Certificate"),
+            gettext("Sign"),
+            gettext("Sign Certificate Request/Create Certificate"),
             'Private',
             $iconw);
-      $item->signal_connect('clicked', 
-            sub { my $opts = {};
-                  $opts->{'type'} = 'server';
-                  $self->{'REQ'}->get_sign_req($self, $opts) });
 
-      # Sign Request
-      ($icon, $mask) = Gnome::Stock->pixmap_gdk('Properties', 'GPixmap');
-      $iconw = Gtk::Pixmap->new($icon, $mask);
+      if(not(defined($self->{'reqsignmenu'}))) {
+         _create_sign_req_menu($self);
+      }
 
-      $item = $self->{'toolbar'}->append_item(
-            gettext("Client"),
-            gettext("Sign Certificate Request/Create Client Certificate"),
-            'Private',
-            $iconw);
-      $item->signal_connect('clicked', 
-            sub { my $opts = {};
-                  $opts->{'type'} = 'client';
-                  $self->{'REQ'}->get_sign_req($self, $opts); });
+      $item->signal_connect('clicked',
+            sub { $self->{'reqsignmenu'}->popup( undef, undef, 0, 1, undef); });
 
       # Delete Request
       ($icon, $mask) = Gnome::Stock->pixmap_gdk('Trash', 'GPixmap');
@@ -843,34 +766,33 @@ sub create_menu {
 sub show_text {
    my ($self, $mode) = @_;
 
-   my($parsed, $ind, $t, $box, $label, $text, $vscrollbar, $name, $button_ok,
-         $status, $row, $scrolled, $ca);
+   my($parsed, $t, $box, $label, $text, $vscrollbar, $name, $button_ok,
+         $status, $scrolled, $ca);
 
    $ca = $self->{'CA'}->{'actca'};
 
    if($mode eq 'req') {
-      $row = $self->{'reqlist'}->selection();
-      $ind = $self->{'reqlist'}->get_text($row, 7);
+      $name = $self->{'reqbrowser'}->selection_dn();
    } elsif($mode eq 'cert') {
-      $row = $self->{'certlist'}->selection();
-      $ind = $self->{'certlist'}->get_text($row, 8);
+      $name = $self->{'certbrowser'}->selection_dn();
    } else {
-      GUI::HELPERS::print_error(gettext("Invalid mode for show_text():")." ".$mode);
+      GUI::HELPERS::print_error(
+            gettext("Invalid mode for show_text():")." ".$mode);
       return;
    }
 
-   if((not defined $ind) && ($mode eq 'req')) { 
+   if((not defined $name) && ($mode eq 'req')) { 
       GUI::HELPERS::print_info(gettext("Please select a Request first"));
       return;
-   }elsif((not defined $ind) && ($mode eq 'cert')) {
+   }elsif((not defined $name) && ($mode eq 'cert')) {
       GUI::HELPERS::print_info(gettext("Please select a certificate first"));
       return;
    }
 
    if($mode eq 'req') {
-      ($name, $status) = split(/\%/, $self->{'REQ'}->{'reqlist'}->[$ind]);
+      $status = $self->{'reqbrowser'}->selection_status();
    }elsif($mode eq 'cert') {
-      ($name, $status) = split(/\%/, $self->{'CERT'}->{'certlist'}->[$ind]);
+      $status = $self->{'certbrowser'}->selection_status();
    }
 
    $name = MIME::Base64::encode($name, '');
@@ -913,6 +835,21 @@ sub show_text {
 }
 
 #
+# completeley sick, but needed for doubleclick
+#
+sub _show_details_wrapper {
+   my ($list, $self, $mode, $event) = @_;
+
+   if($event->{'type'} ne "2button_press") {
+      return(0);
+   }
+
+   show_details($self, $mode);
+
+   return(1);
+}
+
+#
 # show request/certificate informations and extensions
 #
 sub show_details {
@@ -924,36 +861,36 @@ sub show_details {
    $ca   = $self->{'CA'}->{'actca'};
 
    if($mode eq 'req') {
-      $row = $self->{'reqlist'}->selection();
-      $ind = $self->{'reqlist'}->get_text($row, 7);
+      $name = $self->{'reqbrowser'}->selection_dn();
    } elsif($mode eq 'cert') {
-      $row = $self->{'certlist'}->selection();
-      $ind = $self->{'certlist'}->get_text($row, 8);
+      $name = $self->{'certbrowser'}->selection_dn();
+   } elsif($mode eq 'CA') {
+      $name = 'CA';
    } else {
       GUI::HELPERS::print_error(
             gettext("Invalid mode for show_details():")." ".$mode);
       return;
    }
 
-   if((not defined $ind) && ($mode eq 'req')) { 
+   if((not defined $name) && ($mode eq 'req')) { 
       GUI::HELPERS::print_info(gettext("Please select a Request first"));
       return;
-   }elsif((not defined $ind) && ($mode eq 'cert')) {
+   }elsif((not defined $name) && ($mode eq 'cert')) {
       GUI::HELPERS::print_info(gettext("Please select a certificate first"));
       return;
    }
 
    if($mode eq 'req') {
-      ($name, $status) = split(/\%/, $self->{'REQ'}->{'reqlist'}->[$ind]);
+      $status = $self->{'reqbrowser'}->selection_status();
    }elsif($mode eq 'cert') {
-      ($name, $status) = split(/\%/, $self->{'CERT'}->{'certlist'}->[$ind]);
+      $status = $self->{'certbrowser'}->selection_status();
    }
 
-   $name = MIME::Base64::encode($name, '');
+   $name = MIME::Base64::encode($name, '') if($name ne 'CA');
 
    if($mode eq 'req') {
       $parsed = $self->{'REQ'}->parse_req( $self, $name);
-   } elsif($mode eq 'cert') {
+   } elsif($mode eq 'cert' || $mode eq 'CA') {
       $parsed = $self->{'CERT'}->parse_cert( $self, $name);
    }
 
@@ -969,6 +906,8 @@ sub show_details {
 
    $button_ok->grab_default();
 
+   $mode = 'cert' if($mode eq 'CA');
+   
    my $tree = $self->create_detail_tree($parsed, $mode);
    $box->vbox->add($tree);
 
@@ -1015,6 +954,8 @@ sub show_req_import_verification {
 #
 sub create_detail_tree {
    my ($self, $parsed, $mode) = @_;
+
+   # print STDERR "DEBUG: create_detail_tree called with mode $mode\n";
 
    my ($tree, $tree_scrolled, $t, $leaf, $rootleaf, $subtree, $mleaf,
          $mtree, $nsext, @no_leaf_exp, @no_leaf, @is_leaf);
@@ -1158,7 +1099,6 @@ sub create_detail_tree {
 
    return($tree_scrolled);
 }
-
 
 
 #
@@ -1408,7 +1348,8 @@ sub show_req_dialog {
 sub show_cert_revoke_dialog {
    my ($self, $opts) = @_;
 
-   my ($box, $button_ok, $button_cancel, $table, $entry, $t);
+   my ($box, $button_ok, $button_cancel, $table, $entry, $t, $label, $combo,
+         @combostrings);
 
    $button_ok = Gnome::Stock->button('Button_Ok');
    $button_ok->signal_connect('clicked', 
@@ -1430,6 +1371,35 @@ sub show_cert_revoke_dialog {
    $entry = GUI::HELPERS::entry_to_table(gettext("CA Password:"),
          \$opts->{'passwd'}, $table, 0, 0);
    $entry->grab_focus();
+
+   if($self->{'OpenSSL'}->{'version'} eq "0.9.7") {
+      $label = GUI::HELPERS::create_label(
+            gettext("Revocation Reason:"), 'left', 0, 0);
+   
+      $table->attach_defaults($label, 0, 1, 1, 2);
+   
+      $combo = Gtk::Combo->new();
+      @combostrings = qw(
+            unspecified 
+            keyCompromise 
+            CACompromise 
+            affiliationChanged 
+            superseded 
+            cessationOfOperation 
+            certificateHold);
+      $combo->set_popdown_strings(@combostrings);
+      $combo->set_use_arrows(1);
+      $combo->set_value_in_list(1, 0);
+   
+      $combo->entry->signal_connect('changed',
+            \&GUI::CALLBACK::entry_to_var,
+            $combo->entry,
+            \$opts->{'reason'},
+            undef,
+            undef);
+   
+      $table->attach_defaults($combo, 1, 2, 1, 2);
+   }
 
    $box->show_all();
          
@@ -1647,71 +1617,71 @@ sub show_ca_export_dialog {
 
    return;
 }
-
-#
-# get password for renewal of Certificate
-#
-sub show_cert_renew_dialog {
-   my ($self, $opts) = @_;
-
-   my ($box, $button_ok, $button_cancel, $label, $table, $entry, $radiobox,
-         $key1, $key2);
-
-   $button_ok     = Gnome::Stock->button('Button_Ok');
-   $button_ok->signal_connect('clicked', 
-         sub { $self->{'CERT'}->get_renew_cert($self, $opts, $box) });
-
-   $button_cancel = Gnome::Stock->button('Button_Cancel');
-   $button_cancel->signal_connect('clicked', 
-         sub { $box->destroy() });
-
-   $box = GUI::HELPERS::dialog_box(
-         gettext("Renew Certificate"), 
-         gettext("Renew Certificate"),
-         $button_ok, $button_cancel);
-
-   $label = GUI::HELPERS::create_label(
-         gettext("The CA passphrase is needed for signing the Request"),
-         'center', 1, 0);
-   $box->vbox->add($label);
-
-   # small table for data
-   $table = Gtk::Table->new(1, 2, 0);
-   $table->set_col_spacing(0, 10);
-   $box->vbox->add($table);
-
-   $entry = GUI::HELPERS::entry_to_table(gettext("CA Password:"),
-         \$opts->{'passwd'}, $table, 0, 0);
-   $entry->grab_focus();
-
-   $entry = GUI::HELPERS::entry_to_table(gettext("Valid for (Days):"),
-         \$opts->{'days'}, $table, 1, 1);
-
-   $label = GUI::HELPERS::create_label(
-         gettext("Type of Certificate:"), 'left', 1, 0);
-   $box->vbox->add($label);
-   
-   $radiobox = Gtk::HBox->new(0, 0);
-   $key1 = Gtk::RadioButton->new(gettext("Server"));
-   $key1->set_active(1) 
-      if(defined($opts->{'type'}) && $opts->{'type'} eq 'server');
-   $key1->signal_connect('toggled',
-         \&GUI::CALLBACK::toggle_to_var,\$opts->{'type'}, 'server');
-   $radiobox->add($key1);
-
-   $key2 = Gtk::RadioButton->new(gettext("Client"), $key1);
-   $key2->set_active(1) 
-      if(defined($opts->{'type'}) && $opts->{'type'} eq 'client');
-   $key2->signal_connect('toggled',
-         \&GUI::CALLBACK::toggle_to_var,\$opts->{'type'}, 'client');
-   $radiobox->add($key2);
-
-   $box->vbox->add($radiobox);
-
-   $box->show_all();
-         
-   return;
-}
+# 
+# #
+# # get password for renewal of Certificate
+# #
+# sub show_cert_renew_dialog {
+#    my ($self, $opts) = @_;
+# 
+#    my ($box, $button_ok, $button_cancel, $label, $table, $entry, $radiobox,
+#          $key1, $key2);
+# 
+#    $button_ok     = Gnome::Stock->button('Button_Ok');
+#    $button_ok->signal_connect('clicked', 
+#          sub { $self->{'CERT'}->get_renew_cert($self, $opts, $box) });
+# 
+#    $button_cancel = Gnome::Stock->button('Button_Cancel');
+#    $button_cancel->signal_connect('clicked', 
+#          sub { $box->destroy() });
+# 
+#    $box = GUI::HELPERS::dialog_box(
+#          gettext("Renew Certificate"), 
+#          gettext("Renew Certificate"),
+#          $button_ok, $button_cancel);
+# 
+#    $label = GUI::HELPERS::create_label(
+#          gettext("The CA passphrase is needed for signing the Request"),
+#          'center', 1, 0);
+#    $box->vbox->add($label);
+# 
+#    # small table for data
+#    $table = Gtk::Table->new(1, 2, 0);
+#    $table->set_col_spacing(0, 10);
+#    $box->vbox->add($table);
+# 
+#    $entry = GUI::HELPERS::entry_to_table(gettext("CA Password:"),
+#          \$opts->{'passwd'}, $table, 0, 0);
+#    $entry->grab_focus();
+# 
+#    $entry = GUI::HELPERS::entry_to_table(gettext("Valid for (Days):"),
+#          \$opts->{'days'}, $table, 1, 1);
+# 
+#    $label = GUI::HELPERS::create_label(
+#          gettext("Type of Certificate:"), 'left', 1, 0);
+#    $box->vbox->add($label);
+#    
+#    $radiobox = Gtk::HBox->new(0, 0);
+#    $key1 = Gtk::RadioButton->new(gettext("Server"));
+#    $key1->set_active(1) 
+#       if(defined($opts->{'type'}) && $opts->{'type'} eq 'server');
+#    $key1->signal_connect('toggled',
+#          \&GUI::CALLBACK::toggle_to_var,\$opts->{'type'}, 'server');
+#    $radiobox->add($key1);
+# 
+#    $key2 = Gtk::RadioButton->new(gettext("Client"), $key1);
+#    $key2->set_active(1) 
+#       if(defined($opts->{'type'}) && $opts->{'type'} eq 'client');
+#    $key2->signal_connect('toggled',
+#          \&GUI::CALLBACK::toggle_to_var,\$opts->{'type'}, 'client');
+#    $radiobox->add($key2);
+# 
+#    $box->vbox->add($radiobox);
+# 
+#    $box->show_all();
+#          
+#    return;
+# }
 
 #
 # get password for exporting keys
@@ -1801,6 +1771,7 @@ sub show_req_import_dialog {
 
    return;
 }
+
 
 #
 # get data for exporting a certificate
@@ -2076,6 +2047,8 @@ sub show_req_sign_dialog {
          \$opts->{'days'}, $table, $rows, 1);
    $rows++;
 
+   # print STDERR "DEBUG: got type: $opts->{'type'}\n";
+
    if($opts->{'type'} eq 'server') {
       if(defined($self->{'TCONFIG'}->{'server_cert'}->{'subjectAltName'}) &&
          $self->{'TCONFIG'}->{'server_cert'}->{'subjectAltName'} eq 'user') {
@@ -2090,17 +2063,23 @@ sub show_req_sign_dialog {
                \$opts->{'subjectAltName'}, $table, $rows, 1);
          $rows++;
       }
+      if(defined($self->{'TCONFIG'}->{'server_cert'}->{'extendedKeyUsage'}) &&
+         $self->{'TCONFIG'}->{'server_cert'}->{'extendedKeyUsage'} eq 'user') { 
+         $t = gettext("Extended Key Usage:");
+         
+         $entry = GUI::HELPERS::entry_to_table($t,
+               \$opts->{'extendedKeyUsage'}, $table, $rows, 1);
+         $rows++;
+      }
       if(defined($self->{'TCONFIG'}->{'server_cert'}->{'nsSslServerName'}) && 
          $self->{'TCONFIG'}->{'server_cert'}->{'nsSslServerName'} eq 'user') { 
-         $entry = GUI::HELPERS::entry_to_table(
-               gettext("Netscape SSL Server Name:"), 
+         $entry = GUI::HELPERS::entry_to_table(gettext("Netscape SSL Server Name:"), 
                \$opts->{'nsSslServerName'}, $table, $rows, 1);
          $rows++;
       }
       if(defined($self->{'TCONFIG'}->{'server_cert'}->{'nsRevocationUrl'}) && 
          $self->{'TCONFIG'}->{'server_cert'}->{'nsRevocationUrl'} eq 'user') { 
-         $entry = GUI::HELPERS::entry_to_table(
-               gettext("Netscape Revocation URL:"), 
+         $entry = GUI::HELPERS::entry_to_table(gettext("Netscape Revocation URL:"), 
                \$opts->{'nsRevocationUrl'}, $table, $rows, 1);
          $rows++;
       }
@@ -2127,21 +2106,28 @@ sub show_req_sign_dialog {
                \$opts->{'subjectAltName'}, $table, $rows, 1);
          $rows++;
       }
+      if(defined($self->{'TCONFIG'}->{'client_cert'}->{'extendedKeyUsage'}) &&
+         $self->{'TCONFIG'}->{'client_cert'}->{'extendedKeyUsage'} eq 'user') { 
+         $t = gettext("Extended Key Usage:");
+         
+         $entry = GUI::HELPERS::entry_to_table($t,
+               \$opts->{'extendedKeyUsage'}, $table, $rows, 1);
+         $rows++;
+      }
       if(defined($self->{'TCONFIG'}->{'client_cert'}->{'nsRevocationUrl'}) && 
          $self->{'TCONFIG'}->{'client_cert'}->{'nsRevocationUrl'} eq 'user') { 
-         $entry = GUI::HELPERS::entry_to_table(
-               gettext("Netscape Revocation URL:"), 
+         $entry = GUI::HELPERS::entry_to_table(gettext("Netscape Revocation URL:"), 
                \$opts->{'nsRevocationUrl'}, $table, $rows, 1);
          $rows++;
       }
       if(defined($self->{'TCONFIG'}->{'client_cert'}->{'nsRenewalUrl'}) && 
          $self->{'TCONFIG'}->{'client_cert'}->{'nsRenewalUrl'} eq 'user') { 
-         $entry = GUI::HELPERS::entry_to_table(
-               gettext("Netscape Renewal URL:"), 
+         $entry = GUI::HELPERS::entry_to_table(gettext("Netscape Renewal URL:"), 
                \$opts->{'nsRenewalUrl'}, $table, $rows, 1);
          $rows++;
       }
    }
+
    if($self->{'OpenSSL'}->{'version'} eq "0.9.7") {
       $radiobox = Gtk::HBox->new(0, 0);
       $key1 = Gtk::RadioButton->new(gettext("Yes"));
@@ -2149,15 +2135,14 @@ sub show_req_sign_dialog {
       $key1->signal_connect('toggled', \&GUI::CALLBACK::toggle_to_var,
             \$opts->{'noemaildn'}, 0);
       $radiobox->add($key1);
-
+         
       $key2 = Gtk::RadioButton->new(gettext("No"), $key1);
       $key2->signal_connect('toggled', \&GUI::CALLBACK::toggle_to_var,
             \$opts->{'noemaildn'}, 1);
       $radiobox->add($key2);
-      
+            
       $label = GUI::HELPERS::create_label(
             gettext("Add eMail Address to Subject DN:"), 'left', 0, 0);
-
       $table->attach_defaults($label, 0, 1, $rows, $rows+1);
       $table->attach_defaults($radiobox, 1, 2, $rows, $rows+1);
    }
@@ -2375,7 +2360,7 @@ sub about {
    $aboutdialog->set_modal(1);
 
    my $href = Gnome::HRef->new (
-         "http://tinyca.sm-zone.net/", 
+         "http://tinyca.sm-zone.net/",
          "http://tinyca.sm-zone.net/");
    $aboutdialog->vbox->pack_start($href, 1, 1, 0);
 
@@ -2772,6 +2757,156 @@ sub _show_cert_menu {
 }
 
 #
+# create popup menus for creating certificates
+#
+sub _create_create_cert_menu {
+   my $self = shift;
+   
+   my ($menu_item, $opts, @menus, $width, $style, $font, $string);
+
+   $self->{'newcertmenu'} = Gtk::Menu->new();
+
+   @menus = (
+         gettext("Create Key and Certificate (Server)"),
+         gettext("Create Key and Certificate (Client)"),
+         );
+
+   $string = 0;
+   foreach(@menus) {
+      $string = $_ if(length($_) > length($string));
+   }
+   $menu_item = Gnome::Stock->menu_item('Menu_Properties',
+         gettext("Create Key and Certificate (Server)"));
+
+   $style = $menu_item->get_style();
+   $font  = $style->font();
+   $width = $font->string_width($string);
+   $width += 50;
+
+   $menu_item->set_usize($width, 0);
+
+   $menu_item = Gnome::Stock->menu_item('Menu_Properties',
+         gettext("Create Key and Certificate (Server)"));
+   $self->{'newcertmenu'}->append($menu_item);
+   $menu_item->signal_connect( 'activate', 
+         sub { $self->{'REQ'}->get_req_create($self, "signserver") });
+
+   $menu_item = Gnome::Stock->menu_item('Menu_Properties',
+         gettext("Create Key and Certificate (Client)"));
+   $self->{'newcertmenu'}->append($menu_item);
+   $menu_item->signal_connect( 'activate', 
+         sub { $self->{'REQ'}->get_req_create($self, "signclient") });
+
+   $self->{'newcertmenu'}->set_title(gettext("Create Certificate"));
+
+   $self->{'newcertmenu'}->show_all();
+
+   return;
+}
+
+#
+# create popup menus for sign request button
+#
+sub _create_sign_req_menu {
+   my $self = shift;
+   
+   my ($menu_item, $opts, @menus, $width, $style, $font, $string);
+
+   $self->{'reqsignmenu'} = Gtk::Menu->new();
+
+   @menus = (
+         gettext("Sign Request (Server)"),
+         gettext("Sign Request (Client)"),
+         );
+
+   $string = 0;
+   foreach(@menus) {
+      $string = $_ if(length($_) > length($string));
+   }
+
+   $menu_item = Gnome::Stock->menu_item('Menu_Search',
+         gettext("Request Details"));
+
+   $style = $menu_item->get_style();
+   $font  = $style->font();
+   $width = $font->string_width($string);
+   $width += 50;
+
+   $menu_item->set_usize($width, 0);
+
+   $menu_item = Gnome::Stock->menu_item('Menu_Properties',
+         gettext("Sign Request (Server)"));
+   $self->{'reqsignmenu'}->append($menu_item);
+   $menu_item->signal_connect( 'activate', 
+         sub { $opts->{'type'} = 'server';
+         $self->{'REQ'}->get_sign_req($self, $opts) });
+
+   $menu_item = Gnome::Stock->menu_item('Menu_Properties',
+         gettext("Sign Request (Client)"));
+   $self->{'reqsignmenu'}->append($menu_item);
+   $menu_item->signal_connect( 'activate', 
+         sub { $opts->{'type'} = 'client';
+         $self->{'REQ'}->get_sign_req($self, $opts) });
+
+   $self->{'reqsignmenu'}->set_title(gettext("Sign Request"));
+
+   $self->{'reqsignmenu'}->show_all();
+
+   return;
+}
+
+#
+# create popup menus for sign request button
+#
+sub _create_renew_cert_menu {
+   my $self = shift;
+   
+   my ($menu_item, $opts, @menus, $width, $style, $font, $string);
+
+   $self->{'renewcertmenu'} = Gtk::Menu->new();
+
+   @menus = (
+         gettext("Sign Request (Server)"),
+         gettext("Sign Request (Client)"),
+         );
+
+   $string = 0;
+   foreach(@menus) {
+      $string = $_ if(length($_) > length($string));
+   }
+
+   $menu_item = Gnome::Stock->menu_item('Menu_Search',
+         gettext("Request Details"));
+
+   $style = $menu_item->get_style();
+   $font  = $style->font();
+   $width = $font->string_width($string);
+   $width += 50;
+
+   $menu_item->set_usize($width, 0);
+
+   $menu_item = Gnome::Stock->menu_item('Menu_Properties',
+         gettext("Sign Request (Server)"));
+   $self->{'renewcertmenu'}->append($menu_item);
+   $menu_item->signal_connect( 'activate', 
+         sub { $opts->{'type'} = 'server';
+         $self->{'CERT'}->get_renew_cert($self, $opts) });
+
+   $menu_item = Gnome::Stock->menu_item('Menu_Properties',
+         gettext("Sign Request (Client)"));
+   $self->{'renewcertmenu'}->append($menu_item);
+   $menu_item->signal_connect( 'activate', 
+         sub { $opts->{'type'} = 'client';
+         $self->{'CERT'}->get_renew_cert($self, $opts) });
+
+   $self->{'renewcertmenu'}->set_title(gettext("Renew Certificate"));
+
+   $self->{'renewcertmenu'}->show_all();
+
+   return;
+}
+
+#
 # create popup menus for requests
 #
 sub _create_req_menu {
@@ -2883,86 +3018,96 @@ sub _show_req_menu {
 }
 
 #
-# signal handler for selected list items
-# (updates the X509_infobox window) 
+# reread keylist and update display
 #
-# called if certificate is selected
-# fill in the certificate details in the window
-#
-sub _fill_info {
-   my ($clist, $self, $mode, $row, $column) = @_;
+sub update_keys {
+   my $self = shift;
 
-   my ($ind, $ca, $item, $status, $itemname, $parsed, $label,
-	$title, @fields, $t);
+   $self->{'KEY'}->read_keylist($self);
 
-   $ca  = $self->{'CA'}->{'actca'};
-   
-   if($mode eq 'cert') {
-      $ind = $clist->get_text($row, 8);
-   }elsif($mode eq 'req') {
-      $ind = $clist->get_text($row, 7);
-   }else {
-         GUI::HELPERS::print_error(gettext("Invalid mode for: _fill_info(): ").$mode);
-      return;
+   $self->{'keylist'}->clear();
+
+   my $ind = 0;
+   foreach my $n (@{$self->{'KEY'}->{'keylist'}}) {
+      my ($name, $type) = split(/\%/, $n);
+      my @line = split(/\:/, $name);
+      my $row = $self->{'keylist'}->append(@line);
+      $self->{'keylist'}->set_text($row, 7, $type);
+      $self->{'keylist'}->set_text($row, 8, $ind);
+      $ind++;
    }
 
-   if(not defined($ind)) {
-      if($mode eq 'cert') {
-         $t = gettext("Please select a Certificate first");
-      } else {
-         $t = gettext("Please select a Request first");
-      }
-      GUI::HELPERS::print_error($t);
-      return;
-   }
-
-   if($mode eq 'cert') {
-      ($item, $status) = split(/\%/, $self->{'CERT'}->{'certlist'}->[$ind]);
-   }else{
-      $item = $self->{'REQ'}->{'reqlist'}->[$ind];
-   }
-
-   $itemname = MIME::Base64::encode($item, '');
-
-   if($mode eq 'cert') {
-      $parsed = $self->{'CERT'}->parse_cert($self, $itemname);
-   }else{
-      $parsed = $self->{'REQ'}->parse_req($self, $itemname);
-   }
-
-   defined($parsed) || do {
-      if($mode eq 'cert') {
-         GUI::HELPERS::print_warning(gettext("Can't read Certificate"));
-      } else {
-            GUI::HELPERS::print_warning(gettext("Can't read Request"));
-      }
-      return;
-   };
-
-    if ($mode eq 'cert') {
-      $title=gettext("Certificate Information");
-      $self->{'certinfobox'}->display($self->{'certinfo'}, $parsed,
-	$mode, $title);
-      }
-    else {
-      $title=gettext("Request Information");
-      $self->{'reqinfobox'}->display($self->{'reqinfo'}, $parsed,
-	$mode, $title);
-      }
-
-   return;
+   return();
 }
-
 
 1
 
 # 
 # $Log: GUI.pm,v $
-# Revision 1.75  2004/06/13 13:40:33  sm
-# added link to homepage
+# Revision 1.96  2004/07/15 10:45:46  sm
+# removed references to create_mframe, always recreate only one list
 #
-# Revision 1.74  2004/06/13 13:19:08  sm
-# added possibility to generate request and certificate in one step
+# Revision 1.95  2004/07/15 08:29:37  sm
+# changed fixed font
+#
+# Revision 1.94  2004/07/15 07:13:01  sm
+# added extendedKeyUsage for client certs
+#
+# Revision 1.93  2004/07/09 10:00:07  sm
+# added configuration for extendedKyUsage
+#
+# Revision 1.92  2004/07/08 20:18:21  sm
+# remeber last used export directory
+#
+# Revision 1.91  2004/07/08 14:28:06  sm
+# store export path in file
+#
+# Revision 1.90  2004/07/08 13:47:36  sm
+# use the same tmpdir for everything
+#
+# Revision 1.89  2004/07/08 13:36:50  sm
+# changed default export directory to users home
+#
+# Revision 1.88  2004/07/08 12:36:47  sm
+# corrected module path for X509_*
+# Thanks to aleksander.adamowski@altkom.pl
+#
+# Revision 1.87  2004/07/08 11:20:38  sm
+# added revocation reason for openssl 0.9.7
+#
+# Revision 1.86  2004/07/08 10:19:08  sm
+# added busy mouse-pointer
+# use correct configuration when renewing certificate
+#
+# Revision 1.85  2004/07/07 13:52:59  sm
+# added dropdown menu to create_cert and sign_req buttons
+#
+# Revision 1.84  2004/07/05 20:19:53  sm
+# removed uninitialized value, when no ca is opened
+#
+# Revision 1.83  2004/07/02 07:34:09  sm
+# added show_ca_details
+#
+# Revision 1.82  2004/06/23 16:46:10  sm
+# faster reread after revoking a certificate
+#
+# Revision 1.81  2004/06/18 13:56:46  sm
+# added possibility to show_details() via doubleclick
+#
+# Revision 1.80  2004/06/17 09:59:51  sm
+# use CERT/REQ for lists
+#
+# Revision 1.79  2004/06/16 13:46:53  sm
+# corrected version
+#
+# Revision 1.78  2004/06/16 13:42:49  sm
+# added noemailDN
+#
+# Revision 1.77  2004/06/16 07:36:50  sm
+# added changes again
+#
+# Revision 1.76  2004/06/15 13:15:55  arasca
+# Browsing of certificates and requests moved to new class X509_browser.
 #
 # Revision 1.73  2004/06/07 13:11:28  sm
 # simplifications for translations, added WORDS.pm

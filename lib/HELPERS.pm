@@ -1,7 +1,7 @@
 # Copyright (c) Olaf Gellert <og@pre-secure.de> and
 #               Stephan Martin <sm@sm-zone.net>
 #
-# $Id: HELPERS.pm,v 1.7 2004/06/16 07:21:11 sm Exp $
+# $Id: HELPERS.pm,v 1.10 2004/07/15 09:01:05 sm Exp $
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -83,6 +83,12 @@ sub exit_clean {
    my ($ret) = @_;
 
    $ret = 0 unless(defined $ret);
+   
+   # hack to avoid busy cursor
+   my $rootwin = Gtk::Gdk->ROOT_PARENT();
+   my $cursor  = Gtk::Gdk::Cursor->new(68);
+
+   $rootwin->set_cursor($cursor);
    
    Gtk->exit($ret);
 
@@ -174,6 +180,40 @@ sub parse_extensions {
    }
 
    return($tmp);
+}
+
+#
+# get last used export directory
+#
+sub get_export_dir {
+   my $main = shift;
+
+   open(EXPIN, "<$main->{'cadir'}/.exportdir") || return(undef);
+   my $dir = <EXPIN>;
+   chomp($dir);
+
+   return($dir);
+}
+
+#
+# write last used export directory
+#
+sub write_export_dir {
+   my ($main, $dir) = @_;
+
+   $dir =~ s:/[^/]+$::;
+
+   open(EXPOUT, ">$main->{'cadir'}/.exportdir") || do {
+      my $t = sprintf(gettext("Can't write exportdir: %s, %s"), 
+               "$main->{'cadir'}/.exportdir", $!);
+      GUI::HELPERS::print_warning($t);
+      return;
+   };
+   print EXPOUT "$dir\n";
+
+   close(EXPOUT);
+
+   return($dir);
 }
 
 1
@@ -268,6 +308,15 @@ given in $retcode.
 
 #
 # $Log: HELPERS.pm,v $
+# Revision 1.10  2004/07/15 09:01:05  sm
+# added hack to avoid busy cursor after exit
+#
+# Revision 1.9  2004/07/08 20:18:21  sm
+# remeber last used export directory
+#
+# Revision 1.8  2004/07/08 14:28:06  sm
+# store export path in file
+#
 # Revision 1.7  2004/06/16 07:21:11  sm
 # avoid warning cause undefined var
 #
