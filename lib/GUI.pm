@@ -1,6 +1,6 @@
 # Copyright (c) Stephan Martin <sm@sm-zone.net>
 #
-# $Id: GUI.pm,v 1.54 2004/05/11 18:33:58 sm Exp $
+# $Id: GUI.pm,v 1.55 2004/05/22 14:24:24 sm Exp $
 # 
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -35,7 +35,7 @@ sub new {
 
    bless($self, $class);
 
-   $self->{'version'} = '0.6.0 (beta)';
+   $self->{'version'} = '0.6.1 (beta)';
 
    # initialize CA object
    $self->{'CA'} = CA->new($self->{'init'});
@@ -4323,6 +4323,9 @@ sub _exit_clean {
 
 # 
 # $Log: GUI.pm,v $
+# Revision 1.55  2004/05/22 14:24:24  sm
+# increased version
+#
 # Revision 1.54  2004/05/11 18:33:58  sm
 # corrected generation of exportfile names
 #

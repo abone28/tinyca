@@ -1,6 +1,6 @@
 # Copyright (c) Stephan Martin <sm@sm-zone.net>
 #
-# $Id: CA.pm,v 1.18 2004/05/05 20:59:42 sm Exp $
+# $Id: CA.pm,v 1.19 2004/05/21 05:57:11 sm Exp $
 # 
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -549,6 +549,8 @@ sub create_ca {
       delete($self->{$name});
       return;
    } else {
+   if(defined($mode) && $mode eq "sub") {
+      # for SubCAs: copy the request to the signing CA
       open(IN, "<$self->{$name}->{'dir'}"."/cacert.req") || do {
          $main->print_warning(gettext("Can't read Certificate"));
          return;
@@ -560,6 +562,7 @@ sub create_ca {
       print OUT while(<IN>);
       close IN; close OUT;
 
+      # for SubCAs: copy the key to the signing CA
       open(IN, "<$self->{$name}->{'dir'}"."/cacert.key") || do {
          $main->print_warning(gettext("Can't read Certificate"));
          return;
@@ -570,6 +573,7 @@ sub create_ca {
       };
       print OUT while(<IN>);
       close IN; close OUT;
+    }
    }
 
    if(defined($mode) && $mode eq "sub") {
