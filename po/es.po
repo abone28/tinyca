@@ -6,8 +6,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: es\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2004-08-09 21:41+0200\n"
-"PO-Revision-Date: 2004-07-17 17:01+0200\n"
+"POT-Creation-Date: 2004-12-05 19:53+0100\n"
+"PO-Revision-Date: 2004-11-10 18:15+0100\n"
 "Last-Translator: Ramón Pons Vivanco <rpons@rinu.org>\n"
 "Language-Team: spanish\n"
 "MIME-Version: 1.0\n"
@@ -35,7 +35,7 @@ msgstr "  Inicializando OpenSSL"
 msgid "  Check for CA Version"
 msgstr "  Comprobar versión de la CA"
 
-#: ../lib/CA.pm:168 ../lib/CA.pm:195 ../lib/CA.pm:513
+#: ../lib/CA.pm:168 ../lib/CA.pm:195
 msgid "Can't open index file: "
 msgstr "No se puede abir el índice: "
 
@@ -109,104 +109,268 @@ msgstr "El País debe tener un código exactamente de 2 letras"
 msgid "CA: %s already exists"
 msgstr "Ya existe la CA: %s"
 
-#: ../lib/CA.pm:449 ../lib/CA.pm:553
+#: ../lib/CA.pm:464
+msgid "Name for storage must be filled in and must not contain spaces"
+msgstr ""
+"El nombre debe ser rellenado obligatoriamente y no debe contener espacios"
+
+#: ../lib/CA.pm:473
+msgid "You didn't give a password for the private CA key."
+msgstr "No ha introducido password para la Clave privada."
+
+#: ../lib/CA.pm:475
+msgid "The import will fail, if the key is encrypted."
+msgstr "La importación fallará si la clave está cifrada."
+
+#: ../lib/CA.pm:484
+msgid "Please give a new password for the CA"
+msgstr "Por favor introduzca el password de la CA"
+
+#: ../lib/CA.pm:491
+msgid "New passwords don't match"
+msgstr "Los passwords nuevos no coinciden"
+
+#: ../lib/CA.pm:499
+msgid "Please give a CA certificate to import"
+msgstr "Por favor seleccione un Certificado para importar"
+
+#: ../lib/CA.pm:504
+#, c-format
+msgid ""
+"Can't read CA certificate file:\n"
+"%s"
+msgstr ""
+"No se puede leer el fichero del Certificado de la CA:\n"
+"%s"
+
+#: ../lib/CA.pm:514
+msgid "Please give a CA keyfile to import"
+msgstr "Por favor seleccione un fichero con la Clave de la CA para importar"
+
+#: ../lib/CA.pm:519
+#, c-format
+msgid ""
+"Can't read CA key file:\n"
+"%s"
+msgstr ""
+"No se puede leer el fichero con la Clave de la CA:\n"
+"%s"
+
+#: ../lib/CA.pm:531
+msgid "Please give an Index file to import.\n"
+msgstr "Por favor introduzca el fichero índice a importar.\n"
+
+#: ../lib/CA.pm:532
+msgid "If you don't have an Index file, i'll try to generate one.\n"
+msgstr "Si no existe un fichero índice se generará uno.\n"
+
+#: ../lib/CA.pm:533
+msgid "Attention: This will cause all Certificates to show up as valid.\n"
+msgstr ""
+"Atención: esto causará que todos los Certificados se muestren como válidos.\n"
+
+#: ../lib/CA.pm:534
+msgid "Attention: Revoked Certificates will not be determined."
+msgstr "Atención: los Certificados revocados no se determinaran."
+
+#: ../lib/CA.pm:545
+#, c-format
+msgid ""
+"Can't read Index file:\n"
+"%s"
+msgstr ""
+"No se puede leer el índice:\n"
+"%s"
+
+#: ../lib/CA.pm:558
+msgid "Please give a directory containing the certificates to import"
+msgstr ""
+"Por favor, seleccione un directorio que contenga los Certificados a importar"
+
+#: ../lib/CA.pm:563
+#, c-format
+msgid ""
+"Can't find certificate directory:\n"
+"%s"
+msgstr ""
+"No se puede encontrar el directorio del Certificado:\n"
+"%s"
+
+#: ../lib/CA.pm:574
+#, c-format
+msgid "CA: %s already exists. Please choose another name"
+msgstr "Ya existe la CA: %s. Por favor elija otro nombre"
+
+#: ../lib/CA.pm:590
+msgid "Can't find X509v3 Basic Constraints in CA Certificate\n"
+msgstr ""
+"No se pueden encontrar las restricciones básicas X509v3 en el Certificado de "
+"la CA\n"
+
+#: ../lib/CA.pm:591
+msgid "Import canceled"
+msgstr "Importación abortada"
+
+#: ../lib/CA.pm:597
+msgid "The selected CA Certificate is no valid CA certificate\n"
+msgstr ""
+"Los Certificados de la CA seleccionados no son Certificados de CA válidos\n"
+
+#: ../lib/CA.pm:598
+#, c-format
+msgid "X509v3 Basic Constraint is set to: %s"
+msgstr "La restricción básica X509v3 vale: %s"
+
+#: ../lib/CA.pm:608
+#, c-format
+msgid ""
+"Can't open Index file:\n"
+"%s"
+msgstr ""
+"No se puede abir el fichero índice:\n"
+"%s"
+
+#: ../lib/CA.pm:659 ../lib/CERT.pm:62
+#, c-format
+msgid "Can't open Certificate directory: %s"
+msgstr "No se puede abrir el directorio con los Certificados: %s"
+
+#: ../lib/CA.pm:677 ../lib/CERT.pm:83
+#, c-format
+msgid "   Read Certificate: %s"
+msgstr "   Leer Certificado: %s"
+
+#: ../lib/CA.pm:687
+#, c-format
+msgid "Can't read Certificate file: %s"
+msgstr "No se puede leer el fichero del Certificado: %s"
+
+#: ../lib/CA.pm:711
+#, c-format
+msgid "Can't write Certificate file: %s"
+msgstr "No se puede escribir el fichero del Certificado: %s"
+
+#: ../lib/CA.pm:761 ../lib/CA.pm:907
+msgid "Can't open Index file: "
+msgstr "No se puede abrir el fichero índice: "
+
+#: ../lib/CA.pm:769 ../lib/CA.pm:914
+msgid "Can't write Serial file: "
+msgstr "No se puede escribir el número de serie: "
+
+#: ../lib/CA.pm:785
+#, c-format
+msgid "Can't write CA Certificate file: %s"
+msgstr "No se puede escribir el fichero del Certificado: %s"
+
+#: ../lib/CA.pm:794
+#, c-format
+msgid "Can't write CA Key file: %s"
+msgstr "No se puede escribir la Clave de la CA: %s"
+
+#: ../lib/CA.pm:811 ../lib/CA.pm:1132
+msgid "Generating CRL failed"
+msgstr "Falló la generación de CRL"
+
+#: ../lib/CA.pm:823
+#, c-format
+msgid "Succesfully imported %d certificates\n"
+msgstr "Certificados %d importados correctamente\n"
+
+#: ../lib/CA.pm:824
+msgid "Check the configuration of your imported CA."
+msgstr "Compruebe la configuración de la CA importada."
+
+#: ../lib/CA.pm:843 ../lib/CA.pm:953
 msgid "No CA name given"
 msgstr "Nombre de la CA no introducido"
 
-#: ../lib/CA.pm:457 ../lib/CA.pm:462 ../lib/CA.pm:467 ../lib/CA.pm:472
-#: ../lib/CA.pm:477 ../lib/CA.pm:482
+#: ../lib/CA.pm:851 ../lib/CA.pm:856 ../lib/CA.pm:861 ../lib/CA.pm:866
+#: ../lib/CA.pm:871 ../lib/CA.pm:876
 msgid "Can't create directory: "
 msgstr "No se puede crear el directorio: "
 
-#: ../lib/CA.pm:491
+#: ../lib/CA.pm:885
 #, c-format
 msgid "Can't open template file %s %s"
 msgstr "No se puede abrir la plantilla %s: %s"
 
-#: ../lib/CA.pm:496 ../lib/CA.pm:784 ../lib/CA.pm:851 ../lib/CERT.pm:590
+#: ../lib/CA.pm:890 ../lib/CA.pm:1184 ../lib/CA.pm:1251 ../lib/CERT.pm:593
 #: ../lib/KEY.pm:220 ../lib/REQ.pm:700
 #, c-format
 msgid "Can't open output file: %s: %s"
 msgstr "No se puede abrir el fichero de salida %s: %s"
 
-#: ../lib/CA.pm:520
-msgid "Can't write serial file: "
-msgstr "No se puede escribir el número de serie: "
-
-#: ../lib/CA.pm:566 ../lib/REQ.pm:166
+#: ../lib/CA.pm:966 ../lib/KEY.pm:462 ../lib/REQ.pm:166
 msgid "Generating key failed"
 msgstr "Falló la generación de clave"
 
-#: ../lib/CA.pm:598 ../lib/REQ.pm:192
+#: ../lib/CA.pm:998 ../lib/REQ.pm:192
 msgid "Generating Request failed"
 msgstr "Falló la generación de Petición"
 
-#: ../lib/CA.pm:607 ../lib/CA.pm:621
+#: ../lib/CA.pm:1007 ../lib/CA.pm:1021 ../lib/CERT.pm:99
 msgid "Can't read Certificate"
 msgstr "No se puede leer el Certificado"
 
-#: ../lib/CA.pm:612 ../lib/CA.pm:626
+#: ../lib/CA.pm:1012 ../lib/CA.pm:1026
 msgid "Can't write Certificate"
 msgstr "No se puede escribir el Certificado"
 
-#: ../lib/CA.pm:666
+#: ../lib/CA.pm:1066
 msgid "Generating certificate failed"
-msgstr "Falló la generación del certificado"
+msgstr "Falló la generación del Certificado"
 
-#: ../lib/CA.pm:685 ../lib/CA.pm:708
+#: ../lib/CA.pm:1085 ../lib/CA.pm:1108
 #, c-format
 msgid "Can't open ca certificate file %s %s"
-msgstr "No se puede abrir el fichero del certificado de la CA %s: %s"
+msgstr "No se puede abrir el fichero del Certificado de la CA %s %s"
 
-#: ../lib/CA.pm:693
+#: ../lib/CA.pm:1093
 #, c-format
 msgid "Can't create certificate chain file: %s: %s"
-msgstr "No se puede crear el fichero con la cadena de certificados: %s: %s"
+msgstr "No se puede crear el fichero con la Cadena de Certificados: %s: %s"
 
-#: ../lib/CA.pm:732
-msgid "Generating CRL failed"
-msgstr "Falló la generación de CRL"
-
-#: ../lib/CA.pm:741
+#: ../lib/CA.pm:1141
 #, c-format
 msgid "CA: %s created"
 msgstr "CA: %s creada"
 
-#: ../lib/CA.pm:776
+#: ../lib/CA.pm:1176
 #, c-format
 msgid "Can't open certificate chain file: %s: %s"
-msgstr "No se puede abrir el fichero con la cadena de certificados: %s: %s"
+msgstr "No se puede abrir el fichero con la cadena de Certificados: %s: %s"
 
-#: ../lib/CA.pm:797
+#: ../lib/CA.pm:1197
 #, c-format
 msgid "Certificate Chain succesfully exported to: %s"
 msgstr "Cadena de Certificados exportada correctamente a: %s "
 
-#: ../lib/CA.pm:832 ../lib/CERT.pm:540 ../lib/GUI.pm:140 ../lib/KEY.pm:336
+#: ../lib/CA.pm:1232 ../lib/CERT.pm:543 ../lib/GUI.pm:140 ../lib/KEY.pm:336
 #: ../lib/REQ.pm:72 ../lib/REQ.pm:389
 msgid "Can't read CA certificate"
-msgstr "No se puede leer el certificado de la CA"
+msgstr "No se puede leer el Certificado de la CA"
 
-#: ../lib/CA.pm:842
+#: ../lib/CA.pm:1242
 #, c-format
 msgid "Invalid Format for export_ca_cert(): %s"
 msgstr "Formato erroneo para export_ca_cert(): %s"
 
-#: ../lib/CA.pm:864
+#: ../lib/CA.pm:1264
 #, c-format
 msgid "Certificate succesfully exported to: %s"
 msgstr "Certificado exportado correctamente a: %s"
 
-#: ../lib/CA.pm:897
+#: ../lib/CA.pm:1297
 msgid "Please give the output file"
 msgstr "Por favor introduzca fichero de salida"
 
-#: ../lib/CA.pm:905
+#: ../lib/CA.pm:1305
 msgid "Please give the CA password to create the Revocation List"
 msgstr ""
 "Por favor introduzca el password de la CA para crear la Lista de Revocación"
 
-#: ../lib/CA.pm:926
+#: ../lib/CA.pm:1326
 msgid ""
 "Wrong CA password given\n"
 "Generating Revocation List failed"
@@ -214,7 +378,7 @@ msgstr ""
 "Password de la CA introducido incorrecto\n"
 "Falló la generación de la Lista de Revocación"
 
-#: ../lib/CA.pm:930
+#: ../lib/CA.pm:1330
 msgid ""
 "CA Key not found\n"
 "Generating Revocation List failed"
@@ -222,38 +386,25 @@ msgstr ""
 "Clave de la CA no encontrada\n"
 "Falló la generación de la Lista de Revocación"
 
-#: ../lib/CA.pm:934 ../lib/CA.pm:940
+#: ../lib/CA.pm:1334 ../lib/CA.pm:1340
 msgid "Generating Revocation List failed"
 msgstr "Falló la generación de la Lista de Revocación"
 
-#: ../lib/CA.pm:948
+#: ../lib/CA.pm:1348
 #, c-format
 msgid "CRL successfully exported to: %s"
 msgstr "CRL exportada correctamente a: %s"
 
-#: ../lib/CERT.pm:62
-msgid "Can't open certdir"
-msgstr "No se puede abrir el directorio con los certificados"
-
-#: ../lib/CERT.pm:82
-#, c-format
-msgid "   Read Certificate: %s"
-msgstr "   Leer Certificado: %s"
-
-#: ../lib/CERT.pm:96
-msgid "Can't read certificate"
-msgstr "No se puede leer el certificado"
-
-#: ../lib/CERT.pm:136 ../lib/CERT.pm:192 ../lib/CERT.pm:315 ../lib/CERT.pm:374
+#: ../lib/CERT.pm:139 ../lib/CERT.pm:195 ../lib/CERT.pm:318 ../lib/CERT.pm:377
 msgid "Please select a Certificate first"
 msgstr "Por favor seleccione un Certificado antes"
 
-#: ../lib/CERT.pm:144 ../lib/CERT.pm:202 ../lib/CERT.pm:326 ../lib/CERT.pm:394
-#: ../lib/OpenSSL.pm:659 ../lib/GUI/X509_browser.pm:433
+#: ../lib/CERT.pm:147 ../lib/CERT.pm:205 ../lib/CERT.pm:329 ../lib/CERT.pm:397
+#: ../lib/OpenSSL.pm:678 ../lib/GUI/X509_browser.pm:433
 msgid "VALID"
 msgstr "VÁLIDO"
 
-#: ../lib/CERT.pm:146
+#: ../lib/CERT.pm:149
 #, c-format
 msgid ""
 "Can't renew Certifikate with Status: %s\n"
@@ -262,7 +413,7 @@ msgstr ""
 "No se puede renovar el Certificado con Estado: %s\n"
 "Por favor revoque el Certificado antes"
 
-#: ../lib/CERT.pm:161
+#: ../lib/CERT.pm:164
 msgid ""
 "Key and Request are necessary for renewal of a Certificate\n"
 "Renewal is not possible!"
@@ -270,12 +421,12 @@ msgstr ""
 "Se necesitan Clave y Petición para renovar un Certificado\n"
 "¡No se puede renovar!"
 
-#: ../lib/CERT.pm:203
+#: ../lib/CERT.pm:206
 #, c-format
 msgid "Can't revoke Certifikate with Status: %s"
 msgstr "No se puede revocar un Certificado con Estado: %s"
 
-#: ../lib/CERT.pm:249
+#: ../lib/CERT.pm:252
 msgid ""
 "Wrong CA password given\n"
 "Revoking the Certificate failed"
@@ -283,7 +434,7 @@ msgstr ""
 "El password de la CA introducido no es correcto\n"
 "Falló la revocación del Certificado"
 
-#: ../lib/CERT.pm:256
+#: ../lib/CERT.pm:259
 msgid ""
 "CA Key not found\n"
 "Revoking the Certificate failed"
@@ -291,74 +442,74 @@ msgstr ""
 "Clave de la CA no encontrada\n"
 "Falló la revocación del Certificado"
 
-#: ../lib/CERT.pm:263
+#: ../lib/CERT.pm:266
 msgid "Revoking the Certificate failed"
 msgstr "Falló la revocación del Certificado"
 
-#: ../lib/CERT.pm:283
+#: ../lib/CERT.pm:286
 msgid "Generating a new Revocation List failed"
 msgstr "Falló la generación de la Lista de Revocación"
 
-#: ../lib/CERT.pm:328
+#: ../lib/CERT.pm:331
 msgid ""
 "Can't delete VALID certificate!\n"
 "Please revoke the Certificate first."
 msgstr ""
-"¡No se puede eliminar un certificado VÁLIDO!\n"
+"¡No se puede eliminar un Certificado VÁLIDO!\n"
 "Por favor revoque el Certificado antes."
 
-#: ../lib/CERT.pm:395
+#: ../lib/CERT.pm:398
 msgid "Certificate seems not to be VALID"
 msgstr "El Certificado parece no ser VÁLIDO"
 
-#: ../lib/CERT.pm:397
+#: ../lib/CERT.pm:400
 msgid "Export is not possible"
 msgstr "No se puede exportar"
 
-#: ../lib/CERT.pm:419 ../lib/KEY.pm:170
+#: ../lib/CERT.pm:422 ../lib/KEY.pm:170
 msgid "Please give at least the output file"
 msgstr "Por favor al menos introduzca el fichero de salida"
 
-#: ../lib/CERT.pm:425
+#: ../lib/CERT.pm:428
 msgid "Key is necessary for export as PKCS#12"
 msgstr "Se necesita la Clave para exportar como PKCS#12"
 
-#: ../lib/CERT.pm:427 ../lib/CERT.pm:441 ../lib/KEY.pm:250 ../lib/KEY.pm:296
+#: ../lib/CERT.pm:430 ../lib/CERT.pm:444 ../lib/KEY.pm:250 ../lib/KEY.pm:296
 msgid "Export is not possible!"
 msgstr "¡No se puede exportar!"
 
-#: ../lib/CERT.pm:439
+#: ../lib/CERT.pm:442
 msgid "Key is necessary for export as Zip"
 msgstr "Se necesita la Clave para exportar como Zip"
 
-#: ../lib/CERT.pm:490 ../lib/KEY.pm:278
+#: ../lib/CERT.pm:493 ../lib/KEY.pm:278
 msgid "Generating PKCS#12 failed"
 msgstr "Falló la generación de PKCS#12"
 
-#: ../lib/CERT.pm:498 ../lib/CERT.pm:569 ../lib/KEY.pm:285 ../lib/KEY.pm:361
+#: ../lib/CERT.pm:501 ../lib/CERT.pm:572 ../lib/KEY.pm:285 ../lib/KEY.pm:361
 #, c-format
 msgid "Certificate and Key successfully exported to %s"
 msgstr "El Certificado y la Clave han sido correctamente exportados a %s"
 
-#: ../lib/CERT.pm:511 ../lib/CERT.pm:529 ../lib/CERT.pm:548 ../lib/KEY.pm:309
+#: ../lib/CERT.pm:514 ../lib/CERT.pm:532 ../lib/CERT.pm:551 ../lib/KEY.pm:309
 #: ../lib/KEY.pm:325 ../lib/KEY.pm:343
 msgid "Can't create temporary file"
 msgstr "No se puede crear un fichero temporal"
 
-#: ../lib/CERT.pm:521 ../lib/KEY.pm:318
+#: ../lib/CERT.pm:524 ../lib/KEY.pm:318
 msgid "Can't read Key file"
 msgstr "No se puede leer el fichero con la Clave"
 
-#: ../lib/CERT.pm:563 ../lib/KEY.pm:356
+#: ../lib/CERT.pm:566 ../lib/KEY.pm:356
 msgid "Generating Zip file failed"
 msgstr "Falló la generación del fichero Zip"
 
-#: ../lib/CERT.pm:581
+#: ../lib/CERT.pm:584
 #, c-format
 msgid "Invalid Format for export_cert(): %s"
 msgstr "Formato erroneo para export_cert(): %s"
 
-#: ../lib/CERT.pm:601
+#: ../lib/CERT.pm:604
 #, c-format
 msgid "Certificate successfully exported to: %s"
 msgstr "Certificado correctamente exportado a: %s"
@@ -375,43 +526,43 @@ msgstr "Información CA"
 msgid "Certificates"
 msgstr "Certificados"
 
-#: ../lib/GUI.pm:215 ../lib/GUI/WORDS.pm:56 ../lib/GUI/X509_browser.pm:258
+#: ../lib/GUI.pm:215 ../lib/GUI/WORDS.pm:57 ../lib/GUI/X509_browser.pm:258
 #: ../lib/GUI/X509_browser.pm:268
 msgid "Common Name"
 msgstr "Nombre Común"
 
-#: ../lib/GUI.pm:216 ../lib/GUI.pm:1249 ../lib/GUI.pm:2274
-#: ../lib/GUI/WORDS.pm:57 ../lib/GUI/X509_browser.pm:259
+#: ../lib/GUI.pm:216 ../lib/GUI.pm:1273 ../lib/GUI.pm:2298
+#: ../lib/GUI/WORDS.pm:58 ../lib/GUI/X509_browser.pm:259
 #: ../lib/GUI/X509_browser.pm:269
 msgid "eMail Address"
 msgstr "Dirección eMail"
 
-#: ../lib/GUI.pm:217 ../lib/GUI/WORDS.pm:59 ../lib/GUI/X509_browser.pm:260
+#: ../lib/GUI.pm:217 ../lib/GUI/WORDS.pm:60 ../lib/GUI/X509_browser.pm:260
 #: ../lib/GUI/X509_browser.pm:270
 msgid "Organizational Unit"
 msgstr "Unidad Organizativa"
 
-#: ../lib/GUI.pm:218 ../lib/GUI/WORDS.pm:58 ../lib/GUI/X509_browser.pm:261
+#: ../lib/GUI.pm:218 ../lib/GUI/WORDS.pm:59 ../lib/GUI/X509_browser.pm:261
 #: ../lib/GUI/X509_browser.pm:271
 msgid "Organization"
 msgstr "Organización"
 
-#: ../lib/GUI.pm:219 ../lib/GUI/WORDS.pm:60 ../lib/GUI/X509_browser.pm:262
+#: ../lib/GUI.pm:219 ../lib/GUI/WORDS.pm:61 ../lib/GUI/X509_browser.pm:262
 #: ../lib/GUI/X509_browser.pm:272
 msgid "Location"
 msgstr "Ubicación"
 
-#: ../lib/GUI.pm:220 ../lib/GUI/WORDS.pm:61 ../lib/GUI/X509_browser.pm:263
+#: ../lib/GUI.pm:220 ../lib/GUI/WORDS.pm:62 ../lib/GUI/X509_browser.pm:263
 #: ../lib/GUI/X509_browser.pm:273
 msgid "State"
 msgstr "Provincia"
 
-#: ../lib/GUI.pm:221 ../lib/GUI/WORDS.pm:62 ../lib/GUI/X509_browser.pm:264
+#: ../lib/GUI.pm:221 ../lib/GUI/WORDS.pm:63 ../lib/GUI/X509_browser.pm:264
 #: ../lib/GUI/X509_browser.pm:274
 msgid "Country"
 msgstr "País"
 
-#: ../lib/GUI.pm:222 ../lib/GUI/WORDS.pm:68
+#: ../lib/GUI.pm:222 ../lib/GUI/WORDS.pm:69
 msgid "Type"
 msgstr "Tipo"
 
@@ -451,7 +602,7 @@ msgstr "Salir"
 msgid "Exit TinyCA"
 msgstr "Salir de TinyCA"
 
-#: ../lib/GUI.pm:405 ../lib/GUI.pm:1135
+#: ../lib/GUI.pm:405 ../lib/GUI.pm:1159
 msgid "Open CA"
 msgstr "Abrir CA"
 
@@ -463,622 +614,698 @@ msgstr "Abrir una CA existente"
 msgid "New CA"
 msgstr "Nueva CA"
 
-#: ../lib/GUI.pm:418 ../lib/GUI.pm:2201
+#: ../lib/GUI.pm:418 ../lib/GUI.pm:2225
 msgid "Create a new CA"
 msgstr "Crear una CA nueva"
 
-#: ../lib/GUI.pm:429 ../lib/GUI.pm:1137
+#: ../lib/GUI.pm:429 ../lib/GUI.pm:2398
+msgid "Import CA"
+msgstr "Importar CA"
+
+#: ../lib/GUI.pm:430
+msgid "Import an existing CA"
+msgstr "Importar una CA existente"
+
+#: ../lib/GUI.pm:441 ../lib/GUI.pm:1161
 msgid "Delete CA"
 msgstr "Eliminar CA"
 
-#: ../lib/GUI.pm:430
+#: ../lib/GUI.pm:442
 msgid "Delete an existing CA"
 msgstr "Eliminar una CA existente"
 
-#: ../lib/GUI.pm:446 ../lib/GUI.pm:510 ../lib/GUI.pm:634
+#: ../lib/GUI.pm:458 ../lib/GUI.pm:522 ../lib/GUI.pm:646
 #: ../lib/GUI/HELPERS.pm:51 ../lib/GUI/HELPERS.pm:97 ../lib/GUI/HELPERS.pm:145
 msgid "Details"
 msgstr "Detalles"
 
-#: ../lib/GUI.pm:447
+#: ../lib/GUI.pm:459
 msgid "Show X.509 Extensions of the CA Certificate"
 msgstr "Mostar las Extensiones X.509 del Certificado de la CA"
 
-#: ../lib/GUI.pm:458
+#: ../lib/GUI.pm:470
 msgid "Sub CA"
 msgstr "Sub CA"
 
-#: ../lib/GUI.pm:459 ../lib/GUI.pm:2197
+#: ../lib/GUI.pm:471 ../lib/GUI.pm:2221
 msgid "Create a new Sub CA"
 msgstr "Crear una nueva Sub CA"
 
-#: ../lib/GUI.pm:470
+#: ../lib/GUI.pm:482
 msgid "Export CA"
 msgstr "Exportar CA"
 
-#: ../lib/GUI.pm:471 ../lib/GUI.pm:1581 ../lib/GUI.pm:1593
+#: ../lib/GUI.pm:483 ../lib/GUI.pm:1605 ../lib/GUI.pm:1617
 msgid "Export CA Certificate"
 msgstr "Exportar Certificado de la CA"
 
-#: ../lib/GUI.pm:482 ../lib/GUI.pm:1448 ../lib/GUI.pm:1459
+#: ../lib/GUI.pm:494 ../lib/GUI.pm:1472 ../lib/GUI.pm:1483
 msgid "Export CRL"
 msgstr "Exportar CRL"
 
-#: ../lib/GUI.pm:483
+#: ../lib/GUI.pm:495
 msgid "Export Certificate Revocation List"
 msgstr "Exportar el Certificado de la Lista de Revocación"
 
-#: ../lib/GUI.pm:495
+#: ../lib/GUI.pm:507
 msgid "Export Chain"
 msgstr "Exportar Cadena"
 
-#: ../lib/GUI.pm:496 ../lib/GUI.pm:1533 ../lib/GUI.pm:1546
+#: ../lib/GUI.pm:508 ../lib/GUI.pm:1557 ../lib/GUI.pm:1570
 msgid "Export CA Certificate Chain"
 msgstr "Exportar Cadena de Certificados de la CA"
 
-#: ../lib/GUI.pm:511
+#: ../lib/GUI.pm:523
 msgid "Show X.509 Extensions of the selected Certificate"
 msgstr "Mostar las Extensiones X.509 del Certificado de la CA"
 
-#: ../lib/GUI.pm:522 ../lib/GUI.pm:646
+#: ../lib/GUI.pm:534 ../lib/GUI.pm:658
 msgid "View"
 msgstr "Ver"
 
-#: ../lib/GUI.pm:523
+#: ../lib/GUI.pm:535
 msgid "View selected Certificate"
 msgstr "Ver Certificados seleccionados"
 
-#: ../lib/GUI.pm:534 ../lib/GUI.pm:658
+#: ../lib/GUI.pm:546 ../lib/GUI.pm:670
 msgid "New"
 msgstr "Nuevo"
 
-#: ../lib/GUI.pm:535
+#: ../lib/GUI.pm:547
 msgid "Generate new Key and Request and Sign as Certificate"
 msgstr "Generar nueva Clave, Petición y Firmar como Certificado"
 
-#: ../lib/GUI.pm:552 ../lib/GUI.pm:608
+#: ../lib/GUI.pm:564 ../lib/GUI.pm:620
 msgid "Export"
 msgstr "Exportar"
 
-#: ../lib/GUI.pm:553
+#: ../lib/GUI.pm:565
 msgid "Export selected Certificate to file"
 msgstr "Exportar los Certificados seleccionados a un fichero"
 
-#: ../lib/GUI.pm:564
+#: ../lib/GUI.pm:576
 msgid "Revoke"
 msgstr "Revocar"
 
-#: ../lib/GUI.pm:565
+#: ../lib/GUI.pm:577
 msgid "Revoke selected Certificate"
 msgstr "Revocar los Certificados seleccionados"
 
-#: ../lib/GUI.pm:576
+#: ../lib/GUI.pm:588
 msgid "Renew"
 msgstr "Renovar"
 
-#: ../lib/GUI.pm:577
+#: ../lib/GUI.pm:589
 msgid "Renew selected Certificate"
 msgstr "Renovar los Certificados seleccionados"
 
-#: ../lib/GUI.pm:594 ../lib/GUI.pm:620 ../lib/GUI.pm:699
+#: ../lib/GUI.pm:606 ../lib/GUI.pm:632 ../lib/GUI.pm:711
 msgid "Delete"
 msgstr "Eliminar"
 
-#: ../lib/GUI.pm:595
+#: ../lib/GUI.pm:607
 msgid "Delete selected (revoked) Certificate"
 msgstr "Eliminar los Certificados seleccionados (revocados)"
 
-#: ../lib/GUI.pm:609
+#: ../lib/GUI.pm:621
 msgid "Export selected Key to file"
 msgstr "Exportar la Clave seleccionada a un fichero"
 
-#: ../lib/GUI.pm:621
+#: ../lib/GUI.pm:633
 msgid "Delete selected Key"
 msgstr "Eliminar la Clave seleccionada"
 
-#: ../lib/GUI.pm:635
+#: ../lib/GUI.pm:647
 msgid "Show Details of the selected Request"
 msgstr "Mostar Detalles de la Petición seleccionada"
 
-#: ../lib/GUI.pm:647
+#: ../lib/GUI.pm:659
 msgid "View selected Request"
 msgstr "Ver la Petición seleccionada"
 
-#: ../lib/GUI.pm:659
+#: ../lib/GUI.pm:671
 msgid "Generate new Key and Certificate Request"
 msgstr "Generar nueva Clave y Petición de Certificado"
 
-#: ../lib/GUI.pm:670
+#: ../lib/GUI.pm:682
 msgid "Import"
 msgstr "Importar"
 
-#: ../lib/GUI.pm:671
+#: ../lib/GUI.pm:683
 msgid "Import a Certificate Request"
 msgstr "Importar una Petición de Certificado"
 
-#: ../lib/GUI.pm:682
+#: ../lib/GUI.pm:694
 msgid "Sign"
 msgstr "Firmar"
 
-#: ../lib/GUI.pm:683
+#: ../lib/GUI.pm:695
 msgid "Sign Certificate Request/Create Certificate"
 msgstr "Firmar Petición de Certificado/Crear Certificado"
 
-#: ../lib/GUI.pm:700
+#: ../lib/GUI.pm:712
 msgid "Delete selected Certificate Request"
 msgstr "Eliminar Peticiones de Certificados seleccionadas"
 
-#: ../lib/GUI.pm:718
+#: ../lib/GUI.pm:730
 msgid "_CA"
 msgstr "_CA"
 
-#: ../lib/GUI.pm:721
+#: ../lib/GUI.pm:733
 msgid "_Open CA"
 msgstr "_Abrir CA"
 
-#: ../lib/GUI.pm:727
+#: ../lib/GUI.pm:739
 msgid "_New CA"
 msgstr "_Nueva CA"
 
-#: ../lib/GUI.pm:733
+#: ../lib/GUI.pm:745
 msgid "_Delete CA"
 msgstr "_Eliminar CA"
 
-#: ../lib/GUI.pm:741
+#: ../lib/GUI.pm:753
 msgid "_Exit"
 msgstr "_Salir"
 
-#: ../lib/GUI.pm:749
+#: ../lib/GUI.pm:761
 msgid "_Preferences"
 msgstr "_Preferencias"
 
-#: ../lib/GUI.pm:752
+#: ../lib/GUI.pm:764
 msgid "Experts Only!!"
 msgstr "¡¡Solo expertos!!"
 
-#: ../lib/GUI.pm:757
+#: ../lib/GUI.pm:769
 msgid "OpenSSL _Configuration"
 msgstr "_Configuración OpenSSL"
 
-#: ../lib/GUI.pm:765 ../lib/GUI.pm:768
+#: ../lib/GUI.pm:777 ../lib/GUI.pm:780
 msgid "_Help"
 msgstr "_Ayuda"
 
-#: ../lib/GUI.pm:772
+#: ../lib/GUI.pm:784
 msgid "_About TinyCA"
 msgstr "_Sobre TinyCA"
 
-#: ../lib/GUI.pm:801
+#: ../lib/GUI.pm:813
 msgid "Invalid mode for show_text():"
 msgstr "Modo erróneo para show_text():"
 
-#: ../lib/GUI.pm:806 ../lib/GUI.pm:897 ../lib/REQ.pm:233 ../lib/REQ.pm:360
+#: ../lib/GUI.pm:818 ../lib/GUI.pm:909 ../lib/REQ.pm:233 ../lib/REQ.pm:360
 msgid "Please select a Request first"
 msgstr "Por favor seleccione antes una Petición"
 
-#: ../lib/GUI.pm:809 ../lib/GUI.pm:900
+#: ../lib/GUI.pm:821 ../lib/GUI.pm:912
 msgid "Please select a certificate first"
-msgstr "Por favor seleccione antes un certificado"
+msgstr "Por favor seleccione antes un Certificado"
 
-#: ../lib/GUI.pm:827 ../lib/GUI.pm:918 ../lib/GUI/X509_browser.pm:466
+#: ../lib/GUI.pm:839 ../lib/GUI.pm:930 ../lib/GUI/X509_browser.pm:466
 #: ../lib/GUI/X509_browser.pm:524
 msgid "Can't read file"
 msgstr "No se puede leer fichero"
 
-#: ../lib/GUI.pm:829
+#: ../lib/GUI.pm:841
 msgid "Request"
 msgstr "Petición"
 
-#: ../lib/GUI.pm:829
+#: ../lib/GUI.pm:841
 msgid "Certificate"
 msgstr "Certificado"
 
-#: ../lib/GUI.pm:892
+#: ../lib/GUI.pm:904
 msgid "Invalid mode for show_details():"
 msgstr "Modo erroneo para show_details()"
 
-#: ../lib/GUI.pm:920 ../lib/GUI.pm:998 ../lib/GUI.pm:2849 ../lib/GUI.pm:2900
-#: ../lib/GUI.pm:2941 ../lib/GUI.pm:2955
+#: ../lib/GUI.pm:932 ../lib/GUI.pm:1021 ../lib/GUI.pm:3022 ../lib/GUI.pm:3073
+#: ../lib/GUI.pm:3114 ../lib/GUI.pm:3128
 msgid "Request Details"
 msgstr "Detalles de la Petición"
 
-#: ../lib/GUI.pm:920 ../lib/GUI.pm:998 ../lib/GUI.pm:2702 ../lib/GUI.pm:2714
+#: ../lib/GUI.pm:932 ../lib/GUI.pm:1021 ../lib/GUI.pm:2875 ../lib/GUI.pm:2887
 msgid "Certificate Details"
 msgstr "Detalles del Certificado"
 
-#: ../lib/GUI.pm:955 ../lib/GUI.pm:1770 ../lib/GUI.pm:2945 ../lib/GUI.pm:2995
+#: ../lib/GUI.pm:972 ../lib/GUI.pm:1794 ../lib/GUI.pm:3118 ../lib/GUI.pm:3168
 msgid "Import Request"
 msgstr "Importar Petición"
 
-#: ../lib/GUI.pm:961
-msgid "Do you really want to import the following Certificate Request?"
-msgstr "¿Quiere realmente importar la siguiente Petición de Certificado?"
+#: ../lib/GUI.pm:974 ../lib/GUI.pm:2444
+msgid "Import CA Certificate"
+msgstr "Importar Certificado de la CA"
 
-#: ../lib/GUI.pm:1005
+#: ../lib/GUI.pm:981
+msgid "Do you want to import the following Certificate Request?"
+msgstr "¿Quiere importar la siguiente Petición de Certificado?"
+
+#: ../lib/GUI.pm:983
+msgid "Do you want to import the following CA Certificate?"
+msgstr "¿Quiere importar la siguiente Petición de Certificado?"
+
+#: ../lib/GUI.pm:1028
 msgid "Subject DN"
 msgstr "Asunto DN"
 
-#: ../lib/GUI.pm:1024
+#: ../lib/GUI.pm:1047
 msgid "Issuer"
 msgstr "Firmante"
 
-#: ../lib/GUI.pm:1045
+#: ../lib/GUI.pm:1068
 msgid "Validity"
 msgstr "Validez"
 
-#: ../lib/GUI.pm:1057
+#: ../lib/GUI.pm:1080
 msgid "Key/Request Details:"
 msgstr "Detalles de Clave/Petición:"
 
-#: ../lib/GUI.pm:1057
+#: ../lib/GUI.pm:1080
 msgid "Key/Certificate Details:"
 msgstr "Detalles de Clave/Certificado:"
 
-#: ../lib/GUI.pm:1069
+#: ../lib/GUI.pm:1092
 msgid "Fingerprints"
 msgstr "Huella digital"
 
-#: ../lib/GUI.pm:1082
+#: ../lib/GUI.pm:1105
 msgid "Requested X.509 Extensions"
 msgstr "Extensiones X.509 pedidas"
 
-#: ../lib/GUI.pm:1082
+#: ../lib/GUI.pm:1105
 msgid "X.509v3 Extensions"
 msgstr "Extensiones X.509v3"
 
-#: ../lib/GUI.pm:1101
+#: ../lib/GUI.pm:1125
 msgid "Requested Netscape Extensions"
 msgstr "Extensiones Netscape pedidas"
 
-#: ../lib/GUI.pm:1101
+#: ../lib/GUI.pm:1125
 msgid "Netscape Extensions"
 msgstr "Extensiones Netscape"
 
-#: ../lib/GUI.pm:1139
+#: ../lib/GUI.pm:1163
 msgid "Invalid action given: "
 msgstr "Acción introducida erronea: "
 
-#: ../lib/GUI.pm:1182 ../lib/GUI.pm:1202
+#: ../lib/GUI.pm:1206 ../lib/GUI.pm:1226
 msgid "Invalid action for show_select_ca_dialog(): "
 msgstr "Acción erronea para show_select_ca_dialog(): "
 
-#: ../lib/GUI.pm:1231
+#: ../lib/GUI.pm:1255
 msgid "Create Request"
 msgstr "Crear Petición"
 
-#: ../lib/GUI.pm:1231
+#: ../lib/GUI.pm:1255
 msgid "Create a new Certificate Request"
 msgstr "Crear una nueva Petición de Certificado"
 
-#: ../lib/GUI.pm:1239
+#: ../lib/GUI.pm:1263
 msgid "Common Name (eg, your Name,"
 msgstr "Nombre Común (ej. su Nombre,"
 
-#: ../lib/GUI.pm:1243
+#: ../lib/GUI.pm:1267
 msgid "your eMail Address"
 msgstr "su Dirección eMail"
 
-#: ../lib/GUI.pm:1246
+#: ../lib/GUI.pm:1270
 msgid "or the Servers Name)"
 msgstr "or el Nombre del Servidor)"
 
-#: ../lib/GUI.pm:1252
+#: ../lib/GUI.pm:1276
 msgid "Password (protect your private Key):"
 msgstr "Password (protege su Clave privada):"
 
-#: ../lib/GUI.pm:1255 ../lib/GUI.pm:2254
+#: ../lib/GUI.pm:1279 ../lib/GUI.pm:2278
 msgid "Password (confirmation):"
 msgstr "Password (confirmación):"
 
-#: ../lib/GUI.pm:1258 ../lib/GUI.pm:2246
+#: ../lib/GUI.pm:1282 ../lib/GUI.pm:2270
 msgid "Country Name (2 letter code):"
 msgstr "Nombre País (código de 2 letras):"
 
-#: ../lib/GUI.pm:1261 ../lib/GUI.pm:2258
+#: ../lib/GUI.pm:1285 ../lib/GUI.pm:2282
 msgid "State or Province Name:"
 msgstr "Estado o Nombre de Provincia:"
 
-#: ../lib/GUI.pm:1264 ../lib/GUI.pm:2262
+#: ../lib/GUI.pm:1288 ../lib/GUI.pm:2286
 msgid "Locality Name (eg. city):"
 msgstr "Nombre Ubicación (ej. ciudad):"
 
-#: ../lib/GUI.pm:1267 ../lib/GUI.pm:2266
+#: ../lib/GUI.pm:1291 ../lib/GUI.pm:2290
 msgid "Organization Name (eg. company):"
 msgstr "Nombre Organización (ej. compañía):"
 
-#: ../lib/GUI.pm:1270 ../lib/GUI.pm:2270
+#: ../lib/GUI.pm:1294 ../lib/GUI.pm:2294
 msgid "Organizational Unit Name (eg. section):"
 msgstr "Unidad Organizativa (ej. sección):"
 
-#: ../lib/GUI.pm:1273 ../lib/GUI.pm:2282 ../lib/GUI/WORDS.pm:65
+#: ../lib/GUI.pm:1297 ../lib/GUI.pm:2306 ../lib/GUI/WORDS.pm:66
 msgid "Keylength"
 msgstr "Longitud Clave"
 
-#: ../lib/GUI.pm:1300 ../lib/GUI.pm:2309
+#: ../lib/GUI.pm:1324 ../lib/GUI.pm:2333
 msgid "Digest"
 msgstr "Resumen"
 
-#: ../lib/GUI.pm:1341
+#: ../lib/GUI.pm:1365
 msgid "Algorithm"
 msgstr "Algoritmo"
 
-#: ../lib/GUI.pm:1384 ../lib/GUI.pm:2705 ../lib/GUI.pm:2743
+#: ../lib/GUI.pm:1408 ../lib/GUI.pm:2878 ../lib/GUI.pm:2916
 msgid "Revoke Certificate"
 msgstr "Revocar Certificado"
 
-#: ../lib/GUI.pm:1392 ../lib/GUI.pm:1471 ../lib/GUI.pm:2061
+#: ../lib/GUI.pm:1416 ../lib/GUI.pm:1495 ../lib/GUI.pm:2085
 msgid "CA Password:"
 msgstr "Password CA:"
 
-#: ../lib/GUI.pm:1398
+#: ../lib/GUI.pm:1422
 msgid "Revocation Reason:"
 msgstr "Razón Revocación:"
 
-#: ../lib/GUI.pm:1448
+#: ../lib/GUI.pm:1472
 msgid "Export Revocation List to File"
 msgstr "Exportar Lista de Revocación a fichero"
 
-#: ../lib/GUI.pm:1456 ../lib/GUI.pm:1542 ../lib/GUI.pm:1590 ../lib/GUI.pm:1778
-#: ../lib/GUI.pm:1842
+#: ../lib/GUI.pm:1480 ../lib/GUI.pm:1566 ../lib/GUI.pm:1614 ../lib/GUI.pm:1802
+#: ../lib/GUI.pm:1866
 msgid "File:"
 msgstr "Fichero:"
 
-#: ../lib/GUI.pm:1475 ../lib/GUI.pm:2067 ../lib/GUI.pm:2278
+#: ../lib/GUI.pm:1499 ../lib/GUI.pm:2091 ../lib/GUI.pm:2302
 msgid "Valid for (Days):"
 msgstr "Válido para (Días):"
 
-#: ../lib/GUI.pm:1478 ../lib/GUI.pm:1605 ../lib/GUI.pm:1863
+#: ../lib/GUI.pm:1502 ../lib/GUI.pm:1629 ../lib/GUI.pm:1887
 msgid "Export Format:"
 msgstr "Formato a Exportar:"
 
-#: ../lib/GUI.pm:1484 ../lib/GUI.pm:1611
+#: ../lib/GUI.pm:1508 ../lib/GUI.pm:1635
 msgid "PEM"
 msgstr "PEM"
 
-#: ../lib/GUI.pm:1493 ../lib/GUI.pm:1620
+#: ../lib/GUI.pm:1517 ../lib/GUI.pm:1644
 msgid "DER"
 msgstr "DER"
 
-#: ../lib/GUI.pm:1502 ../lib/GUI.pm:1629
+#: ../lib/GUI.pm:1526 ../lib/GUI.pm:1653
 msgid "TXT"
 msgstr "TXT"
 
-#: ../lib/GUI.pm:1534
+#: ../lib/GUI.pm:1558
 msgid "Export CA Certificate Chain to File"
 msgstr "Exportar cadena de Certificados de la CA a fichero"
 
-#: ../lib/GUI.pm:1582
+#: ../lib/GUI.pm:1606
 msgid "Export CA Certificate to File"
 msgstr "Exportar Certificado de la CA a fichero"
 
-#: ../lib/GUI.pm:1724 ../lib/GUI.pm:1725
+#: ../lib/GUI.pm:1748 ../lib/GUI.pm:1749
 msgid "Export Key without Passphrase"
 msgstr "Exportar Clave sin Password"
 
-#: ../lib/GUI.pm:1730
+#: ../lib/GUI.pm:1754
 msgid "I hope you know what you're doing?"
 msgstr "¿Espero que sepa lo que hace?"
 
-#: ../lib/GUI.pm:1734
+#: ../lib/GUI.pm:1758
 msgid "The Key Passphrase is needed for decryption of the Key"
 msgstr "Se necesita el Password para descifrar la Clave"
 
-#: ../lib/GUI.pm:1743
+#: ../lib/GUI.pm:1767
 msgid "Password:"
 msgstr "Password:"
 
-#: ../lib/GUI.pm:1770
+#: ../lib/GUI.pm:1794
 msgid "Import Request from File"
 msgstr "Importar Petición de un fichero"
 
-#: ../lib/GUI.pm:1781
+#: ../lib/GUI.pm:1805
 msgid "Import Request File"
 msgstr "Importar Fichero de Petición"
 
-#: ../lib/GUI.pm:1808 ../lib/GUI.pm:1846 ../lib/GUI.pm:2704 ../lib/GUI.pm:2737
+#: ../lib/GUI.pm:1832 ../lib/GUI.pm:1870 ../lib/GUI.pm:2877 ../lib/GUI.pm:2910
 msgid "Export Certificate"
 msgstr "Exportar Certificado"
 
-#: ../lib/GUI.pm:1810 ../lib/GUI.pm:1848 ../lib/GUI.pm:2639 ../lib/GUI.pm:2646
+#: ../lib/GUI.pm:1834 ../lib/GUI.pm:1872 ../lib/GUI.pm:2812 ../lib/GUI.pm:2819
 msgid "Export Key"
 msgstr "Exportar Clave"
 
-#: ../lib/GUI.pm:1813
+#: ../lib/GUI.pm:1837
 msgid "Invalid mode for show_export_dialog(): "
 msgstr "Modo erroneo para show_export_dialog():"
 
-#: ../lib/GUI.pm:1830
+#: ../lib/GUI.pm:1854
 msgid "Export Certificate to File"
 msgstr "Exportar Certificado a Fichero"
 
-#: ../lib/GUI.pm:1832
+#: ../lib/GUI.pm:1856
 msgid "Export Key to File"
 msgstr "Exportar Clave a Fichero"
 
-#: ../lib/GUI.pm:1867
+#: ../lib/GUI.pm:1891
 msgid "PEM (Certificate)"
 msgstr "PEM (Certificado)"
 
-#: ../lib/GUI.pm:1869
+#: ../lib/GUI.pm:1893
 msgid "PEM (Key)"
 msgstr "PEM (Clave)"
 
-#: ../lib/GUI.pm:1878
+#: ../lib/GUI.pm:1902
 msgid "DER (Certificate)"
 msgstr "DER (Certificado)"
 
-#: ../lib/GUI.pm:1880
+#: ../lib/GUI.pm:1904
 msgid "DER (Key without Passphrase)"
 msgstr "DER (Clave sin Password)"
 
-#: ../lib/GUI.pm:1888
+#: ../lib/GUI.pm:1912
 msgid "PKCS#12 (Certificate & Key)"
 msgstr "PKCS#12 (Certificado & Clave)"
 
-#: ../lib/GUI.pm:1895
+#: ../lib/GUI.pm:1919
 msgid "Zip (Certificate & Key)"
 msgstr "Zip (Certificado & Clave)"
 
-#: ../lib/GUI.pm:1907
+#: ../lib/GUI.pm:1931
 msgid "TXT (Certificate)"
 msgstr "TXT (Certificado)"
 
-#: ../lib/GUI.pm:1913
+#: ../lib/GUI.pm:1937
 msgid "Without Passphrase (PEM)"
 msgstr "Sin Password (PEM)"
 
-#: ../lib/GUI.pm:1919 ../lib/GUI.pm:2014 ../lib/GUI.pm:2154
+#: ../lib/GUI.pm:1943 ../lib/GUI.pm:2038 ../lib/GUI.pm:2178
 msgid "Yes"
 msgstr "Sí"
 
-#: ../lib/GUI.pm:1926 ../lib/GUI.pm:2021 ../lib/GUI.pm:2160
+#: ../lib/GUI.pm:1950 ../lib/GUI.pm:2045 ../lib/GUI.pm:2184
 msgid "No"
 msgstr "No"
 
-#: ../lib/GUI.pm:1992
+#: ../lib/GUI.pm:2016
 msgid "Export to PKCS#12"
 msgstr "Exportar a PKCS#12"
 
-#: ../lib/GUI.pm:2000
+#: ../lib/GUI.pm:2024
 msgid "Key Password:"
 msgstr "Password Clave:"
 
-#: ../lib/GUI.pm:2004
+#: ../lib/GUI.pm:2028
 msgid "Export Password:"
 msgstr "Exportar Password:"
 
-#: ../lib/GUI.pm:2008
+#: ../lib/GUI.pm:2032
 msgid "Add CA Certificate to PKCS#12 structure"
 msgstr "Añadir Certificado de la CA a la estructura del PKCS#12"
 
-#: ../lib/GUI.pm:2053 ../lib/GUI.pm:2872
+#: ../lib/GUI.pm:2077 ../lib/GUI.pm:3045
 msgid "Sign Request"
 msgstr "Firmar Petición"
 
-#: ../lib/GUI.pm:2053
+#: ../lib/GUI.pm:2077
 msgid "Sign Request/Create Certificate"
 msgstr "Firmar Petición/Crear Certificado"
 
-#: ../lib/GUI.pm:2078 ../lib/GUI.pm:2118
+#: ../lib/GUI.pm:2102 ../lib/GUI.pm:2142
 msgid "Subject alternative name (IP Address):"
 msgstr "Nombre asunto alternativo (Dirección IP):"
 
-#: ../lib/GUI.pm:2081 ../lib/GUI.pm:2121
+#: ../lib/GUI.pm:2105 ../lib/GUI.pm:2145
 msgid "Subject alternative name (DNS Name):"
 msgstr "Nombre asunto alternativo (Nombre DNS):"
 
-#: ../lib/GUI.pm:2089 ../lib/GUI.pm:2132
+#: ../lib/GUI.pm:2113 ../lib/GUI.pm:2156
 msgid "Extended Key Usage:"
 msgstr "Uso Clave (extendido):"
 
-#: ../lib/GUI.pm:2097
+#: ../lib/GUI.pm:2121
 msgid "Netscape SSL Server Name:"
 msgstr "Nombre Servidor Netscape SSL:"
 
-#: ../lib/GUI.pm:2103 ../lib/GUI.pm:2140
+#: ../lib/GUI.pm:2127 ../lib/GUI.pm:2164
 msgid "Netscape Revocation URL:"
 msgstr "URL Revocación Netscape"
 
-#: ../lib/GUI.pm:2109 ../lib/GUI.pm:2146
+#: ../lib/GUI.pm:2133 ../lib/GUI.pm:2170
 msgid "Netscape Renewal URL:"
 msgstr "URL Renovación Netscape:"
 
-#: ../lib/GUI.pm:2124
+#: ../lib/GUI.pm:2148
 msgid "Subject alternative name (eMail Address):"
 msgstr "Nombre asunto alternativo (Dirección eMail):"
 
-#: ../lib/GUI.pm:2166
+#: ../lib/GUI.pm:2190
 msgid "Add eMail Address to Subject DN:"
 msgstr "Añadir Dirección eMail al Asunto DN:"
 
-#: ../lib/GUI.pm:2197 ../lib/GUI.pm:2201
+#: ../lib/GUI.pm:2221 ../lib/GUI.pm:2225
 msgid "Create CA"
 msgstr "Crear CA"
 
-#: ../lib/GUI.pm:2215
+#: ../lib/GUI.pm:2239
 msgid "CA Password (for creating the new CA):"
 msgstr "Password CA (para crear la nueva CA):"
 
-#: ../lib/GUI.pm:2226
+#: ../lib/GUI.pm:2250 ../lib/GUI.pm:2419
 msgid "Name (for local storage):"
 msgstr "Nombre (para almacenarlo localmente):"
 
-#: ../lib/GUI.pm:2233
+#: ../lib/GUI.pm:2257
 msgid "Data for CA Certificate"
 msgstr "Información para el Certificado de la CA"
 
-#: ../lib/GUI.pm:2242
+#: ../lib/GUI.pm:2266
 msgid "Common Name (for the CA):"
 msgstr "Nombre Común (para la CA):"
 
-#: ../lib/GUI.pm:2250
+#: ../lib/GUI.pm:2274
 msgid "Password (needed for signing):"
 msgstr "Password (necesario para firmar):"
 
-#: ../lib/GUI.pm:2361
+#: ../lib/GUI.pm:2398
+msgid "Import an existing CA into TinyCA"
+msgstr "Importar una CA exitente"
+
+#: ../lib/GUI.pm:2409
+msgid "Password of the private CA key (Needed for import):"
+msgstr "Password de la Clave privada (Necesario para importar):"
+
+#: ../lib/GUI.pm:2423
+msgid "New password for the CA:"
+msgstr "Nuevo password para la CA:"
+
+#: ../lib/GUI.pm:2427
+msgid "Confirm password:"
+msgstr "Confirmar Password:"
+
+#: ../lib/GUI.pm:2432
+msgid "Files/Directories to import"
+msgstr "Fichers/Directorios a importar"
+
+#: ../lib/GUI.pm:2441
+msgid "CA Certificate (PEM/DER):"
+msgstr "Certificado de la CA (PEM/DER):"
+
+#: ../lib/GUI.pm:2457
+msgid "CA private key (PEM/DER):"
+msgstr "Clave privada de la CA (PEM/DER):"
+
+#: ../lib/GUI.pm:2460
+msgid "Import CA private key"
+msgstr "Importar clave privada de CA"
+
+#: ../lib/GUI.pm:2473
+msgid "Index File (index.txt):"
+msgstr "Fichero índice (index.txt):"
+
+#: ../lib/GUI.pm:2476
+msgid "Import Index File"
+msgstr "Importar fichero índice"
+
+#: ../lib/GUI.pm:2489
+msgid "Directory containing certificates (PEM/DER):"
+msgstr "Directorio que contiene los Certificados (PEM/DER):"
+
+#: ../lib/GUI.pm:2493
+msgid "Import certificates from directory"
+msgstr "Importar Certificados de directorio"
+
+#: ../lib/GUI.pm:2515
 msgid "You are kidding, are you??"
 msgstr "¿Está bromeando, verdad?"
 
-#: ../lib/GUI.pm:2402
+#: ../lib/GUI.pm:2540
+msgid "Translations contributed by"
+msgstr "Traducciones realizadas por"
+
+#: ../lib/GUI.pm:2544
+msgid "Spanish: Ramon Pons Vivanco <rpons\\@rinu.org>"
+msgstr "Castellano: Ramon Pons Vivanco <rpons\\@rinu.org>"
+
+#: ../lib/GUI.pm:2549
+msgid "Czech: Robert Wolf <gentoo\\@slave.umbr.cas.cz>"
+msgstr "Checo: Robert Wolf <gentoo\\@slave.umbr.cas.cz>"
+
+#: ../lib/GUI.pm:2575
 msgid "Do you really want to delete the selected Request?"
 msgstr "¿Está seguro de que desea eliminar las Peticiones seleccionadas?"
 
-#: ../lib/GUI.pm:2404
+#: ../lib/GUI.pm:2577
 msgid "Do you really want to delete the selected Key?"
 msgstr "¿Está seguro de que desea eliminar las Claves seleccionadas?"
 
-#: ../lib/GUI.pm:2406
+#: ../lib/GUI.pm:2579
 msgid "Do you really want to delete the selected Certificate?"
 msgstr "¿Está seguro de que desea eliminar los Certificados seleccionados?"
 
-#: ../lib/GUI.pm:2459
+#: ../lib/GUI.pm:2632
 msgid "The Key or the Request is already existing!"
 msgstr "¡La Clave o la Petición ya existen!"
 
-#: ../lib/GUI.pm:2461
+#: ../lib/GUI.pm:2634
 msgid "If the corresponding certificate it's not expired or revoked "
-msgstr "¡Si el certificado correspondiente no ha caducado o ha sido revocado "
+msgstr "¡Si el Certificado correspondiente no ha caducado o ha sido revocado "
 
-#: ../lib/GUI.pm:2462
+#: ../lib/GUI.pm:2635
 msgid "you won't be able to sign this request!"
-msgstr "no podrá firmar la Petición!"
+msgstr "¡no podrá firmar la Petición!"
 
-#: ../lib/GUI.pm:2503
+#: ../lib/GUI.pm:2676
 msgid "The Certificate will be longer valid than your CA!"
 msgstr "¡El Certificado tendrá mayor duración que la CA!"
 
-#: ../lib/GUI.pm:2505
+#: ../lib/GUI.pm:2678
 msgid "This may cause problems with some software!!"
 msgstr "¡¡Esto puede causar problemas con algunos programas!!"
 
-#: ../lib/GUI.pm:2520
+#: ../lib/GUI.pm:2693
 msgid "Expirationdate Warning"
 msgstr "Advertencia - Caducado"
 
-#: ../lib/GUI.pm:2547
+#: ../lib/GUI.pm:2720
 msgid "Overwrite Certificate"
 msgstr "Sobreescribrir Certificado"
 
-#: ../lib/GUI.pm:2553
+#: ../lib/GUI.pm:2726
 msgid "There seems to be an certificate already."
-msgstr "Parece que ya hay un certificado."
+msgstr "Parece que ya hay un Certificado."
 
-#: ../lib/GUI.pm:2557
+#: ../lib/GUI.pm:2730
 msgid ""
 "Creating a new one (overwrite) will fail if it's not revoked or expired!"
 msgstr ""
 "¡Al crear uno nuevo (sobreescribir) fallará si no está revocado o ha "
 "caducado!"
 
-#: ../lib/GUI.pm:2563
+#: ../lib/GUI.pm:2736
 msgid "Really try to overwrite the Certificate?"
 msgstr "¿Quiere realmente sobreescribir el Certificado?"
 
-#: ../lib/GUI.pm:2596
+#: ../lib/GUI.pm:2769
 msgid "Convert CA"
 msgstr "Convertir CA"
 
-#: ../lib/GUI.pm:2604
+#: ../lib/GUI.pm:2777
 msgid ""
 "This CA seems to be created with openssl 0.9.6x. And it seems like you have "
 "switched to openssl 0.9.7x."
@@ -1086,67 +1313,67 @@ msgstr ""
 "Está CA parece que ha sido creada con OpenSSL 0.9.6x. Y parece que ha "
 "cambiado a OpenSSL 0.9.7x."
 
-#: ../lib/GUI.pm:2612
+#: ../lib/GUI.pm:2785
 msgid ""
 "You won't be able to revoke the existing certificates without converting the "
 "index file of this CA to the new format."
 msgstr ""
-"No podrá revocar los certificados existentes sin convertir el fichero índice "
+"No podrá revocar los Certificados existentes sin convertir el fichero índice "
 "de esta CA al nuevo formato."
 
-#: ../lib/GUI.pm:2620
+#: ../lib/GUI.pm:2793
 msgid ""
 "Attention: it will not be easy to switch back, this has to be done manually"
 msgstr ""
 "Atención: no será fácil volver atras, esto tiene que hacerse manualmente"
 
-#: ../lib/GUI.pm:2639 ../lib/GUI.pm:2660
+#: ../lib/GUI.pm:2812 ../lib/GUI.pm:2833
 msgid "Delete Key"
 msgstr "Eliminar Clave"
 
-#: ../lib/GUI.pm:2703 ../lib/GUI.pm:2728
+#: ../lib/GUI.pm:2876 ../lib/GUI.pm:2901
 msgid "View Certificate"
 msgstr "Ver Certificado"
 
-#: ../lib/GUI.pm:2706 ../lib/GUI.pm:2749
+#: ../lib/GUI.pm:2879 ../lib/GUI.pm:2922
 msgid "Delete Certificate"
 msgstr "Eliminar Certificado"
 
-#: ../lib/GUI.pm:2791 ../lib/GUI.pm:2800 ../lib/GUI.pm:2810
+#: ../lib/GUI.pm:2964 ../lib/GUI.pm:2973 ../lib/GUI.pm:2983
 msgid "Create Key and Certificate (Server)"
 msgstr "Crear Clave y Certificado (Servidor)"
 
-#: ../lib/GUI.pm:2792 ../lib/GUI.pm:2816
+#: ../lib/GUI.pm:2965 ../lib/GUI.pm:2989
 msgid "Create Key and Certificate (Client)"
 msgstr "Crear Clave y Certificado (Cliente)"
 
-#: ../lib/GUI.pm:2821
+#: ../lib/GUI.pm:2994
 msgid "Create Certificate"
 msgstr "Crear Certificado"
 
-#: ../lib/GUI.pm:2839 ../lib/GUI.pm:2859 ../lib/GUI.pm:2890 ../lib/GUI.pm:2910
-#: ../lib/GUI.pm:2943 ../lib/GUI.pm:2978
+#: ../lib/GUI.pm:3012 ../lib/GUI.pm:3032 ../lib/GUI.pm:3063 ../lib/GUI.pm:3083
+#: ../lib/GUI.pm:3116 ../lib/GUI.pm:3151
 msgid "Sign Request (Server)"
 msgstr "Firmar Petición (Servidor)"
 
-#: ../lib/GUI.pm:2840 ../lib/GUI.pm:2866 ../lib/GUI.pm:2891 ../lib/GUI.pm:2917
-#: ../lib/GUI.pm:2944 ../lib/GUI.pm:2985
+#: ../lib/GUI.pm:3013 ../lib/GUI.pm:3039 ../lib/GUI.pm:3064 ../lib/GUI.pm:3090
+#: ../lib/GUI.pm:3117 ../lib/GUI.pm:3158
 msgid "Sign Request (Client)"
 msgstr "Firmar Petición (Cliente)"
 
-#: ../lib/GUI.pm:2923
+#: ../lib/GUI.pm:3096
 msgid "Renew Certificate"
 msgstr "Renovar Certificado"
 
-#: ../lib/GUI.pm:2942 ../lib/GUI.pm:2969
+#: ../lib/GUI.pm:3115 ../lib/GUI.pm:3142
 msgid "View Request"
 msgstr "Ver Petición"
 
-#: ../lib/GUI.pm:2946 ../lib/GUI.pm:3001
+#: ../lib/GUI.pm:3119 ../lib/GUI.pm:3174
 msgid "New Request"
 msgstr "Nueva Petición"
 
-#: ../lib/GUI.pm:2947 ../lib/GUI.pm:3010
+#: ../lib/GUI.pm:3120 ../lib/GUI.pm:3183
 msgid "Delete Request"
 msgstr "Eliminar Petición"
 
@@ -1212,6 +1439,19 @@ msgstr "Formato no válido para exportar una Petición: %s"
 msgid "Something Failed ??"
 msgstr "¿¿Ha fallado algo??"
 
+#: ../lib/KEY.pm:428
+#, c-format
+msgid ""
+"Can't open Key file:\n"
+"%s"
+msgstr ""
+"No se puede abrir el fichero de Claves:\n"
+"%s"
+
+#: ../lib/KEY.pm:465
+msgid "The password for your old CA Key is wrong"
+msgstr "El password de la Clave antigua no es correcto"
+
 #: ../lib/OpenSSL.pm:68
 msgid "Creating DSA key in progress..."
 msgstr "Creación de una clave DSA en progreso..."
@@ -1237,38 +1477,46 @@ msgstr "Error al convetir Certificado"
 msgid "Error reading fingerprint from Certificate"
 msgstr "Error al leer la huella digital del Certificado"
 
-#: ../lib/OpenSSL.pm:657
+#: ../lib/OpenSSL.pm:666
+msgid "Error reading subject from Certificate"
+msgstr "Error al leer el asunto del Certificado"
+
+#: ../lib/OpenSSL.pm:676
 msgid "Can't read CRL"
 msgstr "No se puede leer la CRL"
 
-#: ../lib/OpenSSL.pm:662
+#: ../lib/OpenSSL.pm:681
 msgid "EXPIRED"
 msgstr "CADUCADO"
 
-#: ../lib/OpenSSL.pm:673
+#: ../lib/OpenSSL.pm:692
 msgid "REVOKED"
 msgstr "REVOCADO"
 
-#: ../lib/OpenSSL.pm:701
+#: ../lib/OpenSSL.pm:696
+msgid "UNDEFINED"
+msgstr "SIN DEFINIR"
+
+#: ../lib/OpenSSL.pm:723
 #, c-format
 msgid "Can't open Request file %s: %s"
 msgstr "No se puede abrir fichero de Petición %s: %s"
 
-#: ../lib/OpenSSL.pm:718 ../lib/OpenSSL.pm:732 ../lib/REQ.pm:645
+#: ../lib/OpenSSL.pm:740 ../lib/OpenSSL.pm:754 ../lib/REQ.pm:645
 msgid "Error converting Request"
 msgstr "Error al convertir Petición"
 
-#: ../lib/OpenSSL.pm:805
+#: ../lib/OpenSSL.pm:827
 #, c-format
 msgid "Can't open file %s: %s"
 msgstr "No se puede abrir fichero %s: %s"
 
-#: ../lib/OpenSSL.pm:913
+#: ../lib/OpenSSL.pm:936
 #, c-format
 msgid "Can't read index %s: %s"
 msgstr "No se puede leer el índice %s: %s"
 
-#: ../lib/OpenSSL.pm:923
+#: ../lib/OpenSSL.pm:946
 #, c-format
 msgid "Can't write index %s: %s"
 msgstr "No se puede escribir el índice %s: %s"
@@ -1385,7 +1633,7 @@ msgid "Can't open configuration"
 msgstr "No se puede abrir la configuración"
 
 #: ../lib/TCONFIG.pm:277 ../lib/TCONFIG.pm:292 ../lib/GUI/TCONFIG.pm:38
-#: ../lib/GUI/TCONFIG.pm:1211
+#: ../lib/GUI/TCONFIG.pm:1215
 msgid "Can't get CA name"
 msgstr "No se puede obtener el nombre de la CA"
 
@@ -1421,7 +1669,7 @@ msgstr ""
 "¡¡Sea consciente: algunas opciones pueden producir fallos en programas "
 "incorrectos!!"
 
-#: ../lib/GUI/TCONFIG.pm:104 ../lib/GUI/TCONFIG.pm:1254
+#: ../lib/GUI/TCONFIG.pm:104 ../lib/GUI/TCONFIG.pm:1258
 msgid "If you are unsure: leave the defaults untouched"
 msgstr "Si no está seguro: deje las opciones por defecto"
 
@@ -1430,9 +1678,9 @@ msgid "These Settings are passed to OpenSSL for creating Server Certificates"
 msgstr ""
 "Estas opciones se le pasan a OpenSSL para crear Certificados de Servidor"
 
-#: ../lib/GUI/TCONFIG.pm:145 ../lib/GUI/TCONFIG.pm:544
-#: ../lib/GUI/TCONFIG.pm:935 ../lib/GUI/TCONFIG.pm:1151
-#: ../lib/GUI/TCONFIG.pm:1246
+#: ../lib/GUI/TCONFIG.pm:145 ../lib/GUI/TCONFIG.pm:548
+#: ../lib/GUI/TCONFIG.pm:939 ../lib/GUI/TCONFIG.pm:1155
+#: ../lib/GUI/TCONFIG.pm:1250
 msgid "Multiple Values can be separated by \",\""
 msgstr "Los valores multiples se pueden separar por \",\""
 
@@ -1440,55 +1688,55 @@ msgstr "Los valores multiples se pueden separar por \",\""
 msgid "Server Certificate Settings"
 msgstr "Opciones Certificado Servidor"
 
-#: ../lib/GUI/TCONFIG.pm:173 ../lib/GUI/TCONFIG.pm:570
-#: ../lib/GUI/TCONFIG.pm:963 ../lib/GUI/TCONFIG.pm:1366
+#: ../lib/GUI/TCONFIG.pm:173 ../lib/GUI/TCONFIG.pm:574
+#: ../lib/GUI/TCONFIG.pm:967 ../lib/GUI/TCONFIG.pm:1370
 msgid "Subject alternative name (subjectAltName):"
 msgstr "Nombre asunto alternativo (subjectAltName):"
 
-#: ../lib/GUI/TCONFIG.pm:246 ../lib/GUI/TCONFIG.pm:660
-#: ../lib/GUI/TCONFIG.pm:1021 ../lib/GUI/TCONFIG.pm:1264
+#: ../lib/GUI/TCONFIG.pm:246 ../lib/GUI/TCONFIG.pm:664
+#: ../lib/GUI/TCONFIG.pm:1025 ../lib/GUI/TCONFIG.pm:1268
 msgid "Key Usage (keyUsage):"
 msgstr "Uso Clave (keyUsage):"
 
-#: ../lib/GUI/TCONFIG.pm:326 ../lib/GUI/TCONFIG.pm:731
+#: ../lib/GUI/TCONFIG.pm:326 ../lib/GUI/TCONFIG.pm:735
 msgid "Extended Key Usage (extendedKeyUsage):"
 msgstr "Uso Clave Extendida (extendedKeyUsage):"
 
-#: ../lib/GUI/TCONFIG.pm:406 ../lib/GUI/TCONFIG.pm:811
-#: ../lib/GUI/TCONFIG.pm:991 ../lib/GUI/TCONFIG.pm:1336
+#: ../lib/GUI/TCONFIG.pm:406 ../lib/GUI/TCONFIG.pm:815
+#: ../lib/GUI/TCONFIG.pm:995 ../lib/GUI/TCONFIG.pm:1340
 msgid "Netscape Certificate Type (nsCertType):"
 msgstr "Tipo Certificado Netscape (nsCertType):"
 
-#: ../lib/GUI/TCONFIG.pm:431
+#: ../lib/GUI/TCONFIG.pm:435
 msgid "Netscape SSL Server Name (nsSslServerName):"
 msgstr "Nombre Servidor SSL Netscape (nsSslServerName):"
 
-#: ../lib/GUI/TCONFIG.pm:455 ../lib/GUI/TCONFIG.pm:840
-#: ../lib/GUI/TCONFIG.pm:1095
+#: ../lib/GUI/TCONFIG.pm:459 ../lib/GUI/TCONFIG.pm:844
+#: ../lib/GUI/TCONFIG.pm:1099
 msgid "Netscape Revocation URL (nsRevocationUrl):"
 msgstr "URL Revocación Netscape (nsRevocationUrl):"
 
-#: ../lib/GUI/TCONFIG.pm:479 ../lib/GUI/TCONFIG.pm:864
+#: ../lib/GUI/TCONFIG.pm:483 ../lib/GUI/TCONFIG.pm:868
 msgid "Netscape Renewal URL (nsRenewalUrl):"
 msgstr "URL Renovación Netscape (nsRenewalUrl):"
 
-#: ../lib/GUI/TCONFIG.pm:539
+#: ../lib/GUI/TCONFIG.pm:543
 msgid "These Settings are passed to OpenSSL for creating Client Certificates"
 msgstr "Estas opciones se pasan a OpenSSL para crear Certificados de Cliente"
 
-#: ../lib/GUI/TCONFIG.pm:564
+#: ../lib/GUI/TCONFIG.pm:568
 msgid "Client Certificate Settings"
 msgstr "Opciones Certificado Cliente"
 
-#: ../lib/GUI/TCONFIG.pm:930
+#: ../lib/GUI/TCONFIG.pm:934
 msgid "These Settings are passed to OpenSSL for creating CA Certificates"
 msgstr "Estas opciones se pasan a OpenSSL para crear Certificados de la CA"
 
-#: ../lib/GUI/TCONFIG.pm:955 ../lib/GUI/TCONFIG.pm:957
+#: ../lib/GUI/TCONFIG.pm:959 ../lib/GUI/TCONFIG.pm:961
 msgid "CA Certificate Settings"
 msgstr "Opciones Certificado CA"
 
-#: ../lib/GUI/TCONFIG.pm:1146
+#: ../lib/GUI/TCONFIG.pm:1150
 msgid ""
 "These Settings are passed to OpenSSL for creating Certificate Revocation "
 "Lists"
@@ -1496,163 +1744,167 @@ msgstr ""
 "Estas opciones se pasan a OpenSSL para crear Listas de Revocación de "
 "Certificados"
 
-#: ../lib/GUI/TCONFIG.pm:1172
+#: ../lib/GUI/TCONFIG.pm:1176
 msgid "Revocation List Settings"
 msgstr "Opciones Lista Revocación"
 
-#: ../lib/GUI/TCONFIG.pm:1228
+#: ../lib/GUI/TCONFIG.pm:1232
 msgid "CA Configuration"
 msgstr "Configuración CA"
 
-#: ../lib/GUI/TCONFIG.pm:1236
+#: ../lib/GUI/TCONFIG.pm:1240
 msgid "These Settings are passed to OpenSSL for creating this CA Certificate"
 msgstr "Estas opciones se pasan a OpenSSL para crear este Certificado de la CA"
 
-#: ../lib/GUI/TCONFIG.pm:1241
+#: ../lib/GUI/TCONFIG.pm:1245
 msgid "and the CA Certificates of every SubCA, created with this CA."
 msgstr "y el Certificado de la CA y de todas las SubCA creadas con esta CA."
 
-#: ../lib/GUI/WORDS.pm:28 ../lib/GUI/WORDS.pm:73
+#: ../lib/GUI/WORDS.pm:28 ../lib/GUI/WORDS.pm:74
 msgid "Not set"
 msgstr "No establecido"
 
-#: ../lib/GUI/WORDS.pm:29 ../lib/GUI/WORDS.pm:74
+#: ../lib/GUI/WORDS.pm:29 ../lib/GUI/WORDS.pm:75
 msgid "Ask User"
 msgstr "Preguntar Usuario"
 
-#: ../lib/GUI/WORDS.pm:30 ../lib/GUI/WORDS.pm:75
+#: ../lib/GUI/WORDS.pm:30 ../lib/GUI/WORDS.pm:76
 msgid "critical"
 msgstr "crítico"
 
-#: ../lib/GUI/WORDS.pm:31 ../lib/GUI/WORDS.pm:76
+#: ../lib/GUI/WORDS.pm:31 ../lib/GUI/WORDS.pm:77
 msgid "not critical"
 msgstr "no crítico"
 
-#: ../lib/GUI/WORDS.pm:32 ../lib/GUI/WORDS.pm:77
+#: ../lib/GUI/WORDS.pm:32 ../lib/GUI/WORDS.pm:78
 msgid "Copy Email"
 msgstr "Copia Email"
 
-#: ../lib/GUI/WORDS.pm:33 ../lib/GUI/WORDS.pm:78
+#: ../lib/GUI/WORDS.pm:33 ../lib/GUI/WORDS.pm:79
 msgid "DNS Name"
 msgstr "Nombre DNS"
 
-#: ../lib/GUI/WORDS.pm:34 ../lib/GUI/WORDS.pm:80
+#: ../lib/GUI/WORDS.pm:34 ../lib/GUI/WORDS.pm:81
 msgid "IP Address"
 msgstr "Dirección IP"
 
-#: ../lib/GUI/WORDS.pm:35 ../lib/GUI/WORDS.pm:79
+#: ../lib/GUI/WORDS.pm:35 ../lib/GUI/WORDS.pm:80
 msgid "Email"
 msgstr "Email"
 
-#: ../lib/GUI/WORDS.pm:36 ../lib/GUI/WORDS.pm:81
+#: ../lib/GUI/WORDS.pm:36 ../lib/GUI/WORDS.pm:82
 msgid "SSL Server"
 msgstr "Servidor SSL"
 
-#: ../lib/GUI/WORDS.pm:37 ../lib/GUI/WORDS.pm:82
+#: ../lib/GUI/WORDS.pm:37 ../lib/GUI/WORDS.pm:83
+msgid "SSL Server, SSL Client"
+msgstr "Servidor SSL, Cliente SSL"
+
+#: ../lib/GUI/WORDS.pm:38 ../lib/GUI/WORDS.pm:84
 msgid "Key Encipherment"
 msgstr "Cifrado Clave"
 
-#: ../lib/GUI/WORDS.pm:38 ../lib/GUI/WORDS.pm:83
+#: ../lib/GUI/WORDS.pm:39 ../lib/GUI/WORDS.pm:85
 msgid "Digital Signature"
 msgstr "Firma Digital"
 
-#: ../lib/GUI/WORDS.pm:39 ../lib/GUI/WORDS.pm:84
+#: ../lib/GUI/WORDS.pm:40 ../lib/GUI/WORDS.pm:86
 msgid "Key Encipherment, Digital Signature"
 msgstr "Cifrado Clave, Firma Digital"
 
-#: ../lib/GUI/WORDS.pm:40 ../lib/GUI/WORDS.pm:85
+#: ../lib/GUI/WORDS.pm:41 ../lib/GUI/WORDS.pm:87
 msgid "Object Signing"
 msgstr "Firmar Objeto"
 
-#: ../lib/GUI/WORDS.pm:41 ../lib/GUI/WORDS.pm:89
+#: ../lib/GUI/WORDS.pm:42 ../lib/GUI/WORDS.pm:91
 msgid "SSL Client, Object Signing"
 msgstr "Cliente SSL, Firmar Objeto"
 
-#: ../lib/GUI/WORDS.pm:42 ../lib/GUI/WORDS.pm:87
+#: ../lib/GUI/WORDS.pm:43 ../lib/GUI/WORDS.pm:89
 msgid "SSL Client, Email(S/MIME)"
 msgstr "Cliente SSL, Email(S/MIME)"
 
-#: ../lib/GUI/WORDS.pm:43 ../lib/GUI/WORDS.pm:88
+#: ../lib/GUI/WORDS.pm:44 ../lib/GUI/WORDS.pm:90
 msgid "SSL Client"
 msgstr "Cliente SSL"
 
-#: ../lib/GUI/WORDS.pm:44 ../lib/GUI/WORDS.pm:86
+#: ../lib/GUI/WORDS.pm:45 ../lib/GUI/WORDS.pm:88
 msgid "Email(S/MIME)"
 msgstr "Email(S/MIME)"
 
-#: ../lib/GUI/WORDS.pm:45 ../lib/GUI/WORDS.pm:90
+#: ../lib/GUI/WORDS.pm:46 ../lib/GUI/WORDS.pm:92
 msgid "SSL Client, Email, Object Signing"
 msgstr "Cliente SSL, Email, Firmar Objeto"
 
-#: ../lib/GUI/WORDS.pm:46 ../lib/GUI/WORDS.pm:91
+#: ../lib/GUI/WORDS.pm:47 ../lib/GUI/WORDS.pm:93
 msgid "Object Signing CA"
 msgstr "Firmar Objeto CA"
 
-#: ../lib/GUI/WORDS.pm:47 ../lib/GUI/WORDS.pm:92
+#: ../lib/GUI/WORDS.pm:48 ../lib/GUI/WORDS.pm:94
 msgid "S/MIME CA"
 msgstr "S/MIME CA"
 
-#: ../lib/GUI/WORDS.pm:48 ../lib/GUI/WORDS.pm:93
+#: ../lib/GUI/WORDS.pm:49 ../lib/GUI/WORDS.pm:95
 msgid "SSL CA"
 msgstr "SSL CA"
 
-#: ../lib/GUI/WORDS.pm:49 ../lib/GUI/WORDS.pm:94
+#: ../lib/GUI/WORDS.pm:50 ../lib/GUI/WORDS.pm:96
 msgid "SSL CA, S/MIME CA"
 msgstr "SSL CA, S/MIME CA"
 
-#: ../lib/GUI/WORDS.pm:50 ../lib/GUI/WORDS.pm:95
+#: ../lib/GUI/WORDS.pm:51 ../lib/GUI/WORDS.pm:97
 msgid "SSL CA, Object Signing CA"
 msgstr "SSL CA, Firmar Objeto CA"
 
-#: ../lib/GUI/WORDS.pm:51 ../lib/GUI/WORDS.pm:96
+#: ../lib/GUI/WORDS.pm:52 ../lib/GUI/WORDS.pm:98
 msgid "S/MIME CA, Object Signing CA"
 msgstr "S/MIME CA, Firmar Objeto CA"
 
-#: ../lib/GUI/WORDS.pm:52 ../lib/GUI/WORDS.pm:97
+#: ../lib/GUI/WORDS.pm:53 ../lib/GUI/WORDS.pm:99
 msgid "SSL CA, S/MIME CA, Object Signing CA"
 msgstr "SSL CA, S/MIME CA, Firmar Objeto CA"
 
-#: ../lib/GUI/WORDS.pm:53 ../lib/GUI/WORDS.pm:98
+#: ../lib/GUI/WORDS.pm:54 ../lib/GUI/WORDS.pm:100
 msgid "Certificate Signing"
 msgstr "Firmar Certificado"
 
-#: ../lib/GUI/WORDS.pm:54 ../lib/GUI/WORDS.pm:99
+#: ../lib/GUI/WORDS.pm:55 ../lib/GUI/WORDS.pm:101
 msgid "CRL Signing"
 msgstr "Firmar CRL"
 
-#: ../lib/GUI/WORDS.pm:55 ../lib/GUI/WORDS.pm:100
+#: ../lib/GUI/WORDS.pm:56 ../lib/GUI/WORDS.pm:102
 msgid "Certificate Signing, CRL Signing"
 msgstr "Firmar Certificado, Firmar CRL"
 
-#: ../lib/GUI/WORDS.pm:63
+#: ../lib/GUI/WORDS.pm:64
 msgid "Creation Date"
 msgstr "Fecha Creación"
 
-#: ../lib/GUI/WORDS.pm:64
+#: ../lib/GUI/WORDS.pm:65
 msgid "Expiration Date"
 msgstr "Fecha Caducidad"
 
-#: ../lib/GUI/WORDS.pm:66
+#: ../lib/GUI/WORDS.pm:67
 msgid "Public Key Algorithm"
 msgstr "Algoritmo de Clave Publica"
 
-#: ../lib/GUI/WORDS.pm:67
+#: ../lib/GUI/WORDS.pm:68
 msgid "Signature Algorithm"
 msgstr "Algoritmo de Firma"
 
-#: ../lib/GUI/WORDS.pm:69
+#: ../lib/GUI/WORDS.pm:70
 msgid "Serial"
 msgstr "Número de Serie"
 
-#: ../lib/GUI/WORDS.pm:70 ../lib/GUI/X509_browser.pm:265
+#: ../lib/GUI/WORDS.pm:71 ../lib/GUI/X509_browser.pm:265
 msgid "Status"
 msgstr "Estado"
 
-#: ../lib/GUI/WORDS.pm:71 ../lib/GUI/X509_infobox.pm:83
+#: ../lib/GUI/WORDS.pm:72 ../lib/GUI/X509_infobox.pm:83
 msgid "Fingerprint (MD5)"
 msgstr "Huella Digital (MD5)"
 
-#: ../lib/GUI/WORDS.pm:72 ../lib/GUI/X509_infobox.pm:89
+#: ../lib/GUI/WORDS.pm:73 ../lib/GUI/X509_infobox.pm:89
 msgid "Fingerprint (SHA1)"
 msgstr "Huella Digital (SHA1)"
 
@@ -1723,3 +1975,9 @@ msgstr "No se puede encontrar el directorio de plantillas.\n"
 #: ../tinyca:77
 msgid "Please configure correct path with templates in tinyca.\n"
 msgstr "Por favor configure correctamente la ruta de plantillas en tinyca.\n"
+
+#~ msgid "Can't open certdir"
+#~ msgstr "No se puede abrir el directorio con los Certificados"
+
+#~ msgid "Can't read certificate"
+#~ msgstr "No se puede leer el Certificado"

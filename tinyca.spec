@@ -1,6 +1,6 @@
 # spec file for package tinyca
 #
-# $Id: tinyca.spec,v 1.16 2004/08/09 19:40:51 sm Exp $
+# $Id: tinyca.spec,v 1.18 2004/12/05 18:54:11 sm Exp $
 #
 # Copyright (c) 2002 Stephan Martin
 # This file and all modifications and additions to the pristine
@@ -101,6 +101,8 @@ rm -rf %{buildroot}
 %endif
 
 %changelog
+* Sun Dec  5 2004 - sm@sm-zone.net
+- import functioins added
 * Fri Aug 13 2004 - sm@sm-zone.net
 - czech translation
 * Sun Jun 13 2004 - sm@sm-zone.net

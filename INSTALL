@@ -12,7 +12,7 @@ $init->{'zipbin'}       (location of your zip binary)
    Generate the file tinyca.mo from po/de.po:
    msgfmt po/de.po -o locale/de/LC_MESSAGES/tinyca.mo
    msgfmt po/es.po -o locale/es/LC_MESSAGES/tinyca.mo
-   msgfmt po/cz.po -o locale/cz/LC_MESSAGES/tinyca.mo
+   msgfmt po/cs.po -o locale/cs/LC_MESSAGES/tinyca.mo
    or even more simple: call make in the directory po/
 
    If your locale is not set to german/spanish:

@@ -1,6 +1,6 @@
 # Copyright (c) Stephan Martin <sm@sm-zone.net>
 #
-# $Id: WORDS.pm,v 1.2 2004/06/07 13:11:28 sm Exp $
+# $Id: WORDS.pm,v 1.3 2004/10/28 10:45:14 sm Exp $
 # 
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -34,6 +34,7 @@ sub new {
     'ip'                    => gettext("IP Address"),
     'mail'                  => gettext("Email"),
     'server'                => gettext("SSL Server"),
+    'server, client'        => gettext("SSL Server, SSL Client"),
     'key'                   => gettext("Key Encipherment"),
     'sig'                   => gettext("Digital Signature"),
     'keysig'                => gettext("Key Encipherment, Digital Signature"),
@@ -79,6 +80,7 @@ sub new {
     gettext("Email")                               => 'email',
     gettext("IP Address")                          => 'ip',
     gettext("SSL Server")                          => 'server',
+    gettext("SSL Server, SSL Client")              => 'server, client',
     gettext("Key Encipherment")                    => 'key',
     gettext("Digital Signature")                   => 'sig',
     gettext("Key Encipherment, Digital Signature") => 'keysig',

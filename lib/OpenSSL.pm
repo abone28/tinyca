@@ -1,6 +1,6 @@
 # Copyright (c) Stephan Martin <sm@sm-zone.net>
 #
-# $Id: OpenSSL.pm,v 1.45 2004/07/26 09:54:27 sm Exp $
+# $Id: OpenSSL.pm,v 1.48 2004/11/08 08:07:42 sm Exp $
 # 
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -649,29 +649,51 @@ sub parsecert {
       GUI::HELPERS::print_warning($t, $ext);
    }
 
-   $tmp->{'EXPDATE'} = _get_date( $tmp->{'NOTAFTER'});
-
-   $crl = $self->parsecrl($crlfile, 1);
-   #print STDERR "DEBUG: parsed crl $crlfile : $crl\n";
-
-   defined($crl) || GUI::HELPERS::print_error(gettext("Can't read CRL"));
-
-   $tmp->{'STATUS'} = gettext("VALID");
-
-   if($tmp->{'EXPDATE'} < $time) {
-      $tmp->{'STATUS'} = gettext("EXPIRED");
-      # keep database up to date
-      if($crl->{'ISSUER'} eq $tmp->{'ISSUER'}) {
-         _set_expired($tmp->{'SERIAL'}, $indexfile);
+   # get subject in openssl format
+   $cmd = "$self->{'bin'} x509 -noout -subject -in $file";
+   $ext = "$cmd\n\n";
+   $pid = open3($wtfh, $rdfh, $rdfh, $cmd);
+   while(<$rdfh>){
+      $ext .= $_;
+      if($_ =~ /subject= (.*)/) {
+         $tmp->{'SUBJECT'} = $1;
       }
    }
-   
-   foreach my $revoked (@{$crl->{'LIST'}}) {
-      #print STDERR "DEBUG: check $tmp->{'SERIAL'} vs $revoked->{'SERIAL'}\n";
-      next if ($tmp->{'SERIAL'} ne $revoked->{'SERIAL'});
-      if ($tmp->{'SERIAL'} eq $revoked->{'SERIAL'}) {
-         $tmp->{'STATUS'} = gettext("REVOKED");
+   waitpid($pid, 0);
+   $ret = $? >> 8;
+
+   if($ret) {
+      $t = gettext("Error reading subject from Certificate");
+      GUI::HELPERS::print_warning($t, $ext);
+   }
+
+   $tmp->{'EXPDATE'} = _get_date( $tmp->{'NOTAFTER'});
+
+   if(defined($crlfile) && defined($indexfile)) {
+      $crl = $self->parsecrl($crlfile, 1);
+      #print STDERR "DEBUG: parsed crl $crlfile : $crl\n";
+
+      defined($crl) || GUI::HELPERS::print_error(gettext("Can't read CRL"));
+  
+      $tmp->{'STATUS'} = gettext("VALID");
+  
+      if($tmp->{'EXPDATE'} < $time) {
+         $tmp->{'STATUS'} = gettext("EXPIRED");
+         # keep database up to date
+         if($crl->{'ISSUER'} eq $tmp->{'ISSUER'}) {
+            _set_expired($tmp->{'SERIAL'}, $indexfile);
+         }
       }
+     
+      foreach my $revoked (@{$crl->{'LIST'}}) {
+         #print STDERR "DEBUG: check $tmp->{'SERIAL'} $revoked->{'SERIAL'}\n";
+         next if ($tmp->{'SERIAL'} ne $revoked->{'SERIAL'});
+         if ($tmp->{'SERIAL'} eq $revoked->{'SERIAL'}) {
+            $tmp->{'STATUS'} = gettext("REVOKED");
+         }
+      }
+   } else {
+      $tmp->{'STATUS'} = gettext("UNDEFINED");
    }
 
    $self->{'CACHE'}->{$file} = $tmp;
@@ -839,7 +861,8 @@ sub convkey {
    $cmd .= " -passin env:SSLPASS";
    $cmd .= " -passout env:SSLPASSOUT -des3" if(not $opts->{'nopass'});
 
-   $ENV{'SSLPASS'}    = $opts->{'pass'};
+   $ENV{'SSLPASS'}    = defined($opts->{'oldpass'}) ? $opts->{'oldpass'} :
+                        $opts->{'pass'};
    $ENV{'SSLPASSOUT'} = $opts->{'pass'} if(not $opts->{'nopass'});
    
    my($rdfh, $wtfh);
@@ -859,7 +882,7 @@ sub convkey {
    delete($ENV{'SSLPASS'});
    delete($ENV{'SSLPASSOUT'});
 
-   return($ret, $ext) if($ret);
+   return(1, $ext) if($ret);
 
    open(IN, $file) || return(undef);
    $tmp .= $_ while(<IN>);

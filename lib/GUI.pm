@@ -1,6 +1,6 @@
 # Copyright (c) Stephan Martin <sm@sm-zone.net>
 #
-# $Id: GUI.pm,v 1.101 2004/08/13 20:57:23 sm Exp $
+# $Id: GUI.pm,v 1.111 2004/11/27 16:56:10 sm Exp $
 # 
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -37,7 +37,7 @@ sub new {
 
    bless($self, $class);
 
-   $self->{'version'} = '0.6.6 (beta)';
+   $self->{'version'} = '0.6.7 (beta)';
 
    $self->{'words'} = GUI::WORDS->new();
 
@@ -377,7 +377,7 @@ sub create_toolbar {
    
    if(defined($self->{'toolbar'})) {
       @children = $self->{'toolbar'}->children();
-      for(my $i = 4; $i < @children; $i++) {
+      for(my $i = 5; $i < @children; $i++) {
          $c = $children[$i];
          $c->destroy();
       }
@@ -420,6 +420,18 @@ sub create_toolbar {
             $iconw);
       $item->signal_connect('clicked', 
             sub { $self->{'CA'}->get_ca_create($self)});
+   
+      # Import
+      ($icon, $mask) = Gnome::Stock->pixmap_gdk('Convert', 'GPixmap');
+      $iconw = Gtk::Pixmap->new($icon, $mask);
+   
+      $item = $self->{'toolbar'}->append_item(
+            gettext("Import CA"),
+            gettext("Import an existing CA"),
+            'Private',
+            $iconw);
+      $item->signal_connect('clicked', 
+            sub { $self->{'CA'}->get_ca_import($self)});
    
       # Delete
       ($icon, $mask) = Gnome::Stock->pixmap_gdk('Trash', 'GPixmap');
@@ -936,33 +948,44 @@ sub show_details {
 }
 
 #
-# pop-up to verify request import
+# pop-up to verify import
 #
-sub show_req_import_verification {
-   my ($self, $opts, $parsed) = @_;
+sub show_import_verification {
+   my ($self, $mode, $opts, $parsed) = @_;
 
    my($box, $button_ok, $button_cancel, $label, $rows, $tree, $t);
 
    $button_ok = Gnome::Stock->button('Button_Ok');
    $button_ok->can_default(1);
-   $button_ok->signal_connect('clicked', 
+   if($mode eq "req") {
+      $button_ok->signal_connect('clicked', 
          sub { $self->{'REQ'}->import_req($self, $opts, $parsed, $box) });
+   } elsif($mode eq "cacert") {
+      $button_ok->signal_connect('clicked', 
+         sub { $self->{'CA'}->import_ca($self, $opts, $box) });
+   }
 
    $button_cancel = Gnome::Stock->button('Button_Cancel');
    $button_cancel->signal_connect('clicked', sub { $box->destroy() });
 
-   $box = GUI::HELPERS::dialog_box(
-         gettext("Import Request"), gettext("Import Request"),
-         $button_ok, $button_cancel);
+   if($mode eq "req") {
+      $t = gettext("Import Request");
+   } elsif($mode eq "cacert") {
+      $t = gettext("Import CA Certificate");
+   }
+   $box = GUI::HELPERS::dialog_box( $t, $t, $button_ok, $button_cancel);
 
    $button_ok->grab_default();
 
-   $label = GUI::HELPERS::create_label(
-         gettext("Do you really want to import the following Certificate Request?"),
-         'center', 1, 0);
+   if($mode eq "req") {
+      $t = gettext("Do you want to import the following Certificate Request?");
+   } elsif($mode eq "cacert") {
+      $t = gettext("Do you want to import the following CA Certificate?");
+   }
+   $label = GUI::HELPERS::create_label($t, 'center', 1, 0);
    $box->vbox->add($label);
 
-   $tree = $self->create_detail_tree($parsed, "req");
+   $tree = $self->create_detail_tree($parsed, $mode);
    $box->vbox->add($tree);
 
    $box->show_all();
@@ -1087,6 +1110,7 @@ sub create_detail_tree {
             $nsext = 1; next;
          }
          $t =  [$key, $val->[0]];
+         # print STDERR "DEBUG: print key: >$key< val: >$val->[0]<\n";
          $leaf = $tree->insert_node($mleaf, undef, $t, @is_leaf);
 
          if(@{$val} > 1) {
@@ -2022,7 +2046,7 @@ sub show_p12_export_dialog {
    $includeca2->set_active(1) 
       if(defined($opts->{'includeca'}) && $opts->{'includeca'} == 0);
    $includeca2->signal_connect('toggled', 
-         \&GUI::CALLBACK::toggle_to_var, \$opts->{'includeca'}, 1);
+         \&GUI::CALLBACK::toggle_to_var, \$opts->{'includeca'}, 0);
    $radiobox->add($includeca2);
 
    $box->show_all();
@@ -2346,6 +2370,136 @@ sub show_ca_dialog {
    $radiobox->add($key5);
 
    $catable->attach_defaults($radiobox, 1, 2, 15, 16);
+
+   $box->show_all();
+
+   return;
+}
+
+#
+# get data for importing a new CA
+#
+sub show_ca_import_dialog {
+   my ($self, $opts) = @_;
+
+   my ($box, $button_ok, $button_cancel, $label, $table, $filetable, $pwtable,
+         $entry, $certentry, $keyentry, $direntry, $indexentry);
+
+   $button_ok = Gnome::Stock->button('Button_Ok');
+   $button_ok->can_default(1);
+
+   $button_ok->signal_connect('clicked', 
+      sub { $self->{'CA'}->get_ca_import($self, $opts, $box) });
+
+   $button_cancel = Gnome::Stock->button('Button_Cancel');
+   $button_cancel->signal_connect('clicked', sub { $box->destroy() });
+
+   $box = GUI::HELPERS::dialog_box( 
+         gettext("Import CA"), gettext("Import an existing CA into TinyCA"),
+         $button_ok, $button_cancel);
+
+   $button_ok->grab_default();
+
+   # small table for old ca-password
+   $pwtable = Gtk::Table->new(1, 2, 0);
+   $pwtable->set_col_spacing(0, 10);
+   $box->vbox->add($pwtable);
+   
+   $entry = GUI::HELPERS::entry_to_table(
+         gettext("Password of the private CA key (Needed for import):"),
+         \$opts->{'passwd'}, $pwtable, 0, 0);
+   $entry->grab_focus();
+
+   # small table for storage name and new passwords
+   $table = Gtk::Table->new(1, 2, 0);
+   $table->set_col_spacing(0, 10);
+   $box->vbox->add($table);
+
+   $entry = GUI::HELPERS::entry_to_table(
+         gettext("Name (for local storage):"),
+         \$opts->{'name'}, $table, 0, 1);
+
+   $entry = GUI::HELPERS::entry_to_table(
+         gettext("New password for the CA:"),
+         \$opts->{'newpasswd'}, $table, 1, 0);
+
+   $entry = GUI::HELPERS::entry_to_table(
+         gettext("Confirm password:"),
+         \$opts->{'newpasswd2'}, $table, 2, 0);
+
+   # table for file selection dialogs
+   $label = GUI::HELPERS::create_label(
+         gettext("Files/Directories to import"), 'center', 0, 1);
+   $box->vbox->add($label);
+
+   $filetable = Gtk::Table->new(1, 3, 0);
+   $filetable->set_col_spacing(0, 10);
+   $box->vbox->add($filetable);
+
+   # CA certificate
+   $label = GUI::HELPERS::create_label(
+         gettext("CA Certificate (PEM/DER):"), 'left', 0, 0);
+   $filetable->attach_defaults($label, 0, 1, 0, 1);
+
+   $certentry = Gnome::FileEntry->new('', gettext("Import CA Certificate"));
+   $certentry->gnome_entry->set_max_saved(10);
+   $certentry->set_directory(0);
+   $filetable->attach_defaults($certentry, 1, 2, 0, 1);
+   $certentry->gtk_entry->set_text($opts->{'cacertfile'})
+      if(defined($opts->{'cacertfile'}));
+   $certentry->gnome_entry->entry->signal_connect(
+         'changed', \&GUI::CALLBACK::entry_to_var,
+         $certentry->gnome_entry->entry,
+         \$opts->{'cacertfile'});
+
+   # CA private key
+   $label = GUI::HELPERS::create_label(
+         gettext("CA private key (PEM/DER):"), 'left', 0, 0);
+   $filetable->attach_defaults($label, 0, 1, 1, 2);
+
+   $keyentry = Gnome::FileEntry->new('', gettext("Import CA private key"));
+   $keyentry->gnome_entry->set_max_saved(10);
+   $keyentry->set_directory(0);
+   $filetable->attach_defaults($keyentry, 1, 2, 1, 2);
+   $keyentry->gtk_entry->set_text($opts->{'cakeyfile'})
+      if(defined($opts->{'cakeyfile'}));
+   $keyentry->gnome_entry->entry->signal_connect(
+         'changed', \&GUI::CALLBACK::entry_to_var,
+         $keyentry->gnome_entry->entry,
+         \$opts->{'cakeyfile'});
+
+   # Index file
+   $label = GUI::HELPERS::create_label(
+         gettext("Index File (index.txt):"), 'left', 0, 0);
+   $filetable->attach_defaults($label, 0, 1, 2, 3);
+
+   $indexentry = Gnome::FileEntry->new('', gettext("Import Index File"));
+   $indexentry->gnome_entry->set_max_saved(10);
+   $indexentry->set_directory(0);
+   $filetable->attach_defaults($indexentry, 1, 2, 2, 3);
+   $indexentry->gtk_entry->set_text($opts->{'indexfile'})
+      if(defined($opts->{'indexfile'}));
+   $indexentry->gnome_entry->entry->signal_connect(
+         'changed', \&GUI::CALLBACK::entry_to_var,
+         $indexentry->gnome_entry->entry,
+         \$opts->{'indexfile'});
+
+   # certificate directory
+   $label = GUI::HELPERS::create_label(
+         gettext("Directory containing certificates (PEM/DER):"), 'left', 0, 0);
+   $filetable->attach_defaults($label, 0, 1, 3, 4);
+
+   $direntry = Gnome::FileEntry->new('', 
+         gettext("Import certificates from directory"));
+   $direntry->gnome_entry->set_max_saved(10);
+   $direntry->set_directory(1);
+   $filetable->attach_defaults($direntry, 1, 2, 3, 4);
+   $direntry->gtk_entry->set_text($opts->{'certdir'})
+      if(defined($opts->{'certdir'}));
+   $direntry->gnome_entry->entry->signal_connect(
+         'changed', \&GUI::CALLBACK::entry_to_var,
+         $direntry->gnome_entry->entry,
+         \$opts->{'certdir'});
 
    $box->show_all();
 
@@ -3072,7 +3226,11 @@ sub update_keys {
       my ($name, $type) = split(/\%/, $n);
       my @line = split(/\:/, $name);
       my $row = $self->{'keylist'}->append(@line);
-      $self->{'keylist'}->set_text($row, 7, $type);
+      if(defined $type) {
+         $self->{'keylist'}->set_text($row, 7, $type);
+      } else {
+         $self->{'keylist'}->set_text($row, 7, "");
+      }
       $self->{'keylist'}->set_text($row, 8, $ind);
       $ind++;
    }
@@ -3084,6 +3242,33 @@ sub update_keys {
 
 # 
 # $Log: GUI.pm,v $
+# Revision 1.111  2004/11/27 16:56:10  sm
+# fixed warning, when keytype is undefined.
+#
+# Revision 1.110  2004/11/08 11:19:26  sm
+# added generation of index.txt during import
+#
+# Revision 1.109  2004/11/05 14:42:50  sm
+# first working import function
+#
+# Revision 1.108  2004/10/28 15:05:15  sm
+# import improvements
+#
+# Revision 1.107  2004/10/10 16:33:23  sm
+# renamed some vars for clarity
+#
+# Revision 1.106  2004/10/03 08:08:28  sm
+# added import verification for ca certificate
+#
+# Revision 1.105  2004/09/30 20:18:15  sm
+# added check for selected ca files and dirs
+#
+# Revision 1.103  2004/09/28 16:13:19  sm
+# don't include ca cert into pkcs12, if not selected
+#
+# Revision 1.102  2004/09/26 20:17:03  sm
+# added import dialog
+#
 # Revision 1.101  2004/08/13 20:57:23  sm
 # added translators to about()
 #

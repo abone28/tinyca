@@ -1,6 +1,6 @@
 # Copyright (c) Stephan Martin <sm@sm-zone.net>
 #
-# $Id: CERT.pm,v 1.31 2004/07/23 17:50:51 sm Exp $
+# $Id: CERT.pm,v 1.32 2004/11/05 14:42:50 sm Exp $
 # 
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -40,7 +40,7 @@ sub new {
 sub read_certlist {
    my ($self, $certdir, $crlfile, $indexfile, $force, $main) = @_;
 
-   my($f, $certlist, $crl, $modt, $parsed, $tmp, $t, $c, $p);
+   my($f, $certlist, $crl, $modt, $parsed, $tmp, $t, $c, $p, @files);
 
    GUI::HELPERS::set_cursor($main, 1);
 
@@ -59,17 +59,18 @@ sub read_certlist {
 
    opendir(DIR, $certdir) || do {
       GUI::HELPERS::set_cursor($main, 0);
-      GUI::HELPERS::print_warning(gettext("Can't open certdir"));
+      $t = sprintf(gettext("Can't open Certificate directory: %s"), $certdir);
+      GUI::HELPERS::print_warning($t);
       return(0);
    };
 
    while($f = readdir(DIR)) {
       next if $f =~ /^\./;
+      push(@files, $f);
       $c++;
    }
-   rewinddir(DIR);
 
-   while($f = readdir(DIR)) {
+   foreach $f (@files) {
       next if $f =~ /^\./;
 
       $f =~ s/\.pem//;
@@ -88,12 +89,14 @@ sub read_certlist {
           }
       }
 
+      my $debugf = $certdir."/".$f.".pem";
+
       $parsed = $self->{'OpenSSL'}->parsecert($crlfile, $indexfile,
             $certdir."/".$f.".pem", $force);
 
       defined($parsed) || do {
          GUI::HELPERS::set_cursor($main, 0);
-         GUI::HELPERS::print_error(gettext("Can't read certificate"));
+         GUI::HELPERS::print_error(gettext("Can't read Certificate"));
       };
 
       $tmp .= "%".$parsed->{'STATUS'};

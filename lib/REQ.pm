@@ -1,6 +1,6 @@
 # Copyright (c) Stephan Martin <sm@sm-zone.net>
 #
-# $Id: REQ.pm,v 1.44 2004/07/26 09:54:28 sm Exp $
+# $Id: REQ.pm,v 1.45 2004/10/03 08:08:28 sm Exp $
 # 
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -669,7 +669,7 @@ sub get_import_req {
       return;
    }
    
-   $main->show_req_import_verification($opts, $parsed);
+   $main->show_import_verification("req", $opts, $parsed);
    return;
 }
 
@@ -737,6 +737,9 @@ sub parse_req {
 
 # 
 # $Log: REQ.pm,v $
+# Revision 1.45  2004/10/03 08:08:28  sm
+# added import verification for ca certificate
+#
 # Revision 1.44  2004/07/26 09:54:28  sm
 # don't crash when deleting last request list
 #

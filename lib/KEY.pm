@@ -1,6 +1,6 @@
 # Copyright (c) Stephan Martin <sm@sm-zone.net>
 #
-# $Id: KEY.pm,v 1.20 2004/07/15 10:45:47 sm Exp $
+# $Id: KEY.pm,v 1.23 2004/11/27 16:56:10 sm Exp $
 # 
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -400,21 +400,90 @@ sub _check_key {
       } elsif(/DSA PRIVATE KEY/i) {
          $type = "DSA";
          last;
+      } else {
+         $type = "UNKNOWN";
       }
    }
    close(KEY);
 
-   if($type ne "") {
+   if(defined($type) && $type ne "") {
       $name .= "%".$type;
    }
 
    return($name);
 }
 
+sub key_change_passwd {
+   my ($self, $main, $file, $oldpass, $newpass) = @_;
+   my $opts = {};
+   my ($t, $ret, $ext);
+
+   my $inform  = "DER";
+   my $outform = "PEM";
+
+   my($type);
+
+   # ckeck file format
+   open(KEY, "<$file") || do {
+      $t = sprintf(gettext("Can't open Key file:\n%s"),
+            $file);
+      GUI::HELPERS::print_warning($t);
+      return(1);
+   };
+   while(<KEY>) {
+      if(/BEGIN RSA PRIVATE KEY/) {
+         $inform = "PEM";
+         $type   = "RSA";
+         last;
+      } elsif(/BEGIN RSA PRIVATE KEY/){
+         $inform = "PEM";
+         $type   = "DSA";
+         last;
+      } else {
+         $type   = "UNKNOWN";
+      }
+   }
+
+   GUI::HELPERS::set_cursor($main, 1);
+
+   ($ret, $ext) = $main->{'OpenSSL'}->convkey(
+      'type'      => $type,
+      'inform'    => $inform,
+      'outform'   => $outform,
+      'nopass'    => 0,
+      'pass'      => $newpass,
+      'oldpass'   => $oldpass,
+      'keyfile'   => $file
+   );
+
+   GUI::HELPERS::set_cursor($main, 0);
+
+   if($ret eq 1) {
+      $t = gettext("Generating key failed");
+
+      if($ext =~ /unable to load Private Key/) {
+         $t .= gettext("The password for your old CA Key is wrong");
+      }
+      GUI::HELPERS::print_warning(($t), $ext);
+      return($ret);
+   }
+
+   return($ret);
+}
+
 1
 
 #
 # $Log: KEY.pm,v $
+# Revision 1.23  2004/11/27 16:56:10  sm
+# fixed warning, when keytype is undefined.
+#
+# Revision 1.22  2004/11/05 14:42:50  sm
+# first working import function
+#
+# Revision 1.21  2004/10/28 15:05:15  sm
+# import improvements
+#
 # Revision 1.20  2004/07/15 10:45:47  sm
 # removed references to create_mframe, always recreate only one list
 #

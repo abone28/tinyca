@@ -1,6 +1,6 @@
 # Copyright (c) Stephan Martin <sm@sm-zone.net>
 #
-# $Id: TCONFIG.pm,v 1.8 2004/07/15 07:18:53 sm Exp $
+# $Id: TCONFIG.pm,v 1.9 2004/10/28 10:45:13 sm Exp $
 # 
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -407,7 +407,11 @@ sub show_configbox {
    $table->attach_defaults($label, 0, 1, $rows-1, $rows);
 
    $combo = Gtk::Combo->new();
-   @combostrings = ($main->{'words'}{'none'}, $main->{'words'}{'server'});
+   @combostrings = (
+         $main->{'words'}{'none'}, 
+         $main->{'words'}{'server'},
+         $main->{'words'}{'server, client'});
+
    $combo->set_popdown_strings(@combostrings);
    $combo->set_use_arrows(1);
    $combo->set_value_in_list(1, 0);
@@ -1406,6 +1410,9 @@ sub show_config_ca {
 
 # 
 # $Log: TCONFIG.pm,v $
+# Revision 1.9  2004/10/28 10:45:13  sm
+# added nsCertType "server, client" for OpenLDAAP replikation
+#
 # Revision 1.8  2004/07/15 07:18:53  sm
 # added extendedKeyUsage for client certs
 #
