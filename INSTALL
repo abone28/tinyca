@@ -1,0 +1,19 @@
+1. Unpack the sources (seems like you got it allready)
+
+2. Configure the following paths for your setup. These variables 
+   are located in the file tinyca itself.
+
+@INC                    (location of the directory lib)
+$init->{'opensslbin'}   (location of your openssl binary)
+$init->{'templatedir'}  (location of the directory templates)
+$init->{'zipbin'}       (location of your zip binary)
+
+3. If you want to have german texts:
+   Generate the file tinyca.mo from po/de.po:
+   msgfmt po/de.po -o locale/de/LC_MESSAGES/tinyca.mo
+
+   If your locale is not set to german:
+   export LC_ALL=de_DE
+   before you call tinyca.
+
+4. Call tinyca, use it and report bugs :-))

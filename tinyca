@@ -1,0 +1,96 @@
+#!/usr/bin/perl -w
+#
+# $Id: tinyca,v 1.9 2004/05/06 19:44:13 sm Exp $
+#
+# Copyright (c) Stephan Martin <sm@sm-zone.net>
+#
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 2 of the License, or
+# (at your option) any later version.
+# 
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+# 
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111, USA.
+
+BEGIN { push(@INC, './lib'); # put here the location of the modules
+}
+
+use strict;
+
+use Gtk;
+use Gnome;
+set_locale Gtk;
+Gnome->init('TinyCA', '0.6.0');
+
+use MIME::Base64;
+use Time::Local;
+
+use POSIX;
+use Locale::gettext;
+
+use OpenSSL;
+use CA;
+use GUI;
+use CERT;
+use REQ;
+use KEY;
+use TCONFIG;
+
+setlocale(LC_MESSAGES, "");
+bindtextdomain("tinyca", "./locale/");
+textdomain("tinyca");
+
+my $init = {};
+
+# location of openssl
+$init->{'opensslbin'} = "/usr/bin/openssl";
+$init->{'zipbin'} = "/usr/bin/zip";
+
+if(not -x $init->{'opensslbin'}) {
+   printf(gettext("Can't execute %s.\n"), $init->{'opensslbin'});
+   print gettext("Configure correct path to openssl in tinyca.\n");
+   exit(1);
+}
+
+if(not -x $init->{'zipbin'}) {
+   print gettext("zip command not found, support disabled.\n");
+   print gettext("Configure correct path to zip in tinyca.\n");
+}
+
+# directory with the templates
+$init->{'templatedir'} = "./templates";
+
+if(not -d $init->{'templatedir'}) {
+   print gettext("Can't find templatedir.\n");
+   print gettext("Please configure correct path with templates in tinyca.\n");
+   exit(1);
+}
+
+# location for CA files
+$init->{'basedir'} = $ENV{HOME}."/.TinyCA";
+
+umask(0077);
+
+# create main object and initialize CA
+my $gui = GUI->new($init);
+
+# and now run...
+$gui->{'mw'}->show_all();
+
+# decide what to do on startup
+if(@{$gui->{'CA'}->{'calist'}}) {
+   $gui->{'CA'}->get_open_name($gui);
+} else {
+   $gui->{'CA'}->get_ca_create($gui);
+}
+
+Gtk->main();
+
+exit(0);
+
