@@ -1,6 +1,6 @@
 # Copyright (c) Stephan Martin <sm@sm-zone.net>
 #
-# $Id: REQ.pm,v 1.28 2004/06/13 13:19:08 sm Exp $
+# $Id: REQ.pm,v 1.29 2004/06/15 12:19:33 sm Exp $
 # 
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -53,7 +53,7 @@ sub get_req_create {
          $opts = {};
          $opts->{'sign'} = 1;
          $opts->{'type'} = "client";
-      } else {
+      } elsif (defined($opts)) {
          $t = sprintf(gettext("Strange value for 'opts': %s"), $opts);
          GUI::HELPERS::print_error($t);
       }
@@ -399,7 +399,8 @@ sub sign_req {
             'revocationurl'   => $opts->{'nsRevocationUrl'},
             'renewalurl'      => $opts->{'nsRenewalUrl'},
             'subjaltname'     => $opts->{'subjectAltName'},
-            'subjaltnametype' => $opts->{'subjectAltNameType'}
+            'subjaltnametype' => $opts->{'subjectAltNameType'},
+            'noemaildn'       => $opts->{'noemaildn'}
             );
    } else {
       ($ret, $ext) = $main->{'OpenSSL'}->signreq(
@@ -412,7 +413,8 @@ sub sign_req {
             'revocationurl'   => $opts->{'nsRevocationUrl'},
             'renewalurl'      => $opts->{'nsRenewalUrl'},
             'subjaltname'     => $opts->{'subjectAltName'},
-            'subjaltnametype' => $opts->{'subjectAltNameType'}
+            'subjaltnametype' => $opts->{'subjectAltNameType'},
+            'noemaildn'       => $opts->{'noemaildn'}
             );
 
    }
@@ -625,6 +627,9 @@ sub parse_req {
 
 # 
 # $Log: REQ.pm,v $
+# Revision 1.29  2004/06/15 12:19:33  sm
+# fixed bug creating new requests
+#
 # Revision 1.28  2004/06/13 13:19:08  sm
 # added possibility to generate request and certificate in one step
 #

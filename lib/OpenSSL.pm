@@ -136,6 +136,10 @@ sub signreq {
       }
    }
 
+   if(defined($opts->{'noemaildn'}) && $opts->{'noemaildn'}) {
+      $cmd .= " -noemailDN";
+   }
+
    # print STDERR "DEBUG call cmd: $cmd\n";
       
    my($rdfh, $wtfh);

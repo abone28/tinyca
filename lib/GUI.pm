@@ -37,7 +37,7 @@ sub new {
 
    bless($self, $class);
 
-   $self->{'version'} = '0.6.2 (beta)';
+   $self->{'version'} = '0.6.3 (beta)';
 
    $self->{'words'} = GUI::WORDS->new();
 
@@ -383,7 +383,7 @@ sub create_nb {
 sub create_bar {
    my $self = shift;
    
-   $self->{'bar'} = Gnome::AppBar->new(1,1,"user");
+   $self->{'bar'} = Gnome::AppBar->new(1,1, "user");
    $self->{'bar'}->set_status("   Watch out...");
    $self->{'mw'}->set_statusbar($self->{'bar'});
 
@@ -2044,7 +2044,8 @@ sub show_p12_export_dialog {
 sub show_req_sign_dialog {
    my ($self, $opts) = @_;
 
-   my($box, $button_ok, $button_cancel, $entry, $table, $t, $rows);
+   my($box, $button_ok, $button_cancel, $entry, $table, $t, $rows, $key1,
+         $key2, $radiobox, $label);
 
    $rows = 0;
 
@@ -2091,13 +2092,15 @@ sub show_req_sign_dialog {
       }
       if(defined($self->{'TCONFIG'}->{'server_cert'}->{'nsSslServerName'}) && 
          $self->{'TCONFIG'}->{'server_cert'}->{'nsSslServerName'} eq 'user') { 
-         $entry = GUI::HELPERS::entry_to_table(gettext("Netscape SSL Server Name:"), 
+         $entry = GUI::HELPERS::entry_to_table(
+               gettext("Netscape SSL Server Name:"), 
                \$opts->{'nsSslServerName'}, $table, $rows, 1);
          $rows++;
       }
       if(defined($self->{'TCONFIG'}->{'server_cert'}->{'nsRevocationUrl'}) && 
          $self->{'TCONFIG'}->{'server_cert'}->{'nsRevocationUrl'} eq 'user') { 
-         $entry = GUI::HELPERS::entry_to_table(gettext("Netscape Revocation URL:"), 
+         $entry = GUI::HELPERS::entry_to_table(
+               gettext("Netscape Revocation URL:"), 
                \$opts->{'nsRevocationUrl'}, $table, $rows, 1);
          $rows++;
       }
@@ -2126,16 +2129,37 @@ sub show_req_sign_dialog {
       }
       if(defined($self->{'TCONFIG'}->{'client_cert'}->{'nsRevocationUrl'}) && 
          $self->{'TCONFIG'}->{'client_cert'}->{'nsRevocationUrl'} eq 'user') { 
-         $entry = GUI::HELPERS::entry_to_table(gettext("Netscape Revocation URL:"), 
+         $entry = GUI::HELPERS::entry_to_table(
+               gettext("Netscape Revocation URL:"), 
                \$opts->{'nsRevocationUrl'}, $table, $rows, 1);
          $rows++;
       }
       if(defined($self->{'TCONFIG'}->{'client_cert'}->{'nsRenewalUrl'}) && 
          $self->{'TCONFIG'}->{'client_cert'}->{'nsRenewalUrl'} eq 'user') { 
-         $entry = GUI::HELPERS::entry_to_table(gettext("Netscape Renewal URL:"), 
+         $entry = GUI::HELPERS::entry_to_table(
+               gettext("Netscape Renewal URL:"), 
                \$opts->{'nsRenewalUrl'}, $table, $rows, 1);
          $rows++;
       }
+   }
+   if($self->{'OpenSSL'}->{'version'} eq "0.9.7") {
+      $radiobox = Gtk::HBox->new(0, 0);
+      $key1 = Gtk::RadioButton->new(gettext("Yes"));
+      $key1->set_active(1);
+      $key1->signal_connect('toggled', \&GUI::CALLBACK::toggle_to_var,
+            \$opts->{'noemaildn'}, 0);
+      $radiobox->add($key1);
+
+      $key2 = Gtk::RadioButton->new(gettext("No"), $key1);
+      $key2->signal_connect('toggled', \&GUI::CALLBACK::toggle_to_var,
+            \$opts->{'noemaildn'}, 1);
+      $radiobox->add($key2);
+      
+      $label = GUI::HELPERS::create_label(
+            gettext("Add eMail Address to Subject DN:"), 'left', 0, 0);
+
+      $table->attach_defaults($label, 0, 1, $rows, $rows+1);
+      $table->attach_defaults($radiobox, 1, 2, $rows, $rows+1);
    }
 
    $box->show_all();

@@ -1,4 +1,8 @@
-$Id: CHANGES,v 1.10 2004/06/13 13:26:11 sm Exp $
+$Id: CHANGES,v 1.11 2004/06/16 08:38:33 sm Exp $
+
+version 0.6.3 (beta) - Wed Jun 16 2004
+   * fixed bug which made it impossible to create new requests
+   * added noemailDN
 
 version 0.6.2 (beta) - Sun Jun 13 2004
    * added new look for some functions

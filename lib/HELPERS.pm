@@ -1,7 +1,7 @@
 # Copyright (c) Olaf Gellert <og@pre-secure.de> and
 #               Stephan Martin <sm@sm-zone.net>
 #
-# $Id: HELPERS.pm,v 1.6 2004/06/08 17:05:47 sm Exp $
+# $Id: HELPERS.pm,v 1.7 2004/06/16 07:21:11 sm Exp $
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -134,7 +134,7 @@ sub parse_extensions {
    $tmp = {};
 
    # skip everything before the extensions
-   for($i = 0; $lines->[$i] !~ /^[\s\t]*$sep$/i; $i++) {
+   for($i = 0; defined($lines->[$i]) && $lines->[$i] !~ /^[\s\t]*$sep$/i; $i++) {
       return(undef) if not defined($lines->[$i]);
    }
    $i++;
@@ -268,6 +268,9 @@ given in $retcode.
 
 #
 # $Log: HELPERS.pm,v $
+# Revision 1.7  2004/06/16 07:21:11  sm
+# avoid warning cause undefined var
+#
 # Revision 1.6  2004/06/08 17:05:47  sm
 # added perldoc documentation
 #
