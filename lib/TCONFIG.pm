@@ -1,6 +1,6 @@
 # Copyright (c) Stephan Martin <sm@sm-zone.net>
 #
-# $Id: TCONFIG.pm,v 1.24 2005/02/20 16:02:21 sm Exp $
+# $Id: TCONFIG.pm,v 1.1.1.1 2005/03/31 18:52:57 sm Exp $
 # 
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by

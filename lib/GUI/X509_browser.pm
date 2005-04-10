@@ -1,7 +1,7 @@
 # Copyright (c) Olaf Gellert <og@pre-secure.de> and
 #               Stephan Martin <sm@sm-zone.net>
 #
-# $Id: X509_browser.pm,v 1.15 2004/07/26 09:54:28 sm Exp $
+# $Id: X509_browser.pm,v 1.4 2005/04/08 22:36:20 sm Exp $
 # 
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -25,13 +25,6 @@ use GUI::HELPERS;
 use MIME::Base64;
 use GUI::X509_infobox;
 
-#use Gtk;
-# will we need this?
-#use Gnome;
-# init Gtk;        # initialize Gtk-Perl
-# Gnome->init('Browser', '0.1');
-set_locale Gtk;  # internationalize
-
 use POSIX;
 use Locale::gettext;
 
@@ -53,35 +46,34 @@ sub new {
    my $class = ref($that) || $that;
 
 
-   if ((defined $mode) && (($mode eq 'cert') || ($mode eq 'req'))) {
-      $self->{'mode'}=$mode;
+   if ((defined $mode) && 
+         (($mode eq 'cert') || ($mode eq 'req') || ($mode eq 'key'))) {
+      $self->{'mode'} = $mode;
    } else {
       printf STDERR "No mode specified for X509browser\n";
       return undef;
    }
 
    # initialize fonts and styles
-   $font    = Gtk::Gdk::Font->fontset_load("-adobe-helvetica-bold-r-normal--*-120-*-*-*-*-*-*");
+   $font    = Gtk2::Pango::FontDescription->from_string(
+         "-adobe-helvetica-bold-r-normal--*-120-*-*-*-*-*-*");
    if(defined($font)) {
-      $self->{'stylebold'} = Gtk::Style->new();
-      $self->{'stylebold'}->font($font);
+      $self->{'stylebold'} = Gtk2::Style->new();
+      $self->{'stylebold'}->font_desc->from_string(
+            "-adobe-helvetica-bold-r-normal--*-120-*-*-*-*-*-*");
    } else {
       $self->{'stylebold'} = undef;
    }
 
-   $fontfix = Gtk::Gdk::Font->fontset_load("-adobe-courier-medium-r-normal--*-100-*-*-*-*-*-*");
+   $fontfix = Gtk2::Pango::FontDescription->from_string(
+         "-adobe-courier-medium-r-normal--*-100-*-*-*-*-*-*");
    if(defined($fontfix)) {
-      $self->{'stylefix'} = Gtk::Style->new();
-      $self->{'stylefix'}->font($fontfix);
+      $self->{'stylefix'} = Gtk2::Style->new();
+      $self->{'stylefix'}->font_desc->from_string(
+            "-adobe-courier-medium-r-normal--*-100-*-*-*-*-*-*");
    } else {
       $self->{'stylefix'} = undef;
    }
-
-   $self->{'stylered'} = Gtk::Style->new();
-   $self->{'stylered'}->fg('normal', Gtk::Gdk::Color->parse_color('red'));
-
-   $self->{'stylegreen'} = Gtk::Style->new();
-   $self->{'stylegreen'}->fg('normal', Gtk::Gdk::Color->parse_color('green'));
 
    bless($self, $class);
 
@@ -89,358 +81,357 @@ sub new {
 }
 
 
-sub create_window {
-   my ($self, $title, $ok_text, $cancel_text,
-	      $ok_function, $cancel_function) = @_;
-
-   my ($button_ok, $button_cancel);
-
-   if ( $self->{'dialog_shown'} == $true ) {
-     return(undef);
-     }
-
-   # check arguments
-   if ($title eq undef) {
-     $title = "CA browser, V$version";
-     }
-
-   if (not defined($ok_text)) {
-     $ok_text = gettext("OK");
-     }
-   if (not defined($cancel_text)) {
-     $cancel_text = gettext("Cancel");
-     }
-
-   # initialize main window
-   $self->{'window'} = new Gtk::Dialog();
-
-   # $self->{'window'}->set_policy($false,$false,$true);
-
-   # store pointer to vbox as "browser widget"
-   $self->{'browser'}=$self->{'window'}->vbox;
-
-   if (defined $ok_function) {
-      # todo: we should check if this is a function reference
-      $self->{'User_OK_function'} = $ok_function;
-      }
-   $self->{'OK_function'} = sub { $self->ok_function(); };
-
-   if (defined $cancel_function) {
-      # todo: we should check if this is a function reference
-      $self->{'User_CANCEL_function'} = $cancel_function;
-      }
-   $self->{'CANCEL_function'} = sub { $self->cancel_function(); };
-
-
-
-   $button_ok = new Gtk::Button( "$ok_text" );
-   $button_ok->signal_connect( "clicked", $self->{'OK_function'});
-   $self->{'window'}->action_area->pack_start( $button_ok, $true, $true, 0 );
-
-   $button_cancel = new Gtk::Button( "$cancel_text" );
-   $button_cancel->signal_connect('clicked', $self->{'CANCEL_function'});
-   $self->{'window'}->action_area->pack_start( $button_cancel, $true, $true, 0 );
-
-   $self->{'window'}->set_title( "$title" );
-
-   $self->{'window'}->show_all();
-
-}
+# sub create_window {
+#    my ($self, $title, $ok_text, $cancel_text,
+# 	      $ok_function, $cancel_function) = @_;
+# 
+#    my ($button_ok, $button_cancel);
+# 
+#    if ( $self->{'dialog_shown'} == $true ) {
+#      return(undef);
+#      }
+# 
+#    # check arguments
+#    if ($title eq undef) {
+#      $title = "CA browser, V$version";
+#      }
+# 
+#    if (not defined($ok_text)) {
+#      $ok_text = gettext("OK");
+#      }
+#    if (not defined($cancel_text)) {
+#      $cancel_text = gettext("Cancel");
+#      }
+# 
+#    # initialize main window
+#    $self->{'window'} = new Gtk::Dialog();
+# 
+#    # $self->{'window'}->set_policy($false,$false,$true);
+# 
+#    # store pointer to vbox as "browser widget"
+#    $self->{'browser'}=$self->{'window'}->vbox;
+# 
+#    if (defined $ok_function) {
+#       # todo: we should check if this is a function reference
+#       $self->{'User_OK_function'} = $ok_function;
+#       }
+#    $self->{'OK_function'} = sub { $self->ok_function(); };
+# 
+#    if (defined $cancel_function) {
+#       # todo: we should check if this is a function reference
+#       $self->{'User_CANCEL_function'} = $cancel_function;
+#       }
+#    $self->{'CANCEL_function'} = sub { $self->cancel_function(); };
+# 
+# 
+# 
+#    $button_ok = new Gtk::Button( "$ok_text" );
+#    $button_ok->signal_connect( "clicked", $self->{'OK_function'});
+#    $self->{'window'}->action_area->pack_start( $button_ok, $true, $true, 0 );
+# 
+#    $button_cancel = new Gtk::Button( "$cancel_text" );
+#    $button_cancel->signal_connect('clicked', $self->{'CANCEL_function'});
+#    $self->{'window'}->action_area->pack_start( $button_cancel, $true, $true, 0 );
+# 
+#    $self->{'window'}->set_title( "$title" );
+# 
+#    $self->{'window'}->show_all();
+# 
+# }
 
 sub set_window {
   my $self = shift;
   my $widget = shift;
 
   if ( (not defined $self->{'browser'}) || ( $self->{'browser'} == undef )) {
-    $self->{'browser'}=$widget;
+     $self->{'browser'}=$widget;
   } else {
-    # browser widget already exists
-    return $false;
+     # browser widget already exists
+     return $false;
   }
-}
-
-sub set_contextfunc {
-  my ($self, $context_function, $event, $referrer, @args) = @_;
-
-    $self->{'x509clist'}->signal_connect($event, 
-            $context_function, $referrer, @args);
-}
-
-sub destroy_window {
-  my $self=shift;
-
-  if (defined $self->{'window'}) {
-    $self->{'window'}->destroy();
-    return $true;
-    }
-  else {
-    return $false;
-  }
-}
-
-sub add_ca_select {
-  my $self = shift;
-  my $directory = shift;
-  my $CAref = shift;
-  my $active = shift;
-
-  my ($option_menu, $option_popup, $count, $menu_item, @CAs, $active_index,
-      $caselect_win, $caselect_box, $gtktemp, $subdir);
-
-  if ($self->{'mode'} eq "cert") {
-    $subdir = "certs";
-    }
-  elsif ($self->{'mode'} eq "req") {
-    $subdir = "req";
-    }
-  else {
-    # unknown mode
-    return $false;
-    }
-
-  if ($CAref == undef) {
-    return $false;
-    }
-
-  @CAs=@$CAref;
-  $self->{'CAlist'}=\@CAs;
-  $self->{'actca'}=$active;
-
-  if ($self->{'ca_select'} == undef) {
-    $caselect_box=new Gtk::HBox(0,4);
-    $self->{'browser'}->pack_start($caselect_box, 0, 1, 0);
-
-    $gtktemp=Gtk::Label->new(gettext("Choose CA:"));
-    $caselect_box->pack_start($gtktemp, 0, 1, 0);
-    
-    $option_menu=new Gtk::OptionMenu();
-    $option_popup=new Gtk::Menu();
-
-    for ($count=0; $count<=$#CAs; $count++) {
-      # printf STDERR "adding item %s\n", $CAs[$count];
-      $menu_item=new Gtk::MenuItem($CAs[$count]);
-
-      if ((defined $active) && ($active eq $CAs[$count])) {
-	$active_index=$count;
-        }
-      $option_popup->append($menu_item);
-      $menu_item->signal_connect('activate',
-         sub { $self->add_list ($_[1], $_[2], $_[3], $_[4]) },
-                         $active,
-			 $directory."/".$CAs[$count]."/".$subdir,
-      			 $directory."/".$CAs[$count]."/crl/crl.pem",
-      			 $directory."/".$CAs[$count]."/index.txt");
-      }
-    $option_menu->set_menu( $option_popup );
-    if (not defined $active) {
-      # printf STDERR "default selection of item 0\n";
-      $option_menu->set_history(0);
-      }
-    else {
-      $option_menu->set_history($active_index);
-      }
-    $caselect_box->pack_start($option_menu, 1, 1, 0);
-    $caselect_box->show();
-    # $self->{'browser'}->show_all();
-  } else {
-    return $false;
-  } 
-
 }
 
 sub add_list {
    my ($self, $actca, $directory, $crlfile, $indexfile) = @_;
 
-   my ($x509listwin, $mode, @certtitles, @reqtitles, $ind);
+   my ($x509listwin, @titles, @certtitles, @reqtitles, @keytitles, $column,
+         $color, $text, $iter, $renderer);
 
    # printf STDERR "AddList: Self: $self, Dir $directory, CRL $crlfile, Index: $indexfile\n";
 
-   @certtitles = (gettext("Common Name"),
-         gettext("eMail Address"),
-         gettext("Organizational Unit"),
-         gettext("Organization"),
-         gettext("Location"),
-         gettext("State"),
-         gettext("Country"), 
-         gettext("Status"),
-         "index");
-
    @reqtitles = (gettext("Common Name"),
-         gettext("eMail Address"),
-         gettext("Organizational Unit"),
-         gettext("Organization"),
-         gettext("Location"),
-         gettext("State"),
-         gettext("Country"), 
-         "index");
+                 gettext("eMail Address"),
+                 gettext("Organizational Unit"),
+                 gettext("Organization"),
+                 gettext("Location"),
+                 gettext("State"),
+                 gettext("Country"));
 
-  $self->{'actca'}=$actca;
-  $self->{'actdir'}=$directory;
-  $self->{'actcrl'}=$crlfile;
-  $self->{'actindex'}=$indexfile;
-  $mode=$self->{'mode'};
+   @certtitles = (gettext("Common Name"),
+                  gettext("eMail Address"),
+                  gettext("Organizational Unit"),
+                  gettext("Organization"),
+                  gettext("Location"),
+                  gettext("State"),
+                  gettext("Country"),
+                  gettext("Status"));
 
-  if(defined($self->{'x509box'})) {
-    $self->{'browser'}->remove($self->{'x509box'});
-    $self->{'x509box'}->destroy();
-  }
+   @keytitles = (gettext("Common Name"),
+                 gettext("eMail Address"),
+                 gettext("Organizational Unit"),
+                 gettext("Organization"),
+                 gettext("Location"),
+                 gettext("State"),
+                 gettext("Country"),
+                 gettext("Type"));
 
-  # should we display certificates?
-  if ((defined $mode) && ($mode eq "cert")) {
+   $self->{'actca'}    = $actca;
+   $self->{'actdir'}   = $directory;
+   $self->{'actcrl'}   = $crlfile;
+   $self->{'actindex'} = $indexfile;
+ 
+   if(defined($self->{'x509box'})) {
+      $self->{'browser'}->remove($self->{'x509box'});
+      $self->{'x509box'}->destroy();
+   }
+ 
+   $self->{'x509box'} = Gtk2::VBox->new(0, 0);
 
-    $self->{'x509box'} = Gtk::VBox->new(0, 0);
-    # pane for list (top) and cert infos (bottom)
-    $self->{'x509pane'} = Gtk::VPaned->new();
-    $self->{'x509pane'}->set_handle_size(10);
-    $self->{'x509pane'}->set_gutter_size(8);
-    $self->{'x509pane'}->set_position(250);
-    $self->{'x509box'}->add($self->{'x509pane'});
-
-    $self->{'browser'}->pack_start($self->{'x509box'}, 1, 1, 0);
-
-    # now the list
-    $x509listwin = Gtk::ScrolledWindow->new(undef, undef);
-    $x509listwin->set_policy('automatic', 'automatic');
-    $self->{'x509pane'}->pack1($x509listwin, 1, 1);
+   # pane for list (top) and cert infos (bottom)
+   $self->{'x509pane'} = Gtk2::VPaned->new();
+   $self->{'x509pane'}->set_position(250);
+   $self->{'x509box'}->add($self->{'x509pane'});
+ 
+   $self->{'browser'}->pack_start($self->{'x509box'}, 1, 1, 0);
+ 
+   # now the list
+   $x509listwin = Gtk2::ScrolledWindow->new(undef, undef);
+   $x509listwin->set_policy('automatic', 'automatic');
+   $x509listwin->set_shadow_type('etched-in');
+   $self->{'x509pane'}->pack1($x509listwin, 1, 1);
+ 
+   # shall we display certificates, requests or keys?
+   if ((defined $self->{'mode'}) && ($self->{'mode'} eq "cert")) { 
       
-    $self->{'x509clist'} = Gtk::CList->new_with_titles(@certtitles);
-    # printf STDERR "Self: $self  CertCList: $self->{'x509clist'}\n";
-    $self->{'x509clist'}->set_sort_column (0);
-    $self->{'x509clist'}->signal_connect('click_column', \&_sort_clist);
+      $self->{'x509store'} = Gtk2::ListStore->new(
+        'Glib::String',
+        'Glib::String',
+        'Glib::String',
+        'Glib::String',
+        'Glib::String',
+        'Glib::String',
+        'Glib::String',
+        'Glib::String',
+        'Glib::Int');
+ 
+      @titles = @certtitles;
+ 
+   } elsif ((defined $self->{'mode'}) && ($self->{'mode'} eq "req")) {
+ 
+      $self->{'x509store'} = Gtk2::ListStore->new(
+        'Glib::String',
+        'Glib::String',
+        'Glib::String',
+        'Glib::String',
+        'Glib::String',
+        'Glib::String',
+        'Glib::String',
+        'Glib::Int');
+ 
+      @titles = @reqtitles;
+ 
+   } elsif ((defined $self->{'mode'}) && ($self->{'mode'} eq "key")) {
+       
+      $self->{'x509store'} = Gtk2::ListStore->new(
+        'Glib::String',
+        'Glib::String',
+        'Glib::String',
+        'Glib::String',
+        'Glib::String',
+        'Glib::String',
+        'Glib::String',
+        'Glib::String',
+        'Glib::Int');
+ 
+      @titles = @keytitles;
 
-    for(my $i = 0; $i < 7; $i++) {
-       $self->{'x509clist'}->set_column_auto_resize ($i, 1);
-       }
-    $self->{'x509clist'}->signal_connect('select_row', 
-            \&_fill_info, $self, 'cert' );
-    $self->{'x509clist'}->set_column_visibility(8, 0);
-    $x509listwin->add($self->{'x509clist'});
+   } else {
+     # undefined mode
+      return undef;
+   }
+ 
+   $self->{'x509store'}->set_sort_column_id(0, 'ascending');
+     
+   $self->{'x509clist'} = Gtk2::TreeView->new_with_model($self->{'x509store'});
+   $self->{'x509clist'}->get_selection->set_mode ('single');
+ 
+   for(my $i = 0; $titles[$i]; $i++) {
+      $renderer = Gtk2::CellRendererText->new();
+      $column = Gtk2::TreeViewColumn->new_with_attributes( 
+            $titles[$i], $renderer, 'text' => $i); 
+      $column->set_sort_column_id($i);
+      $column->set_resizable(1);
+      if (($i == 7) && ($self->{'mode'} eq 'cert')) {
+         $column->set_cell_data_func ($renderer, sub {
+               my ($column, $cell, $model, $iter) = @_;
+               $text = $model->get($iter, 7);
+               $color = $text eq gettext("VALID")?'green':'red';
+               $cell->set (text => $text, foreground => $color);
+               });
+      }
+      $self->{'x509clist'}->append_column($column); 
+   }
 
-    update($self, $directory, $crlfile, $indexfile, $true);
-  }
+   if ((defined $self->{'mode'}) && ($self->{'mode'} eq 'cert')) {
+      $self->{'x509clist'}->get_selection->signal_connect('changed' => 
+            sub { _fill_info($self, 'cert') });
+   } elsif ((defined $self->{'mode'}) && ($self->{'mode'} eq 'req')) {
+      $self->{'x509clist'}->get_selection->signal_connect('changed' => 
+            sub { _fill_info($self, 'req') });
+   }
 
-  # or should we display requests?
-  elsif ((defined $mode) && ($mode eq "req")) {
-    $self->{'x509box'} = Gtk::VBox->new(0, 0);
-    # pane for list (top) and request infos (bottom)
-    $self->{'x509pane'} = Gtk::VPaned->new();
-    $self->{'x509pane'}->set_handle_size(10);
-    $self->{'x509pane'}->set_gutter_size(8);
-    $self->{'x509pane'}->set_position(280);
-    $self->{'x509box'}->add($self->{'x509pane'});
-
-    $self->{'browser'}->add($self->{'x509box'});
-
-    # now the list
-    $x509listwin = Gtk::ScrolledWindow->new(undef, undef);
-    $x509listwin->set_policy('automatic', 'automatic');
-    $self->{'x509pane'}->pack1($x509listwin, 1, 1);
-      
-    $self->{'x509clist'} = Gtk::CList->new_with_titles(@reqtitles);
-    # printf STDERR "Self: $self  X509CList: $self->{'x509clist'}\n";
-    $self->{'x509clist'}->set_sort_column (0);
-    $self->{'x509clist'}->signal_connect('click_column', \&_sort_clist);
-
-    for(my $i = 0; $i < 6; $i++) {
-       $self->{'x509clist'}->set_column_auto_resize ($i, 1);
-       }
-    $self->{'x509clist'}->signal_connect('select_row', 
-            \&_fill_info, $self, 'req' );
-    $self->{'x509clist'}->set_column_visibility(7, 0);
-    $x509listwin->add($self->{'x509clist'});
-
-    update($self, $directory, $crlfile, $indexfile, $true);
-
-    }
-  else {
-    # undefined mode (not cert, not req) -> do nothing
-    return undef;
-    }
-
+   $x509listwin->add($self->{'x509clist'});
+ 
+   update($self, $directory, $crlfile, $indexfile, $true);
+ 
 }
-
 
 sub update {
   my ($self, $directory, $crlfile, $indexfile, $force) = @_;
 
-  $self->{'actdir'}=$directory;
-  $self->{'actcrl'}=$crlfile;
-  $self->{'actindex'}=$indexfile;
+  $self->{'actdir'}   = $directory;
+  $self->{'actcrl'}   = $crlfile;
+  $self->{'actindex'} = $indexfile;
 
   # print STDERR "DEBUG: set new dir: $self->{'actdir'}\n";
 
   if ($self->{'mode'} eq "cert") {
-    update_cert($self, $directory, $crlfile, $indexfile, $force);
-    }
-  elsif ($self->{'mode'} eq "req") {
-    update_req($self, $directory, $crlfile, $indexfile, $force);
-    }
-  else {
-    return undef;
-    }
+     update_cert($self, $directory, $crlfile, $indexfile, $force);
+  } elsif ($self->{'mode'} eq "req") {
+     update_req($self, $directory, $crlfile, $indexfile, $force);
+  } elsif ($self->{'mode'} eq "key") {
+     update_key($self, $directory, $crlfile, $indexfile, $force);
+  } else {
+     return undef;
+  }
 
   if ((defined $self->{'infowin'}) && ($self->{'infowin'} ne "")) {
-    # $self->{'infowin'}->hide();
-    # undef $self->{'infowin'};
-    # add_info($self);
-    update_info($self);
-    }
+     update_info($self);
+  }
 
   $self->{'browser'}->show_all();
-  return $true;
-}
 
+  return($true);
+}
 
 sub update_req {
     my ($self, $directory, $crlfile, $indexfile, $force) = @_;
 
-    my ($ind);
+    my ($ind, $name, $state, @line, $iter);
 
-    $self->{'main'}->{'REQ'}->read_reqlist($directory, $crlfile, $indexfile,
-          $force, $self->{'main'});
+    $self->{'main'}->{'REQ'}->read_reqlist(
+          $directory, $crlfile, $indexfile, $force, $self->{'main'});
 
-    $self->{'x509clist'}->clear();
+    $self->{'x509store'}->clear();
 
-     $ind = 0;
-     foreach my $n (@{$self->{'main'}->{'REQ'}->{'reqlist'}}) {
-       my ($name, $state) = split(/\%/, $n);
-       my @line = split(/\:/, $name);
-       my $row = $self->{'x509clist'}->append(@line);
-       $self->{'x509clist'}->set_text($row, 7, $ind);
-       $ind++;
-     }
+    $ind = 0;
+    foreach my $n (@{$self->{'main'}->{'REQ'}->{'reqlist'}}) {
+      ($name, $state) = split(/\%/, $n);
+      @line = split(/\:/, $name);
+      $iter = $self->{'x509store'}->append();
+      $self->{'x509store'}->set($iter, 
+            0 => $line[0], 
+            1 => $line[1], 
+            2 => $line[2],
+            3 => $line[3], 
+            4 => $line[4], 
+            5 => $line[5], 
+            6 => $line[6], 
+            7 => $ind);
+      $ind++; 
+    }
      # now select the first row to display certificate informations
-     $self->{'x509clist'}->select_row(0, 0);
+     $self->{'x509clist'}->get_selection->select_path(
+           Gtk2::TreePath->new_first());
 
 }
 
 sub update_cert {
     my ($self, $directory, $crlfile, $indexfile, $force) = @_;
 
-    my ($ind);
+    my ($ind, $name, $state, @line, $iter);
 
-    $self->{'main'}->{'CERT'}->read_certlist($directory, $crlfile, $indexfile,
-          $force, $self->{'main'});
+    $self->{'main'}->{'CERT'}->read_certlist(
+          $directory, $crlfile, $indexfile, $force, $self->{'main'});
 
-    $self->{'x509clist'}->clear();
+    $self->{'x509store'}->clear();
 
-     $ind = 0;
-     foreach my $n (@{$self->{'main'}->{'CERT'}->{'certlist'}}) {
-       my ($name, $state) = split(/\%/, $n);
-       my @line = split(/\:/, $name);
-       my $row = $self->{'x509clist'}->append(@line);
-       $self->{'x509clist'}->set_text($row, 7, $state);
-       if($state eq gettext("VALID")) {
-         $self->{'x509clist'}->set_cell_style($row, 7, $self->{'stylegreen'});
-         }
-       else {
-         $self->{'x509clist'}->set_cell_style($row, 7, $self->{'stylered'});
-         }
-       $self->{'x509clist'}->set_text($row, 8, $ind);
-       $ind++;
-       }
+    $ind = 0;
+    foreach my $n (@{$self->{'main'}->{'CERT'}->{'certlist'}}) {
+       ($name, $state) = split(/\%/, $n);
+       @line = split(/\:/, $name);
+       $iter = $self->{'x509store'}->append();
+       $self->{'x509store'}->set($iter, 
+             0 => $line[0], 
+             1 => $line[1], 
+             2 => $line[2],
+             3 => $line[3], 
+             4 => $line[4], 
+             5 => $line[5], 
+             6 => $line[6], 
+             7 => $state, 
+             8 => $ind);
+
+       
+#       $self->{'x509clist'}->set_text($row, 7, $state);
+#       if($state eq gettext("VALID")) {
+#          $self->{'x509clist'}->set_cell_style($row, 7, $self->{'stylegreen'});
+#       } else {
+#          $self->{'x509clist'}->set_cell_style($row, 7, $self->{'stylered'});
+#       }
+#       $self->{'x509clist'}->set_text($row, 8, $ind);
+        $ind++;
+     }
      # now select the first row to display certificate informations
-     $self->{'x509clist'}->select_row(0, 0);
+     $self->{'x509clist'}->get_selection->select_path(
+           Gtk2::TreePath->new_first());
+}
+
+sub update_key {
+    my ($self, $directory, $crlfile, $indexfile, $force) = @_;
+
+    my ($ind, $name, @line, $iter, $state);
+
+    $self->{'main'}->{'KEY'}->read_keylist($self->{'main'});
+
+    $self->{'x509store'}->clear();
+
+    $ind = 0;
+    foreach my $n (@{$self->{'main'}->{'KEY'}->{'keylist'}}) {
+       ($name, $state) = split(/\%/, $n);
+       @line = split(/\:/, $name);
+       $iter = $self->{'x509store'}->append();
+       $self->{'x509store'}->set($iter, 
+             0 => $line[0], 
+             1 => $line[1], 
+             2 => $line[2],
+             3 => $line[3], 
+             4 => $line[4], 
+             5 => $line[5], 
+             6 => $line[6], 
+             7 => $state, 
+             8 => $ind);
+
+       
+#       $self->{'x509clist'}->set_text($row, 7, $state);
+#       if($state eq gettext("VALID")) {
+#          $self->{'x509clist'}->set_cell_style($row, 7, $self->{'stylegreen'});
+#       } else {
+#          $self->{'x509clist'}->set_cell_style($row, 7, $self->{'stylered'});
+#       }
+#       $self->{'x509clist'}->set_text($row, 8, $ind);
+        $ind++;
+     }
 }
 
 sub update_info {
@@ -454,19 +445,20 @@ sub update_info {
        $dn = MIME::Base64::encode($dn, '');
 
        if ($self->{'mode'} eq 'cert') { 
-          $parsed=$self->{'main'}->{'CERT'}->parse_cert($self->{'main'}, $dn,
-                $false);
-          $title = gettext("Certificate Information");
+          $parsed = $self->{'main'}->{'CERT'}->parse_cert($self->{'main'},
+                $dn, $false);
+          $title  = gettext("Certificate Information");
        } else { 
           $parsed = $self->{'main'}->{'REQ'}->parse_req($self->{'main'}, $dn,
                 $false);
           $title = gettext("Request Information");
        }
 
-       defined($parsed) || GUI::HELPERS::print_error(gettext("Can't read file"));
+       defined($parsed) || 
+          GUI::HELPERS::print_error(gettext("Can't read file"));
 
        if(not defined($self->{'infobox'})) { 
-          $self->{'infobox'}=Gtk::VBox->new();
+          $self->{'infobox'} = Gtk2::VBox->new();
        }
 
        # printf STDERR "DEBUG: Infowin: $self->{'infowin'}, infobox: $self->{'infobox'}\n";
@@ -496,14 +488,15 @@ sub add_info {
   # printf STDERR "Infowin: $self->{'infowin'}\n";
   # printf STDERR "x509clist: $self->{'x509clist'}\n";
 
-  $row=$self->{'x509clist'}->selection();
+  $row = $self->{'x509clist'}->get_selection->get_selected();
+
   if(defined($row)) { 
      if ($self->{'mode'} eq 'cert') { 
-        $index=$self->{'x509clist'}->get_text($row, 8);
-        $list = $self->{'main'}->{'CERT'}->{'certlist'};
+        $index = ($self->{'x509store'}->get($row))[8];
+        $list  = $self->{'main'}->{'CERT'}->{'certlist'};
      } else { 
-        $index=$self->{'x509clist'}->get_text($row, 7); 
-        $list = $self->{'main'}->{'REQ'}->{'reqlist'};
+        $index = ($self->{'x509store'}->get($row))[7];
+        $list  = $self->{'main'}->{'REQ'}->{'reqlist'};
      }
   }
 
@@ -524,7 +517,7 @@ sub add_info {
     defined($parsed) || GUI::HELPERS::print_error(gettext("Can't read file"));
 
     # printf STDERR "Infowin: $self->{'infowin'}\n";
-    $self->{'infobox'}=Gtk::VBox->new();
+    $self->{'infobox'} = Gtk2::VBox->new();
     $self->{'x509pane'}->pack2($self->{'infobox'}, 1, 1);
     $self->{'infowin'}->display($self->{'infobox'}, $parsed, $self->{'mode'},
           $title);
@@ -548,66 +541,47 @@ sub destroy {
 #
 # signal handler for selected list items
 # (updates the X509_infobox window) 
+# XXX why is that function needed??
 #
 sub _fill_info {
-   my ($clist, $self, $mode, $row, $column) = @_;
-
-   my ($index, $item, $status, $itemname, $parsed, $title, $list, $t);
+   my ($self) = @_;
 
    # print STDERR "DEBUG: fill_info: @_\n";
-
-   if (defined $self->{'infowin'}) { 
-      if($mode eq 'cert') { 
-         $index = $clist->get_text($row, 8);
-         $list =  $self->{'main'}->{'CERT'}->{'certlist'};
-      }elsif($mode eq 'req') {
-         $index = $clist->get_text($row, 7);
-         $list = $self->{'main'}->{'REQ'}->{'reqlist'};
-      }else {
-         $t = sprintf(gettext("Invalid mode for: _fill_info(): %s"), $mode);
-         GUI::HELPERS::print_error($t);
-         return;
-      }
- 
-      if (defined $index) {
-         update_info($self);
-      }
-   }
+   update_info($self) if (defined $self->{'infowin'});
 }
 
 sub selection_fname {
   my $self = shift;
 
-  my ($selected, $row, $index, $dn, $status, $filename, $mode, $list);
+  my ($selected, $row, $index, $dn, $status, $filename, $list);
 
-  $row   = $self->{'x509clist'}->selection();
-  if (not defined $row) {
-    return undef;
-    }
+  $row = $self->{'x509clist'}->get_selection->get_selected();
 
-  $mode=$self->{'mode'};
-  if ($mode eq 'req') {
-    $index = $self->{'x509clist'}->get_text($row, 7);
-    $list = $self->{'main'}->{'REQ'}->{'reqlist'};
-    }
-  elsif ($mode eq 'cert') {
-    $index = $self->{'x509clist'}->get_text($row, 8);
-    $list = $self->{'main'}->{'CERT'}->{'certlist'};
-    }
-  else {
-    GUI::HELPERS::print_error(
-           gettext("Invalid browser mode for selection_dn():"." ".$mode));
-    }
+  return undef if (not defined $row);
+
+  if ($self->{'mode'} eq 'req') {
+     $index = ($self->{'x509store'}->get($row))[7];
+     $list  = $self->{'main'}->{'REQ'}->{'reqlist'};
+  } elsif ($self->{'mode'} eq 'cert') {
+     $index = ($self->{'x509store'}->get($row))[8];
+     $list  = $self->{'main'}->{'CERT'}->{'certlist'};
+  } elsif ($self->{'mode'} eq 'key') {
+     $index = ($self->{'x509store'}->get($row))[8];
+     $list  = $self->{'main'}->{'KEY'}->{'certlist'};
+  } else {
+     GUI::HELPERS::print_error( 
+           gettext("Invalid browser mode for selection_fname():"." "
+              .$self->{'mode'}));
+  }
 
 
   if (defined $index) {
-    ($dn, $status) = split(/\%/, $list->[$index]);
-    $filename= MIME::Base64::encode($dn, '');
-    $filename=$self->{'actdir'}."/$filename".".pem";
-    }
-  else {
-    $filename = undef;
-    }
+     ($dn, $status) = split(/\%/, $list->[$index]);
+     $filename= MIME::Base64::encode($dn, '');
+     $filename=$self->{'actdir'}."/$filename".".pem";
+  } else {
+     $filename = undef;
+  }
 
   return($filename);
 }
@@ -615,45 +589,44 @@ sub selection_fname {
 sub selection_dn {
   my $self = shift;
 
-  my ($selected, $row, $index, $dn, $status, $mode, $list);
+  my ($selected, $row, $index, $dn, $status, $list);
 
-  $row   = $self->{'x509clist'}->selection();
-  if (not defined $row) {
-    return undef;
-    }
+  $row = $self->{'x509clist'}->get_selection->get_selected();
 
-  $mode=$self->{'mode'};
-  if ($mode eq 'req') {
-    $index = $self->{'x509clist'}->get_text($row, 7);
-    $list  = $self->{'main'}->{'REQ'}->{'reqlist'};
-    }
-  elsif ($mode eq 'cert') {
-    $index = $self->{'x509clist'}->get_text($row, 8);
-    $list  = $self->{'main'}->{'CERT'}->{'certlist'};
-    }
-  else {
-    GUI::HELPERS::print_error(
-           gettext("Invalid browser mode for selection_dn():"." ".$mode));
-    }
+  return undef if (not defined $row);
 
-  if (defined $index) {
-    ($dn, $status) = split(/\%/, $list->[$index]);
-    }
-  else {
-    $dn = undef;
-    }
+  if ($self->{'mode'} eq 'req') { 
+     $index = ($self->{'x509store'}->get($row))[7];
+     $list  = $self->{'main'}->{'REQ'}->{'reqlist'};
+  } elsif ($self->{'mode'} eq 'cert') {
+     $index = ($self->{'x509store'}->get($row))[8];
+     $list  = $self->{'main'}->{'CERT'}->{'certlist'};
+  } elsif ($self->{'mode'} eq 'key') {
+     $index = ($self->{'x509store'}->get($row))[8];
+     $list  = $self->{'main'}->{'KEY'}->{'keylist'};
+  } else {
+     GUI::HELPERS::print_error( 
+           gettext("Invalid browser mode for selection_dn():"." "
+              .$self->{'mode'}));
+  }
+
+  if (defined $index) { 
+     ($dn, $status) = split(/\%/, $list->[$index]);
+  } else {
+     $dn = undef;
+  }
+
   return($dn);
 }
 
 sub selection_cadir {
   my $self = shift;
 
-  my ($selected, $dir);
+  my $dir;
 
-  $dir   = $self->{'actdir'};
+  $dir = $self->{'actdir'};
   # cut off the last directory name to provide the ca-directory
-  $dir =~ s/\/certs$//;
-  $dir =~ s/\/req$//;
+  $dir =~ s/\/certs|\/req|\/keys$//;
   return($dir);
 }
 
@@ -670,21 +643,21 @@ sub selection_caname {
 sub selection_cn {
   my $self = shift;
 
-  my ($selected, $row, $index, $cn, $mode);
+  my ($selected, $row, $index, $cn);
 
-  $row   = $self->{'x509clist'}->selection();
-  if (not defined $row) {
-    return undef;
-    }
+  $row = $self->{'x509clist'}->get_selection->get_selected();
 
-  $mode=$self->{'mode'};
-  if (($mode eq 'req') || ($mode eq 'cert')) {
-    $cn = $self->{'x509clist'}->get_text($row, 0);
-    }
-  else {
-    GUI::HELPERS::print_error(
-           gettext("Invalid browser mode for selection_cn():"." ".$mode));
-    }
+  return undef if (not defined $row);
+
+  if (($self->{'mode'} eq 'req') || 
+      ($self->{'mode'} eq 'cert')|| 
+      ($self->{'mode'} eq 'key')) {
+     $cn = ($self->{'x509store'}->get($row))[0];
+  } else {
+     GUI::HELPERS::print_error( 
+           gettext("Invalid browser mode for selection_cn():"." "
+              .$self->{'mode'}));
+  }
 
   return($cn);
 }
@@ -692,57 +665,76 @@ sub selection_cn {
 sub selection_email {
   my $self = shift;
 
-  my ($selected, $row, $index, $email, $mode);
+  my ($selected, $row, $index, $email);
 
-  $row   = $self->{'x509clist'}->selection();
-  if (not defined $row) {
-    return undef;
-    }
+  $row = $self->{'x509clist'}->get_selection->get_selected();
+  return undef if (not defined $row);
 
-  $mode=$self->{'mode'};
-  if (($mode eq 'req') || ($mode eq 'cert')) {
-    $email = $self->{'x509clist'}->get_text($row, 1);
-    }
-  else {
-    GUI::HELPERS::print_error(
-           gettext("Invalid browser mode for selection_cn():"." ".$mode));
-    }
+  if (($self->{'mode'} eq 'req') || 
+      ($self->{'mode'} eq 'cert') ||
+      ($self->{'mode'} eq 'key')) {
+     $email = ($self->{'x509store'}->get($row))[1];
+  } else {
+     GUI::HELPERS::print_error(
+           gettext("Invalid browser mode for selection_cn():"." "
+              .$self->{'mode'}));
+  }
 
   return($email);
 }
 
-
 sub selection_status {
   my $self = shift;
 
-  my ($selected, $row, $index, $dn, $status, $mode, $list);
+  my ($selected, $row, $index, $dn, $status, $list);
 
-  $row   = $self->{'x509clist'}->selection();
-  if (not defined $row) {
-    return undef;
-    }
+  $row = $self->{'x509clist'}->get_selection->get_selected();
+  
+  return undef if (not defined $row);
 
-  $mode=$self->{'mode'};
-  if ($mode eq 'req') {
-    $index = $self->{'x509clist'}->get_text($row, 7);
-    $list  = $self->{'main'}->{'REQ'}->{'reqlist'};
-    }
-  elsif ($mode eq 'cert') {
-    $index = $self->{'x509clist'}->get_text($row, 8);
-    $list  = $self->{'main'}->{'CERT'}->{'certlist'};
-    }
-  else {
-    GUI::HELPERS::print_error(
-           gettext("Invalid browser mode for selection_status():"." ".$mode));
-    }
+  if ($self->{'mode'} eq 'cert') {
+     $index = ($self->{'x509store'}->get($row))[8];
+     $list  = $self->{'main'}->{'CERT'}->{'certlist'};
+  } else {
+     GUI::HELPERS::print_error( 
+           gettext("Invalid browser mode for selection_status():"." "
+              .$self->{'mode'}));
+  }
 
-  if (defined $index) {
-    ($dn, $status) = split(/\%/, $list->[$index]);
-    }
-  else {
-    $status = undef;
-    }
+  if (defined $index) { 
+     ($dn, $status) = split(/\%/, $list->[$index]);
+  } else {
+     $status = undef;
+  }
+
   return($status);
+}
+
+sub selection_type {
+  my $self = shift;
+
+  my ($selected, $row, $index, $dn, $type, $list);
+
+  $row = $self->{'x509clist'}->get_selection->get_selected();
+  
+  return undef if (not defined $row);
+
+  if ($self->{'mode'} eq 'key') {
+     $index = ($self->{'x509store'}->get($row))[8];
+     $list  = $self->{'main'}->{'KEY'}->{'keylist'};
+  } else {
+     GUI::HELPERS::print_error( 
+           gettext("Invalid browser mode for selection_type():"." "
+              .$self->{'mode'}));
+  }
+
+  if (defined $index) { 
+     ($dn, $type) = split(/\%/, $list->[$index]);
+  } else {
+     $type = undef;
+  }
+
+  return($type);
 }
 
 
@@ -812,15 +804,17 @@ sub _show_cert_menu {
 
    return(0);
 }
- 
+
 $true;
+
+
 
 
 __END__
 
 =head1 NAME
 
-GUI::X509_browser - Perl-Gtk browser for X.509 certificates and requests
+GUI::X509_browser - Perl-Gtk2 browser for X.509 certificates and requests
 
 =head1 SYNOPSIS
 
@@ -838,7 +832,7 @@ GUI::X509_browser - Perl-Gtk browser for X.509 certificates and requests
 =head1 DESCRIPTION
 
 This displays a browser for X.509v3 certificates or certification
-requests (CSR) from a CA managed by TinyCA (or some similar
+requests (CSR) from a CA managed by TinyCA2 (or some similar
 structure).
 
 Creation of an X509_browser is done by calling B<new()>,
@@ -853,7 +847,7 @@ all arguments are optional.
 
 =item $title:
 
-the existing Gtk::VBox inside which the info will be
+the existing Gtk2::VBox inside which the info will be
 displayed.
 
 =item $oktext:

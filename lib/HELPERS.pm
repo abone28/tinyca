@@ -1,7 +1,7 @@
 # Copyright (c) Olaf Gellert <og@pre-secure.de> and
 #               Stephan Martin <sm@sm-zone.net>
 #
-# $Id: HELPERS.pm,v 1.12 2005/02/20 16:02:21 sm Exp $
+# $Id: HELPERS.pm,v 1.3 2005/04/08 10:54:52 sm Exp $
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -19,9 +19,6 @@
 
 use strict;
 package HELPERS;
-
-#use Gtk;
-#use Gnome;
 
 use POSIX;
 use Locale::gettext;
@@ -89,14 +86,12 @@ sub exit_clean {
    $ret = 0 unless(defined $ret);
    
    # hack to avoid busy cursor
-   my $rootwin = Gtk::Gdk->ROOT_PARENT();
-   my $cursor  = Gtk::Gdk::Cursor->new(68);
+   my $rootwin = Gtk2::Gdk->get_default_root_window();
+   my $cursor  = Gtk2::Gdk::Cursor->new('left-ptr');
 
    $rootwin->set_cursor($cursor);
    
-   Gtk->exit($ret);
-
-   exit($ret);
+   Gtk2->main_quit($ret);
 }
 
 #
@@ -116,6 +111,7 @@ sub parse_dn {
       s/^\s+//;
       s/\s+$//;
       ($k, $v) = split(/=/);
+      next if(not defined($k));
       if($k =~ /ou/i) {
          $tmp->{'OU'} or  $tmp->{'OU'} = [];
          push(@{$tmp->{'OU'}}, $v);
@@ -381,39 +377,3 @@ In all other cases treat it as a DNS name.
 =back
 
 =cut
-
-#
-# $Log: HELPERS.pm,v $
-# Revision 1.12  2005/02/20 16:02:21  sm
-# added patch for multiple subjectAltNames
-#
-# Revision 1.11  2005/02/13 21:04:07  sm
-# added multiple ou patch from arndt@uni-koblenz.de
-# removed CrlDistributionPoint for Root-CA
-# added detection for openssl 0.9.8
-#
-# Revision 1.10  2004/07/15 09:01:05  sm
-# added hack to avoid busy cursor after exit
-#
-# Revision 1.9  2004/07/08 20:18:21  sm
-# remeber last used export directory
-#
-# Revision 1.8  2004/07/08 14:28:06  sm
-# store export path in file
-#
-# Revision 1.7  2004/06/16 07:21:11  sm
-# avoid warning cause undefined var
-#
-# Revision 1.6  2004/06/08 17:05:47  sm
-# added perldoc documentation
-#
-# Revision 1.5  2004/06/08 16:23:30  sm
-# extracted parse_extensions() to HELPERS.pm
-#
-# Revision 1.4  2004/06/08 14:09:18  sm
-# extracted parse_dn() to HELPERS.pm
-#
-# Revision 1.3  2004/05/26 12:22:02  sm
-# added Log
-#
-#

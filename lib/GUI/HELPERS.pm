@@ -1,6 +1,6 @@
 # Copyright (c) Stephan Martin <sm@sm-zone.net>
 #
-# $Id: HELPERS.pm,v 1.12 2004/07/08 10:19:08 sm Exp $
+# $Id: HELPERS.pm,v 1.5 2005/04/08 13:48:12 sm Exp $
 # 
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -28,41 +28,36 @@ use Locale::gettext;
 sub print_error {
    my ($t, $ext) = @_;
    
-   my ($box, $button, $dbutton, $actionarea);
+   my ($box, $button, $dbutton, $expander, $text, $scrolled, $buffer);
 
-   $box = Gnome::MessageBox->new($t, 'error');
-   $box->close_hides(0);
-   $box->set_close(1);
-   $box->set_position('mouse' );
-   $box->set_policy(0, 0, 0);
-   $box->set_modal(1);
-   $box->realize();
-
-   $button = Gnome::Stock->button('Button_Ok');
+   $button = Gtk2::Button->new_from_stock('gtk-ok');
    $button->signal_connect('clicked', sub { HELPERS::exit_clean(1) });
    $button->can_default(1);
 
-   $actionarea = Gtk::HButtonBox->new();
-   $box->vbox->add($actionarea);
-   $actionarea->pack_start($button, 1, 1, 0);
-   $actionarea->set_layout('end');
+   $box = Gtk2::MessageDialog->new(
+         undef, [qw/destroy-with-parent modal/], 'error', 'none', $t);
+   $box->set_default_size(600, 0);
+   $box->set_resizable(1);
 
    if(defined($ext)) {
-      $dbutton = Gtk::Button->new_with_label(gettext("Details"));
-      $box->{'shown'}      = 0;
-      $box->{'actionarea'} = $actionarea;
-      $box->{'dbutton'}    = $dbutton;
-      $dbutton->signal_connect('clicked', 
-            sub { GUI::HELPERS::toggle_textfield( $box, $ext) });
-      $dbutton->can_default(1);
-      $actionarea->pack_start($dbutton, 1, 1, 0);
-      $actionarea->set_layout('spread');
+      $buffer = Gtk2::TextBuffer->new();
+      $buffer->set_text($ext);
+
+      $text = Gtk2::TextView->new_with_buffer($buffer);
+      $text->set_editable(0);
+      $text->set_wrap_mode('word');
+
+      $scrolled = Gtk2::ScrolledWindow->new(undef, undef);
+      $scrolled->set_policy('never', 'automatic');
+      $scrolled->set_shadow_type('etched-in');
+      $scrolled->add($text);
+
+      $expander = Gtk2::Expander->new(gettext("Command Details"));
+      $expander->add($scrolled);
+      $box->vbox->add($expander);
    }
 
-   $actionarea->set_spacing(6);
-   $actionarea->set_child_ipadding(7, 0);
-
-   $button->grab_default();
+   $box->add_action_widget($button, 0);
 
    $box->show_all();
 }
@@ -73,42 +68,35 @@ sub print_error {
 sub print_warning {
    my ($t, $ext) = @_;
 
-   my ($box, $button, $dbutton, $actionarea);
+   my ($box, $button, $dbutton, $expander, $text, $scrolled, $buffer);
 
-   $box = Gnome::MessageBox->new($t, 'warning');
-   $box->close_hides(0);
-   $box->set_close(1);
-   $box->set_position('mouse' );
-   $box->set_policy(0, 1, 0);
-   $box->set_default_size(440, 0);
-   $box->set_modal(1);
-   $box->realize();
-
-   $button = Gnome::Stock->button('Button_Ok');
+   $button = Gtk2::Button->new_from_stock('gtk-ok');
    $button->signal_connect('clicked', sub { $box->destroy() });
    $button->can_default(1);
 
-   $actionarea = Gtk::HButtonBox->new();
-   $box->vbox->add($actionarea);
-   $actionarea->pack_start($button, 1, 1, 0);
-   $actionarea->set_layout('end');
+   $box = Gtk2::MessageDialog->new(
+         undef, [qw/destroy-with-parent modal/], 'warning', 'none', $t);
+   $box->set_default_size(600, 0);
+   $box->set_resizable(1);
 
    if(defined($ext)) {
-      $dbutton = Gtk::Button->new_with_label(gettext("Details"));
-      $box->{'shown'}      = 0;
-      $box->{'actionarea'} = $actionarea;
-      $box->{'dbutton'}    = $dbutton;
-      $dbutton->signal_connect('clicked', 
-            sub { GUI::HELPERS::toggle_textfield( $box, $ext) });
-      $dbutton->can_default(1);
-      $actionarea->pack_start($dbutton, 1, 1, 0);
-      $actionarea->set_layout('spread');
+      $buffer = Gtk2::TextBuffer->new();
+      $buffer->set_text($ext);
+
+      $text = Gtk2::TextView->new_with_buffer($buffer);
+      $text->set_editable(0);
+      $text->set_wrap_mode('word');
+
+      $scrolled = Gtk2::ScrolledWindow->new(undef, undef);
+      $scrolled->set_policy('never', 'automatic');
+      $scrolled->set_shadow_type('etched-in');
+      $scrolled->add($text);
+
+      $expander = Gtk2::Expander->new(gettext("Command Details"));
+      $expander->add($scrolled);
+      $box->vbox->add($expander);
    }
-
-   $actionarea->set_spacing(6);
-   $actionarea->set_child_ipadding(7, 0);
-
-   $button->grab_default();
+   $box->add_action_widget($button, 0);
 
    $box->show_all();
 
@@ -121,42 +109,35 @@ sub print_warning {
 sub print_info {
    my ($t, $ext) = @_;
 
-   my ($box, $button, $dbutton, $actionarea);
+   my ($box, $button, $dbutton, $buffer, $text, $scrolled, $expander);
 
-   $box = Gnome::MessageBox->new($t, 'info');
-   $box->close_hides(0);
-   $box->set_close(1);
-   $box->set_position('mouse' );
-   $box->set_policy(0, 1, 0);
-   $box->set_default_size(440, 0);
-   $box->set_modal(1);
-   $box->realize();
-
-   $button = Gnome::Stock->button('Button_Ok');
+   $button = Gtk2::Button->new_from_stock('gtk-ok');
    $button->signal_connect('clicked', sub { $box->destroy() });
    $button->can_default(1);
 
-   $actionarea = Gtk::HButtonBox->new();
-   $box->vbox->add($actionarea);
-   $actionarea->pack_start($button, 1, 1, 0);
-   $actionarea->set_layout('end');
+   $box = Gtk2::MessageDialog->new(
+         undef, [qw/destroy-with-parent modal/], 'info', 'none', $t);
+   $box->set_default_size(600, 0);
+   $box->set_resizable(1);
 
    if(defined($ext)) {
-      $dbutton = Gtk::Button->new_with_label(gettext("Details"));
-      $box->{'shown'}      = 0;
-      $box->{'actionarea'} = $actionarea;
-      $box->{'dbutton'}    = $dbutton;
-      $dbutton->signal_connect('clicked', 
-            sub { GUI::HELPERS::toggle_textfield( $box, $ext) });
-      $dbutton->can_default(1);
-      $actionarea->pack_start($dbutton, 1, 1, 0);
-      $actionarea->set_layout('spread');
+      $buffer = Gtk2::TextBuffer->new();
+      $buffer->set_text($ext);
+
+      $text = Gtk2::TextView->new_with_buffer($buffer);
+      $text->set_editable(0);
+      $text->set_wrap_mode('word');
+
+      $scrolled = Gtk2::ScrolledWindow->new(undef, undef);
+      $scrolled->set_policy('never', 'automatic');
+      $scrolled->set_shadow_type('etched-in');
+      $scrolled->add($text);
+
+      $expander = Gtk2::Expander->new(gettext("Command Details"));
+      $expander->add($scrolled);
+      $box->vbox->add($expander);
    }
-
-   $actionarea->set_spacing(6);
-   $actionarea->set_child_ipadding(7, 0);
-
-   $button->grab_default();
+   $box->add_action_widget($button, 0);
 
    $box->show_all();
 
@@ -169,27 +150,21 @@ sub print_info {
 sub dialog_box {
    my ($title, $text, $button1, $button2) = @_;
 
-   my $box = Gnome::Dialog->new($title);
-   $box->close_hides(0);
-   $box->set_close(0);
-   $box->set_position('center');
-   $box->set_policy(0, 1, 0);
-   $box->set_modal(0);
+   my $box = Gtk2::Dialog->new($title, undef, ["destroy-with-parent"]);
 
-   $box->action_area->set_layout('end');
-   $box->action_area->set_spacing(6);
-   $box->action_area->set_child_ipadding(7, 0);
-   $box->action_area->pack_start($button1, 1, 1, 0);
+   $box->add_action_widget($button1, 0);
 
    if(defined($button2)) {
+      $box->add_action_widget($button2, 0);
       $box->action_area->set_layout('spread');
-      $box->action_area->pack_start($button2, 1, 1, 0);
    }
 
    if(defined($text)) {
       my $label = create_label($text, 'center', 0, 1);
       $box->vbox->pack_start($label, 0, 0, 0);
    }
+
+   $box->signal_connect(response => sub { $box->destroy });
 
    return($box);
 }
@@ -200,26 +175,22 @@ sub dialog_box {
 sub create_label {
    my ($text, $mode, $wrap, $bold) = @_;
 
-   my $label = Gtk::Label->new($text);
-   $label->set_justify($mode);
-   if($mode eq 'center') {
-      $label->set_alignment(0.5, 0.5);
-   }elsif($mode eq 'left') {
-      $label->set_alignment(0, 0);
-   }elsif($mode eq 'right') {
-      $label->set_alignment(1, 1);
-   }
-   $label->set_line_wrap($wrap);
-   if($bold) {
-      my $font    = Gtk::Gdk::Font->fontset_load(
-            "-adobe-helvetica-bold-r-normal--*-120-*-*-*-*-*-*"
-            );  
-      if(defined($font)) {
-         my $stylebold = Gtk::Style->new();
-         $stylebold->font($font);
-         $label->set_style($stylebold);
-      }
-   }
+   $text = "<b>$text</b>" if($bold);
+
+   my $label = Gtk2::Label->new($text);
+
+   $label->set_justify($mode); 
+   if($mode eq 'center') { 
+      $label->set_alignment(0.5, 0.5); 
+   }elsif($mode eq 'left') { 
+      $label->set_alignment(0, 0); 
+   }elsif($mode eq 'right') { 
+      $label->set_alignment(1, 1); 
+   } 
+   
+   $label->set_line_wrap($wrap); 
+   
+   $label->set_markup($text) if($bold);
    
    return($label);
 }
@@ -257,11 +228,12 @@ sub entry_to_table {
    $label = create_label($text, 'left', 0, 0);
    $table->attach_defaults($label, 0, 1, $row, $row+1);
 
-   $entry = Gtk::Entry->new();
+   $entry = Gtk2::Entry->new();
    $entry->set_text($$var) if(defined($$var));
+
    $table->attach_defaults($entry, 1, 2, $row, $row+1);
-   $entry->signal_connect('changed', 
-         \&GUI::CALLBACK::entry_to_var, $entry, $var, $box);
+   $entry->signal_connect('changed' =>
+         sub {GUI::CALLBACK::entry_to_var($entry, $entry, $var, $box)} );
    $entry->set_visibility($visibility);
 
    return($entry);
@@ -279,51 +251,17 @@ sub sort_clist {
    return(1);
 }
 
-#
-# add/remove textfield with errormessages to dialog
-#
-sub toggle_textfield {
-   my ($box, $ext) = @_;
-
-   my ($scrolled, $text);
-   
-   if(not $box->{'shown'}) {
-      $scrolled = Gtk::ScrolledWindow->new(undef, undef);
-      $scrolled->set_policy('automatic', 'automatic');
-      $box->vbox->add($scrolled);
-
-      $text = Gtk::Text->new();
-      $text->set_editable(0);
-      $text->set_word_wrap(0);
-      $text->set_line_wrap(1);
-
-      $text->insert(undef, undef, undef, $ext);
-
-      $scrolled->add($text);
-
-      $box->{'shown'}    = 1;
-      $box->{'scrolled'} = $scrolled;
-   } elsif ($box->{'shown'} && defined($box->{'scrolled'})) {
-      $box->{'scrolled'}->destroy();
-      $box->{'scrolled'} = undef;
-      $box->{'shown'}    = 0;
-      $box->set_policy(1, 1, 1);
-      $box->set_default_size(440, 0);
-   }
-
-   $box->show_all();
-
-   return;
-}
-
 sub create_activity_bar {
    my ($t) = @_;
 
-   my $box = Gnome::MessageBox->new($t, 'info');
+   my($box, $bar);
 
-   my $bar = Gtk::ProgressBar->new();
-      $bar->set_activity_mode(1);
-      $bar->set_activity_step(3);
+   $box = Gtk2::MessageDialog->new(
+      undef, [qw/destroy-with-parent modal/], 'info', 'none', $t);
+
+   $bar = Gtk2::ProgressBar->new();
+   $bar->pulse();
+   $bar->set_pulse_step(0.1);
 
    $box->vbox->add($bar);
 
@@ -344,9 +282,56 @@ sub set_cursor {
    } else {
       $main->{'rootwin'}->set_cursor($main->{'cursor'});
    }
-   while(Gtk->events_pending) {
-      Gtk->main_iteration;
+   while(Gtk2->events_pending) {
+      Gtk2->main_iteration;
    }
+}
+
+#
+# call file chooser
+#
+sub browse_file {
+   my($title, $entry, $mode) = @_;
+
+   my($file_chooser, $filename, $filter);
+
+   $file_chooser = Gtk2::FileChooserDialog->new ($title, undef, $mode, 
+         'gtk-cancel' => 'cancel', 
+         'gtk-ok' => 'ok'); 
+
+   $file_chooser->add_shortcut_folder ('/tmp');
+
+   if($mode eq 'open') {
+      $filter = Gtk2::FileFilter->new();
+      $filter->set_name(gettext("Request Files (*.pem, *.der, *.req)"));
+      $filter->add_pattern("*.pem");
+      $filter->add_pattern("*.der");
+      $filter->add_pattern("*.req");
+      $file_chooser->add_filter($filter);
+
+      $filter = Gtk2::FileFilter->new();
+      $filter->set_name(gettext("All Files (*.*)"));
+      $filter->add_pattern("*");
+      $file_chooser->add_filter($filter);
+   }
+
+   if ('ok' eq $file_chooser->run) {
+      $filename = $file_chooser->get_filename();
+      $entry->set_text($filename);
+   }
+
+   $file_chooser->destroy();
+}
+
+#
+# set text in statusbar
+#
+sub set_status {
+   my ($main, $t) = @_;
+
+   $main->{'bar'}->pop($main->{'lastid'}) if(defined($main->{'lastid'}));
+   $main->{'lastid'} = $main->{'bar'}->get_context_id('gargs');
+   $main->{'bar'}->push($main->{'lastid'}, $t);
 }
 
 1
@@ -366,8 +351,9 @@ GUI
  GUI::HELPERS::print_warning($text, $ext);
  GUI::HELPERS::print_error($text, $ext);
  GUI::HELPERS::sort_clist($clist, $col);
- GUI::HELPERS::toggle_textfield($box, $ext);
  GUI::HELPERS::set_cursor($main, $busy);
+ GUI::HELPERS::browse_file($main, $entry, $mode);
+ GUI::HELPERS::set_status($main, $text);
 
  $box   = GUI::HELPERS::dialog_box(
        $title, $text, $button1, $button2);
@@ -380,14 +366,14 @@ GUI
 
 =head1 DESCRIPTION
 
-GUI::HELPERS.pm is just a library, containing some useful functions used by
-other TinyCA modules. All functions are related to the GUI.
+GUI::HELPERS.pm is a library, containing some useful functions used by other
+TinyCA2 modules. All functions are related to the GUI.
 
 =head2 GUI::HELPERS::print_info($text, $ext);
 
 =over 1
 
-creates an Gnome::MessageBox of the type info. The string given in $text is
+creates an Gtk2::MessageDialog of the type info. The string given in $text is
 shown as message, the (multiline) string $ext is available through the
 "Details" Button.
 
@@ -397,8 +383,8 @@ shown as message, the (multiline) string $ext is available through the
 
 =over 1
 
-is identically with GUI::HELPERS::print_warning(), only the Gnome::MessageBox
-is of type warning.
+is identically with GUI::HELPERS::print_warning(), only the
+Gtk2::MessageDialog is of type warning.
 
 =back
 
@@ -406,7 +392,7 @@ is of type warning.
 
 =over 1
 
-is identically with GUI::HELPERS::print_info(), only the Gnome::MessageBox
+is identically with GUI::HELPERS::print_info(), only the Gtk2::MessageDialogog
 is of type error and the program will shut down after closing the message.
 
 =back
@@ -419,22 +405,11 @@ sorts the clist with the values from the given column $col.
    
 =back
 
-=head2 GUI::HELPERS::toggle_textfield($box, $ext);
-
-=over 1
-
-is called by GUI::HELPERS::print_() functions to show or hide the text field
-with extended messages in the messagebox. $box contains the reference to the
-Gnome::MessageBox and $ext contains the (multiline) string with the extended
-message.
-
-=back
-
 =head2 GUI::HELPERS::dialog_box($title, $text, $button1, $button2);
 
 =over 1
 
-returns the reference to a new window of type Gnome::Dialog. $title and
+returns the reference to a new window of type Gtk2::Dialog. $title and
 $button1 must be given.  $text and $button2 are optional arguments and can be
 undef.
 
@@ -444,7 +419,7 @@ undef.
 
 =over 1
 
-returns the reference to a new Gtk::Label. $mode can be "center", "left" or
+returns the reference to a new Gtk2::Label. $mode can be "center", "left" or
 "right". $wrap and $bold are boolean values.
 
 =back
@@ -467,7 +442,7 @@ The function returns the number of the next free row in the table.
 
 adds a new row to $table. The new row is appended at $row and has two columns:
 the first will contain a label with the content of the string $text, the
-second one will contain a textentry Gtk::Entry, associated with the variable
+second one will contain a textentry Gtk2::Entry, associated with the variable
 $var. $visibility controls, if the entered text will be displayed or not
 (passwords).
 The function returns the reference to the new created entry.
@@ -484,48 +459,22 @@ This functions returns nothing;
 
 =back
 
+=head2 GUI::HELPERS::browse_file($main, $entry, $mode);
+
+=over 1
+
+opens a FileChooser dialog to select files or directories. $entry is a
+reference to the variable, where the selected path shall be stored. If $mode
+is set to "open", then only files with appropriate suffixes are displyed.
+
+=back
+
+=head2 GUI::HELPERS::set_status($main, $text);
+
+=over 1
+
+sets the text in $text to the statusbar at the bottom of the window.
+
+=back
+
 =cut
-# 
-# $Log: HELPERS.pm,v $
-# Revision 1.12  2004/07/08 10:19:08  sm
-# added busy mouse-pointer
-# use correct configuration when renewing certificate
-#
-# Revision 1.11  2004/07/02 07:36:52  sm
-# added statusbar during key creation
-#
-# Revision 1.10  2004/06/09 13:48:29  sm
-# fixed all calls to OpenSSL containing $main
-# fixed callbacks with wrong $words reference
-# fixed some typos and wordings
-#
-# Revision 1.9  2004/06/09 09:32:32  sm
-# added perldoc
-#
-# Revision 1.8  2004/05/26 10:28:32  sm
-# added extended errormessages to every call of openssl
-#
-# Revision 1.7  2004/05/26 07:48:36  sm
-# adapted functions once more :-)
-#
-# Revision 1.6  2004/05/26 07:25:47  sm
-# moved print_* to GUI::HELPERS.pm
-#
-# Revision 1.5  2004/05/26 07:22:20  sm
-# added toggle_textfield
-#
-# Revision 1.4  2004/05/26 07:03:40  arasca
-# Moved miscellaneous functions to new module HELPERS.pm, removed
-# Messages.pm and adapted the remaining modules accordingly.
-#
-# Revision 1.3  2004/05/25 14:44:42  sm
-# added textfield to warning dialog
-#
-# Revision 1.2  2004/05/24 16:05:00  sm
-# some more helpers
-#
-# Revision 1.1  2004/05/23 18:27:13  sm
-# initial checkin
-# structural changes
-#
-#

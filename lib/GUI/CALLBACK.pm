@@ -1,6 +1,6 @@
 # Copyright (c) Stephan Martin <sm@sm-zone.net>
 #
-# $Id: CALLBACK.pm,v 1.3 2005/02/20 16:02:22 sm Exp $
+# $Id: CALLBACK.pm,v 1.1.1.1 2005/03/31 18:52:57 sm Exp $
 # 
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -34,7 +34,10 @@ sub entry_to_var {
       $$var = $entry->get_text();
    }
 
-   $box->set_modified(1) if(defined($box));
+   if(defined($box)) {
+      $box->{'button_ok'}->set_sensitive(1);
+      $box->{'button_apply'}->set_sensitive(1);
+   }
 
    return;
 }
@@ -58,6 +61,7 @@ sub entry_to_var_san {
          $radio3->set_sensitive(1) if(defined($radio3));
          $radio4->set_sensitive(1) if(defined($radio4));
       }else{
+         print STDERR "set sensitive(0)\n";
          $radio1->set_sensitive(0) if(defined($radio1));
          $radio2->set_sensitive(0) if(defined($radio2));
          $radio3->set_sensitive(0) if(defined($radio3));
@@ -67,7 +71,10 @@ sub entry_to_var_san {
       $$var = $entry->get_text();
    }
 
-   $box->set_modified(1) if(defined($box));
+   if(defined($box)) {
+      $box->{'button_ok'}->set_sensitive(1);
+      $box->{'button_apply'}->set_sensitive(1);
+   }
 
    return;
 }
@@ -98,7 +105,10 @@ sub entry_to_var_key {
       $$var = $entry->get_text();
    }
 
-   $box->set_modified(1) if(defined($box));
+   if(defined($box)) {
+      $box->{'button_ok'}->set_sensitive(1);
+      $box->{'button_apply'}->set_sensitive(1);
+   }
 
    return;
 }
@@ -110,12 +120,14 @@ sub toggle_to_var {
    my ($button, $var, $value, $outfileref, $formatref, $fileentry, $pass1,
          $pass2) = @_;
 
-   $$var = $value if($button->active());
+   $$var = $value;
 
    if(defined($outfileref) && defined($formatref)) {
       if($$outfileref =~ s/\.(pem|der|txt|p12|zip)$//i) {
          $$outfileref .= "." . lc $$formatref;
-         $fileentry->gnome_entry->entry->set_text($$outfileref);
+         # something seem broken, need tmp var
+         my $tmp = $$outfileref;
+         $fileentry->set_text($tmp);
       }
    }
    if(defined($pass1) && defined($pass2)) {
@@ -142,10 +154,11 @@ sub toggle_to_var {
 sub toggle_to_var_pref {
    my ($button, $var, $value, $box) = @_;
 
-   $$var = $value if($button->active());
+   $$var = $value;
 
-   if(defined($box) && defined($box->notebook->cur_page())) {
-      $box->set_modified(1);
+   if(defined($box) && defined($box->{'nb'}->get_current_page())) {
+      $box->{'button_ok'}->set_sensitive(1);
+      $box->{'button_apply'}->set_sensitive(1);
    }
 
    return;
@@ -153,16 +166,3 @@ sub toggle_to_var_pref {
 
 1
 
-# 
-# $Log: CALLBACK.pm,v $
-# Revision 1.3  2005/02/20 16:02:22  sm
-# added patch for multiple subjectAltNames
-#
-# Revision 1.2  2004/07/09 10:00:08  sm
-# added configuration for extendedKyUsage
-#
-# Revision 1.1  2004/05/23 18:27:13  sm
-# initial checkin
-# structural changes
-#
-#

@@ -1,6 +1,6 @@
 # Copyright (c) Stephan Martin <sm@sm-zone.net>
 #
-# $Id: REQ.pm,v 1.46 2005/02/13 21:04:07 sm Exp $
+# $Id: REQ.pm,v 1.1.1.1 2005/03/31 18:52:57 sm Exp $
 # 
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -195,14 +195,16 @@ sub create_req {
    }
 
    my $parsed = $self->parse_req($main, $opts->{'reqname'}, 1);
-   # print STDERR "DEBUG: returned from parse_req: $parsed->{'KEYSIZE'}\n";
 
    $main->{'reqbrowser'}->update($cadir."/req",
                                  $cadir."/crl/crl.pem",
                                  $cadir."/index.txt",
                                  0); 
 
-   $main->update_keys();
+   $main->{'keybrowser'}->update($cadir."/keys",
+                                 $cadir."/crl/crl.pem",
+                                 $cadir."/index.txt",
+                                 0);
 
    GUI::HELPERS::set_cursor($main, 0);
 
@@ -304,6 +306,8 @@ sub read_reqlist {
    }
    rewinddir(DIR);
 
+   $main->{'barbox'}->pack_start($main->{'progress'}, 0, 0, 0);
+   $main->{'progress'}->show();
    while($f = readdir(DIR)) {
       next if $f =~ /^\./;
       $f =~ s/\.pem//;
@@ -314,11 +318,13 @@ sub read_reqlist {
 
       if(defined($main)) {
          $t = sprintf(gettext("   Read Request: %s"), $d);
-         $main->{'bar'}->set_status($t);
+         GUI::HELPERS::set_status($main, $t);
          $p += 100/$c;
-         $main->{'bar'}->set_progress($p/100);
-         while(Gtk->events_pending) {
-            Gtk->main_iteration;
+         if($p/100 <= 1) {
+            $main->{'progress'}->set_fraction($p/100);
+            while(Gtk2->events_pending) {
+               Gtk2->main_iteration;
+            }
          }
          select(undef, undef, undef, 0.025);
       }
@@ -332,10 +338,10 @@ sub read_reqlist {
    $self->{'lastread'} = time();
 
    if(defined($main)) {
-      $main->{'bar'}->set_progress(0);
+      $main->{'barbox'}->remove($main->{'progress'});
+      $main->{'progress'}->set_fraction(0);
+      GUI::HELPERS::set_cursor($main, 0);
    }
-
-   GUI::HELPERS::set_cursor($main, 0);
 
    return(1);  # got new list
 }
@@ -736,152 +742,3 @@ sub parse_req {
 
 1
 
-# 
-# $Log: REQ.pm,v $
-# Revision 1.46  2005/02/13 21:04:07  sm
-# added multiple ou patch from arndt@uni-koblenz.de
-# removed CrlDistributionPoint for Root-CA
-# added detection for openssl 0.9.8
-#
-# Revision 1.45  2004/10/03 08:08:28  sm
-# added import verification for ca certificate
-#
-# Revision 1.44  2004/07/26 09:54:28  sm
-# don't crash when deleting last request list
-#
-# Revision 1.43  2004/07/23 17:44:00  sm
-# force reread of request when overwriting an old one
-# removed the direct usage of 'OpenSSL.pm' in X509_browser, use correct
-# abstraction via 'REQ.pm' and 'CERT.pm'
-#
-# Revision 1.42  2004/07/23 10:46:14  sm
-# reparse request after creation
-# delete all internal structures, when opening new ca
-#
-# Revision 1.41  2004/07/19 14:10:15  sm
-# fixed bug (again) signing more request in a row
-#
-# Revision 1.40  2004/07/15 10:45:47  sm
-# removed references to create_mframe, always recreate only one list
-#
-# Revision 1.39  2004/07/09 10:00:08  sm
-# added configuration for extendedKyUsage
-#
-# Revision 1.38  2004/07/08 10:19:08  sm
-# added busy mouse-pointer
-# use correct configuration when renewing certificate
-#
-# Revision 1.37  2004/07/05 20:30:55  sm
-# fixed bug, when creating to request directly after creating a new ca
-#
-# Revision 1.36  2004/07/02 07:34:47  sm
-# set default bits to 4096
-#
-# Revision 1.35  2004/06/23 16:48:24  sm
-# added statusbar
-# faster reread of reqlist
-#
-# Revision 1.34  2004/06/17 10:01:07  sm
-# use CERT/REQ for lists
-#
-# Revision 1.31  2004/06/16 13:43:22  sm
-# added noemailDN
-#
-# Revision 1.30  2004/06/15 13:15:56  arasca
-# Browsing of certificates and requests moved to new class X509_browser.
-#
-# Revision 1.29  2004/06/15 12:19:33  sm
-# fixed bug creating new requests
-#
-# Revision 1.28  2004/06/13 13:19:08  sm
-# added possibility to generate request and certificate in one step
-#
-# Revision 1.27  2004/06/06 16:03:56  arasca
-# moved infobox (display of cert and req information at bottom of
-# tinyca GUI) into extra class.
-#
-# Revision 1.26  2004/05/27 17:06:57  arasca
-# Removed remaining references to $main in OpenSSL.pm
-#
-# Revision 1.25  2004/05/26 10:28:32  sm
-# added extended errormessages to every call of openssl
-#
-# Revision 1.24  2004/05/26 07:48:36  sm
-# adapted functions once more :-)
-#
-# Revision 1.23  2004/05/26 07:25:47  sm
-# moved print_* to GUI::HELPERS.pm
-#
-# Revision 1.22  2004/05/26 07:03:40  arasca
-# Moved miscellaneous functions to new module HELPERS.pm, removed
-# Messages.pm and adapted the remaining modules accordingly.
-#
-# Revision 1.21  2004/05/25 14:44:42  sm
-# added textfield to warning dialog
-#
-# Revision 1.20  2004/05/24 16:05:00  sm
-# some more helpers
-#
-# Revision 1.19  2004/05/06 19:22:23  sm
-# added display and export for DSA and RSA keys
-#
-# Revision 1.17  2004/05/05 20:59:42  sm
-# added configuration for CA
-#
-# Revision 1.14  2004/05/04 20:34:58  sm
-# added patches from Olaf Gellert <og@pre-secure.de> for selecting the Digest
-#
-# Revision 1.13  2004/05/02 18:39:30  sm
-# added possibility to create SubCA
-# add new section to config for that
-#
-# Revision 1.10  2003/10/01 20:48:43  sm
-# configure nsRenewalUrl and set during signing
-#
-# Revision 1.9  2003/10/01 13:57:42  sm
-# configure nsRevocationUrl and ask during signing
-#
-# Revision 1.8  2003/10/01 12:42:48  sm
-# configure subjectAltName for client and ask during signing
-#
-# Revision 1.7  2003/09/29 17:02:39  sm
-# configure subjectAltName and set during signing
-#
-# Revision 1.6  2003/09/02 19:38:43  sm
-# change nsSslServerName when signing
-#
-# Revision 1.5  2003/08/27 20:40:38  sm
-# started adding errorhandling
-#
-# Revision 1.4  2003/08/22 20:36:56  sm
-# code cleanup
-#
-# Revision 1.3  2003/08/16 22:05:24  sm
-# first release with Gtk-Perl
-#
-# Revision 1.2  2003/08/13 19:39:37  sm
-# rewrite for Gtk
-#
-# Revision 1.9  2003/07/04 22:58:58  sm
-# first round of the translation is done
-#
-# Revision 1.8  2003/07/03 20:59:03  sm
-# a lot of gettext() inserted
-#
-# Revision 1.7  2003/06/23 20:11:30  sm
-# some new texts from ludwig.nussel@suse.de
-#
-# Revision 1.6  2003/06/19 21:46:43  sm
-# change button status dynamically
-#
-# Revision 1.4  2002/10/04 09:02:50  sm
-# fixed typo
-#
-# Revision 1.3  2002/10/04 09:01:51  sm
-# avoid empty lines in list if decoding of filenames failed
-# set days to 365 default
-#
-# Revision 1.2  2002/09/27 19:51:04  sm
-# Fixed typo in _gen_name()
-#
-# 

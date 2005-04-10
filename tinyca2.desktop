@@ -2,5 +2,5 @@
 Encoding=UTF-8
 Type=Application
 GenericName=Tool to manage a Certification Authority
-Name=TinyCA
-Exec=tinyca
+Name=TinyCA2
+Exec=tinyca2

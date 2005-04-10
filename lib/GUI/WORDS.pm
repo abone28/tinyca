@@ -1,6 +1,6 @@
 # Copyright (c) Stephan Martin <sm@sm-zone.net>
 #
-# $Id: WORDS.pm,v 1.4 2005/02/20 16:02:22 sm Exp $
+# $Id: WORDS.pm,v 1.1.1.1 2005/03/31 18:52:57 sm Exp $
 # 
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by

@@ -1,6 +1,6 @@
 #!/usr/bin/perl -w
 #
-# $Id: tinyca,v 1.24 2005/02/20 16:07:48 sm Exp $
+# $Id: tinyca2,v 1.1.1.1 2005/03/31 18:52:57 sm Exp $
 #
 # Copyright (c) Stephan Martin <sm@sm-zone.net>
 #
@@ -23,10 +23,7 @@ BEGIN { push(@INC, './lib'); # put here the location of the modules
 
 use strict;
 
-use Gtk;
-use Gnome;
-set_locale Gtk;
-Gnome->init('TinyCA', '0.6.8');
+use Gtk2 '-init';
 
 use MIME::Base64;
 
@@ -49,8 +46,8 @@ use KEY;
 use TCONFIG;
 
 setlocale(LC_MESSAGES, "");
-bindtextdomain("tinyca", "./locale/");
-textdomain("tinyca");
+bindtextdomain("tinyca2", "./locale/");
+textdomain("tinyca2");
 
 my $init = {};
 
@@ -97,7 +94,7 @@ if(@{$gui->{'CA'}->{'calist'}}) {
    $gui->{'CA'}->get_ca_create($gui);
 }
 
-Gtk->main();
+Gtk2->main();
 
 exit(0);
 

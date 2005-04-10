@@ -1,6 +1,6 @@
 # Copyright (c) Stephan Martin <sm@sm-zone.net>
 #
-# $Id: OpenSSL.pm,v 1.50 2005/02/20 16:02:21 sm Exp $
+# $Id: OpenSSL.pm,v 1.3 2005/05/21 17:14:58 sm Exp $
 # 
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -72,9 +72,9 @@ sub newkey {
       $i = 0;
       while(defined($c = getc($rdfh))) {
          $ext .= $c;
-         $bar->update(($i++%100)/100);
-         while(Gtk->events_pending) {
-            Gtk->main_iteration;
+         $bar->pulse();
+         while(Gtk2->events_pending) {
+            Gtk2->main_iteration;
          }
       }
       $box->destroy();
@@ -106,9 +106,10 @@ sub newkey {
    $i = 0;
    while(defined($c = getc($rdfh))) {
       $ext .= $c;
-      $bar->update(($i++%100)/100);
-      while(Gtk->events_pending) {
-         Gtk->main_iteration;
+#$bar->update(($i++%100)/100);
+      $bar->pulse();
+      while(Gtk2->events_pending) {
+         Gtk2->main_iteration;
       }
    }
    $box->destroy();
@@ -479,7 +480,11 @@ sub parsecrl {
    }
 
    # get "normal infos"
-   @lines = split(/\n/, $tmp->{'TXT'});
+   if ($tmp->{'TXT'}) {
+      @lines = split(/\n/, $tmp->{'TXT'});
+   } else {
+      @lines = ();
+   }
    foreach(@lines) {
       if ($_ =~ /Signature Algorithm.*: (\w+)/i) {
          $tmp->{'SIG_ALGORITHM'} = $1;
@@ -497,7 +502,10 @@ sub parsecrl {
 
    # get revoked certs
    $tmp->{'LIST'} = [];
-   for($i = 0; $lines[$i] !~ /^[\s\t]*Revoked Certificates:$/i; $i++) {
+   for($i = 0;
+         ($i < scalar(@lines)) &&
+         ($lines[$i] !~ /^[\s\t]*Revoked Certificates:$/i);
+       $i++) {
       $self->{'CACHE'}->{$file} = $tmp;
       return($tmp) if ($lines[$i] =~ /No Revoked Certificates/i);
    }
@@ -695,14 +703,14 @@ sub parsecert {
       }
      
       if (defined($tmp->{'SERIAL'})) {
-      foreach my $revoked (@{$crl->{'LIST'}}) {
-           #print STDERR "DEBUG: check tmp: $tmp->{'SERIAL'}\n";
-           #print STDERR "DEBUG: check revoked: $revoked->{'SERIAL'}\n";
-         next if ($tmp->{'SERIAL'} ne $revoked->{'SERIAL'});
-         if ($tmp->{'SERIAL'} eq $revoked->{'SERIAL'}) {
-            $tmp->{'STATUS'} = gettext("REVOKED");
+         foreach my $revoked (@{$crl->{'LIST'}}) {
+              #print STDERR "DEBUG: check tmp: $tmp->{'SERIAL'}\n";
+              #print STDERR "DEBUG: check revoked: $revoked->{'SERIAL'}\n";
+            next if ($tmp->{'SERIAL'} ne $revoked->{'SERIAL'});
+            if ($tmp->{'SERIAL'} eq $revoked->{'SERIAL'}) {
+               $tmp->{'STATUS'} = gettext("REVOKED");
+            }
          }
-      }
       }
    } else {
       $tmp->{'STATUS'} = gettext("UNDEFINED");
@@ -941,12 +949,46 @@ sub genp12 {
    return($ret, $ext);
 }
 
+sub read_index {
+   my ($self, $index) = @_;
+
+   my (@lines, @index);
+   
+   open(IN, "<$index") || do {
+      my $t = sprintf(gettext("Can't read index %s: %s"), $index, $!);
+      GUI::HELPERS::print_warning($t);
+      return;
+   };
+   @lines = <IN>;
+   close(IN);
+   foreach my $l (@lines) {
+      my $tmp = {};
+      ($tmp->{'STATUS'},
+       $tmp->{'EXPDATE'},
+       $tmp->{'REVDATE'},
+       $tmp->{'SERIAL'},
+       $tmp->{'xxx'},
+       $tmp->{'DN'}) = split(/\t/, $l);
+
+      ($tmp->{'REVDATE'}, $tmp->{'REVREASON'}) = split(/,/, $tmp->{'REVDATE'});
+
+      $tmp->{'EXPDATE'} = _get_index_date($tmp->{'EXPDATE'});
+      if(defined($tmp->{'REVDATE'}) && ($tmp->{'REVDATE'} ne '')) {
+         $tmp->{'REVDATE'} = _get_index_date( $tmp->{'REVDATE'});
+      }
+
+      push(@index, $tmp);
+   }
+
+   return(@index);
+}
+
 sub _set_expired {
    my ($serial, $index) =@_;
    
    open(IN, "<$index") || do {
       my $t = sprintf(gettext("Can't read index %s: %s"), $index, $!);
-      HELPERS::print_warning($t);
+      GUI::HELPERS::print_warning($t);
       return;
    };
 
@@ -956,7 +998,7 @@ sub _set_expired {
 
    open(OUT, ">$index") || do {
       my $t = sprintf(gettext("Can't write index %s: %s"), $index, $!);
-      HELPERS::print_warning($t);
+      GUI::HELPERS::print_warning($t);
       return;
    };
 
@@ -983,6 +1025,20 @@ sub _get_date {
    $t1[0] = _get_index($t1[0]);
                               
    my $ret = Time::Local::timelocal($t2[2],$t2[1],$t2[0],$t1[1],$t1[0],$t1[3]);
+
+   return($ret);
+}
+
+sub _get_index_date {
+   my $string = shift;
+
+   my ($y, $m, $d);
+   
+   $y = substr($string, 0, 2) + 2000;
+   $m = substr($string, 2, 2) - 1;
+   $d = substr($string, 4, 2);
+
+   my $ret = Time::Local::timelocal(0, 0, 0, $d, $m, $y);
 
    return($ret);
 }

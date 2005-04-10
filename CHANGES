@@ -1,10 +1,16 @@
-$Id: CHANGES,v 1.25 2005/02/20 16:02:21 sm Exp $
+$Id: CHANGES,v 1.3 2005/04/10 16:43:58 sm Exp $
+version 0.7.0 - Sun Apr 10 2005
+   * migrated to perl-Gtk2
+   * added advanced export options (Debian #293931)
+   * added CA history
+   * fixed some minor bugs
+
 version 0.6.8 (beta) - Sun Feb 20 2004
    * added detection for openssl 0.9.8
    * removed crlDistributionPoint for Root-CA
    * added patch for multiple OUs 
      Thanks to Uwe Arndt <arndt@uni-koblenz.de>
-   * added patch for multiple subjectAltName extensions
+   * added patch for multiple subjectAltName extensions (Debian #271183)
      Thanks to Peter Marschall <peter@adpm.de>
 
 version 0.6.7 (beta) - Mon Dec  5 2004

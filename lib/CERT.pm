@@ -1,6 +1,6 @@
 # Copyright (c) Stephan Martin <sm@sm-zone.net>
 #
-# $Id: CERT.pm,v 1.32 2004/11/05 14:42:50 sm Exp $
+# $Id: CERT.pm,v 1.3 2005/03/31 20:51:39 sm Exp $
 # 
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -70,6 +70,8 @@ sub read_certlist {
       $c++;
    }
 
+   $main->{'barbox'}->pack_start($main->{'progress'}, 0, 0, 0);
+   $main->{'progress'}->show();
    foreach $f (@files) {
       next if $f =~ /^\./;
 
@@ -81,12 +83,14 @@ sub read_certlist {
 
       if(defined($main)) {
          $t = sprintf(gettext("   Read Certificate: %s"), $tmp);
-         $main->{'bar'}->set_status($t);
+         GUI::HELPERS::set_status($main, $t);
          $p += 100/$c;
-         $main->{'bar'}->set_progress($p/100);
-         while(Gtk->events_pending) {
-            Gtk->main_iteration;
-          }
+         if($p/100 <= 1) {
+            $main->{'progress'}->set_fraction($p/100);
+            while(Gtk2->events_pending) {
+               Gtk2->main_iteration;
+             }
+         }
       }
 
       my $debugf = $certdir."/".$f.".pem";
@@ -111,7 +115,8 @@ sub read_certlist {
    $self->{'lastread'} = time();
 
    if(defined($main)) {
-      $main->{'bar'}->set_progress(0);
+      $main->{'barbox'}->remove($main->{'progress'});
+      $main->{'progress'}->set_fraction(0);
       GUI::HELPERS::set_cursor($main, 0);
    }
 
@@ -319,9 +324,9 @@ sub get_del_cert {
       return;
    }
 
-   $ca    = $main->{'certbrowser'}->selection_caname();
-   $cadir = $main->{'certbrowser'}->selection_cadir();
-   $cert  = $main->{'certbrowser'}->selection_dn();
+   $ca     = $main->{'certbrowser'}->selection_caname();
+   $cadir  = $main->{'certbrowser'}->selection_cadir();
+   $cert   = $main->{'certbrowser'}->selection_dn();
    $status = $main->{'certbrowser'}->selection_status();
 
    $certname = MIME::Base64::encode($cert, '');
@@ -378,11 +383,11 @@ sub get_export_cert {
          return;
       }
 
-      $ca = $main->{'certbrowser'}->selection_caname();
+      $ca    = $main->{'certbrowser'}->selection_caname();
       $cadir = $main->{'certbrowser'}->selection_cadir();
 
-      $opts->{'status'}=$main->{'certbrowser'}->selection_status();
-      $opts->{'cert'}=$main->{'certbrowser'}->selection_dn;
+      $opts->{'status'} = $main->{'certbrowser'}->selection_status();
+      $opts->{'cert'}   = $main->{'certbrowser'}->selection_dn();
 
       $opts->{'certname'} = MIME::Base64::encode($opts->{'cert'}, '');
       $opts->{'certfile'} = 
@@ -412,6 +417,8 @@ sub get_export_cert {
          $opts->{'outfile'} = "$main->{'exportdir'}/cert.pem";
       }
       $opts->{'format'}  = 'PEM';
+      $opts->{'include'} = 0;
+      $opts->{'incfp'}   = 0;
 
       $main->show_export_dialog($opts, 'cert');
       return;
@@ -419,7 +426,8 @@ sub get_export_cert {
 
    if((not defined($opts->{'outfile'})) || ($opts->{'outfile'} eq '')) {
       $main->show_export_dialog($opts, 'cert');
-      GUI::HELPERS::print_warning(gettext("Please give at least the output file"));
+      GUI::HELPERS::print_warning(
+            gettext("Please give at least the output file"));
       return;
    }
 
@@ -466,7 +474,26 @@ sub export_cert {
    $ca   = $main->{'CA'}->{'actca'};
 
    if($opts->{'format'} eq 'PEM') {
-      $out = $opts->{'parsed'}->{'PEM'};
+      if($opts->{'incfp'}) {
+         $out = '';
+         $out .= "Fingerprint (MD5): $opts->{'parsed'}->{'FINGERPRINTMD5'}\n";
+         $out .= "Fingerprint (SHA1): $opts->{'parsed'}->{'FINGERPRINTSHA1'}\n";
+      } else {
+         $out = '';
+      }
+      $out .= $opts->{'parsed'}->{'PEM'};
+
+      if($opts->{'include'}) {
+         open(IN, "<$opts->{'keyfile'}") || do {
+            GUI::HELPERS::set_cursor($main, 0);
+            $t = sprintf(gettext("Can't open Certificate file: %s: %s"),
+                  $opts->{'keyfile'}, $!);
+            return;
+         };
+         $out .= "\n";
+         $out .= $_ while(<IN>);
+         close(IN);
+      }
    } elsif ($opts->{'format'} eq 'DER') {
       $out = $opts->{'parsed'}->{'DER'};
    } elsif ($opts->{'format'} eq 'TXT') {
@@ -511,7 +538,9 @@ sub export_cert {
 
       open(OUT, ">$tmpcert") || do {
          GUI::HELPERS::set_cursor($main, 0);
-         GUI::HELPERS::print_warning(gettext("Can't create temporary file"));
+         $t = sprintf(gettext("Can't create temporary file: %s: %s"), 
+               $tmpcert, $!);
+         GUI::HELPERS::print_warning($t);
          return;
       };
       print OUT $opts->{'parsed'}->{'PEM'};
@@ -521,7 +550,8 @@ sub export_cert {
       {
       open(IN, "<$opts->{'keyfile'}") || do {
          GUI::HELPERS::set_cursor($main, 0);
-         GUI::HELPERS::print_warning(gettext("Can't read Key file"));
+         $t = sprintf(gettext("Can't read Key file: %s: %s"), $tmpcert, $!);
+         GUI::HELPERS::print_warning($t);
          return;
       };
       my @key = <IN>;
@@ -529,7 +559,9 @@ sub export_cert {
 
       open(OUT, ">$tmpkey") || do {
          GUI::HELPERS::set_cursor($main, 0);
-         GUI::HELPERS::print_warning(gettext("Can't create temporary file"));
+         $t = sprintf(gettext("Can't create temporary file: %s: %s"), 
+               $tmpcert, $!);
+         GUI::HELPERS::print_warning($t);
          return;
       };
       print OUT @key;

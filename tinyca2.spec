@@ -1,27 +1,24 @@
 # spec file for package tinyca
 #
-# $Id: tinyca.spec,v 1.18 2004/12/05 18:54:11 sm Exp $
+# $Id: tinyca2.spec,v 1.4 2005/06/05 17:14:53 sm Exp $
 #
 # Copyright (c) 2002 Stephan Martin
 # This file and all modifications and additions to the pristine
 # package are under the same license as the package itself.
 #
 
-# neededforbuild  update-desktop-files
-# usedforbuild    aaa_base acl attr bash bind-utils bison bzip2 coreutils cpio cpp cracklib cvs cyrus-sasl db devs diffutils e2fsprogs file filesystem fillup findutils flex gawk gdbm-devel glibc glibc-devel glibc-locale gpm grep groff gzip info insserv kbd less libacl libattr libgcc libselinux libstdc++ libxcrypt m4 make man mktemp module-init-tools ncurses ncurses-devel net-tools netcfg openldap2-client openssl pam pam-modules patch permissions popt procps pwdutils rcs readline sed sendmail strace syslogd sysvinit tar texinfo timezone unzip util-linux vim zlib zlib-devel autoconf automake binutils gcc gdbm gettext libtool perl rpm update-desktop-files 
-
 %define	bindir		%{_bindir}
-%define	libdir		%{_datadir}/TinyCA/lib
-%define	templatesdir	%{_datadir}/TinyCA/templates
-%define	localedir	%{_datadir}/TinyCA/locale/
+%define	libdir		%{_datadir}/TinyCA2/lib
+%define	templatesdir	%{_datadir}/TinyCA2/templates
+%define	localedir	%{_datadir}/TinyCA2/locale/
 
-Name:       tinyca
+Name:       tinyca2
 URL:        http://tinyca.sm-zone.net/
 Group:      Productivity/Networking/Security
 License:	   GPL
-Requires:	perl perl-Gtk-Perl perl-MIME-Base64
+Requires:	perl perl-Gtk2 perl-MIME-Base64
 Packager:	Stephan Martin <sm@sm-zone.net>
-Version:    @version@
+Version:    0.7.0
 Release:    0
 Source0:    %{name}-%{version}.tar.gz
 Source1:    %{name}.desktop
@@ -58,15 +55,15 @@ Stephan Martin <sm@sm-zone.net>
 
 %build
 # Configure pristine source
-perl -pi -e 's:./lib:%{libdir}:g' tinyca
-perl -pi -e 's:./templates:%{templatesdir}:g' tinyca
-perl -pi -e 's:./locale:%{localedir}:g' tinyca
+perl -pi -e 's:./lib:%{libdir}:g' tinyca2
+perl -pi -e 's:./templates:%{templatesdir}:g' tinyca2
+perl -pi -e 's:./locale:%{localedir}:g' tinyca2
 make -C po
 
 %install
 [ "$RPM_BUILD_ROOT" != "/" ] && [ -d $RPM_BUILD_ROOT ] && rm -rf $RPM_BUILD_ROOT;
 
-LANGUAGES="de es cs"
+LANGUAGES="de es cs fr"
 
 mkdir -p $RPM_BUILD_ROOT%{bindir}
 mkdir -p $RPM_BUILD_ROOT%{libdir}
@@ -76,16 +73,12 @@ mkdir -p $RPM_BUILD_ROOT%{templatesdir}
 install -m 644 lib/*.pm $RPM_BUILD_ROOT%{libdir}
 install -m 644 lib/GUI/*.pm $RPM_BUILD_ROOT%{libdir}/GUI/
 install -m 644 templates/openssl.cnf $RPM_BUILD_ROOT%{templatesdir}
-install -m 755 tinyca $RPM_BUILD_ROOT%{bindir}
+install -m 755 tinyca2 $RPM_BUILD_ROOT%{bindir}
 
 for LANG in $LANGUAGES; do
    mkdir -p $RPM_BUILD_ROOT%{localedir}/$LANG/LC_MESSAGES/
-   install -m 644 locale/$LANG/LC_MESSAGES/tinyca.mo %{buildroot}%{localedir}/$LANG/LC_MESSAGES/
+   install -m 644 locale/$LANG/LC_MESSAGES/tinyca2.mo %{buildroot}%{localedir}/$LANG/LC_MESSAGES/
 done
-
-%if %suse_version > 820
-%suse_update_desktop_file -i %name Network Security
-%endif
 
 %clean
 rm -rf %{buildroot}
@@ -93,11 +86,10 @@ rm -rf %{buildroot}
 %files
 %defattr(-,root,root)
 %doc CHANGES
-%dir %{_datadir}/TinyCA
-%{bindir}/tinyca
-%{_datadir}/TinyCA/*
+%dir %{_datadir}/TinyCA2
+%{bindir}/tinyca2
+%{_datadir}/TinyCA2/*
 %if %suse_version > 820
-%{_datadir}/applications/*
 %endif
 
 %changelog

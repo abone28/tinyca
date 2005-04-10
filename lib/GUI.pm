@@ -1,6 +1,6 @@
 # Copyright (c) Stephan Martin <sm@sm-zone.net>
 #
-# $Id: GUI.pm,v 1.114 2005/02/20 16:07:48 sm Exp $
+# $Id: GUI.pm,v 1.12 2005/06/05 16:46:39 sm Exp $
 # 
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -22,6 +22,8 @@ package GUI;
 use POSIX;
 use Locale::gettext;
 
+use Gtk2::SimpleMenu;
+
 my $false=undef;
 my $true=1;
 
@@ -37,7 +39,7 @@ sub new {
 
    bless($self, $class);
 
-   $self->{'version'} = '0.6.8 (beta)';
+   $self->{'version'} = '0.7.0';
 
    $self->{'words'} = GUI::WORDS->new();
 
@@ -66,15 +68,9 @@ sub new {
    $self->{'TCONFIG'} = TCONFIG->new();
 
    # initialize fonts and styles
-   my $fontfix = Gtk::Gdk::Font->fontset_load(
-         "-adobe-courier-medium-r-normal--*-100-*-*-*-*-*-*"
+   $self->{'fontfix'} = Gtk2::Pango::FontDescription->from_string(
+         "Courier 10"
          );
-   if(defined($fontfix)) {
-      $self->{'stylefix'} = Gtk::Style->new();
-      $self->{'stylefix'}->font($fontfix);
-   } else {
-      $self->{'stylefix'} = undef;
-   }
 
 #   Gtk::Rc->parse_string(
 #'style "default"
@@ -83,34 +79,42 @@ sub new {
 #}
 #widget_class "*" style "default"');
 
-   $self->{'stylered'} = Gtk::Style->new();
-   $self->{'stylered'}->fg('normal', Gtk::Gdk::Color->parse_color('red'));
+#   $self->{'stylered'} = Gtk2::Style->new();
+#   $self->{'stylered'}->fg('normal', Gtk2::Gdk::Color->parse('red'));
 
-   $self->{'stylegreen'} = Gtk::Style->new();
-   $self->{'stylegreen'}->fg('normal', Gtk::Gdk::Color->parse_color('green'));
+#   $self->{'stylegreen'} = Gtk2::Style->new();
+#   $self->{'stylegreen'}->fg('normal', Gtk2::Gdk::Color->parse('green'));
 
    # initialize main window
-   $self->{'mw'} = Gnome::App->new("TinyCA", 
-         "Tiny CA Management $self->{'version'}");
+   $self->{'mw'} = Gtk2::Window->new("toplevel");
+   $self->{'mw'}->set_title("TinyCA2 Management $self->{'version'}");
 
-   $self->{'mw'}->set_policy(0, 1, 0);
-   $self->{'mw'}->set_default_size(800, 600);
+   $self->{'mw'}->set_resizable(1);
+   $self->{'mw'}->set_default_size(850, 600);
    $self->{'mw'}->signal_connect( 'delete_event', 
          sub { HELPERS::exit_clean() });
 
-   $self->{'busycursor'} = Gtk::Gdk::Cursor->new(150);
-   $self->{'cursor'}     = Gtk::Gdk::Cursor->new(68);
-   $self->{'rootwin'}    = Gtk::Gdk->ROOT_PARENT();
-   
-   $self->create_nb();
-   $self->{'mw'}->set_contents($self->{'nb'});
+   $self->{'busycursor'} = Gtk2::Gdk::Cursor->new('watch');
+   $self->{'cursor'}     = Gtk2::Gdk::Cursor->new('left-ptr');
+   $self->{'rootwin'}    = Gtk2::Gdk->get_default_root_window();
+
+   # split window horizontal to add menu, toolbar and notebook
+   $self->{'mvb'} = Gtk2::VBox->new();
+   $self->{'mw'}->add($self->{'mvb'});
 
    $self->create_menu();
+   $self->{'mvb'}->pack_start($self->{'menu'}->{'widget'} , 0, 0, 0);
 
    $self->create_toolbar('startup');
+   $self->{'mvb'}->pack_start($self->{'toolbar'}, 0, 0, 0);
+   
+   $self->create_nb();
+   $self->{'sizebox'} = Gtk2::VBox->new();
+   $self->{'mvb'}->pack_start($self->{'sizebox'}, 1, 1, 0);
+   $self->{'sizebox'}->pack_start($self->{'nb'}, 1, 1, 0);
 
    $self->create_bar();
-
+   $self->{'mvb'}->pack_start($self->{'barbox'}, 0, 0, 0);
 
    $self->{'rootwin'}->set_cursor($self->{'cursor'});
 
@@ -126,42 +130,42 @@ sub create_mframe {
    my($parsed, $calabel, $caframe, $rows, $table, @fields, $text, @childs,
          $label, $cert_export, $cert_revoke, $cert_delete, $certlabel,
          $certlistwin, @certtitles, @keytitles, $keylabel, $keylistwin,
-         $reqlistwin, @reqtitles, $reqlabel);
+         $reqlistwin, @reqtitles, $reqlabel, $ind, $column, $ca, $cadir);
 
-   return if not defined($self->{'CA'}->{'actca'});
-   return if $self->{'CA'}->{'actca'} eq "";
+   if ((defined($self->{'CA'}->{'actca'})) &&
+       ($self->{'CA'}->{'actca'} ne "")) {
+      $ca = $self->{'CA'}->{'actca'};
+   } else {
+      return;
+   }
 
-   my $ca    = $self->{'CA'}->{'actca'};
-   my $cadir = $self->{'CA'}->{'cadir'};
+   $cadir = $self->{'CA'}->{'cadir'};
 
    $parsed = $self->{'CERT'}->parse_cert( $self, 'CA');
 
-   defined($parsed) || GUI::HELPERS::print_error(
-         gettext("Can't read CA certificate")
-         );
+   defined($parsed) || 
+      GUI::HELPERS::print_error( gettext("Can't read CA certificate"));
 
    ### notebooktab for ca information
    if(not defined($self->{'cabox'})) {
-      $self->{'cabox'} = Gtk::VBox->new(0, 0);
-      $calabel = Gtk::Label->new(gettext("CA"));
+      $self->{'cabox'} = Gtk2::VBox->new(0, 0);
+      $calabel = GUI::HELPERS::create_label(gettext("CA"), 'left', 1, 0);
       $self->{'nb'}->insert_page($self->{'cabox'}, $calabel, 0);
    } else {
       $self->{'nb'}->hide();
       $self->{'nb'}->remove_page(0);
       $self->{'cabox'}->destroy();
-      $self->{'cabox'} = Gtk::VBox->new(0, 0);
-      $calabel = Gtk::Label->new(gettext("CA"));
+      $self->{'cabox'} = Gtk2::VBox->new(0, 0);
+      $calabel = GUI::HELPERS::create_label(gettext("CA"), 'left', 1, 0);
       $self->{'nb'}->insert_page($self->{'cabox'}, $calabel, 0);
    }
 
    # frame for CA informations
    $self->{'cainfobox'} = GUI::X509_infobox->new();
-   $self->{'cainfobox'}->display($self->{'cabox'},
-				 $parsed,
-				 'cacert',
-				 gettext("CA Information"));
+   $self->{'cainfobox'}->display($self->{'cabox'}, $parsed, 'cacert',
+         gettext("CA Information"));
 
-   ### notebooktab for certificates (split info and buttons)
+   ### notebooktab for certificates
 
    # delete old instance, force reinitialisation
    if (defined($self->{'certbox'}) && $force) {
@@ -175,9 +179,10 @@ sub create_mframe {
    }
 
    if(not defined($self->{'certbox'})) {
-      $self->{'certbox'} = Gtk::VBox->new(0, 0);
+      $self->{'certbox'} = Gtk2::VBox->new(0, 0);
       
-      $certlabel = Gtk::Label->new(gettext("Certificates"));
+      $certlabel = GUI::HELPERS::create_label(
+            gettext("Certificates"), 'left', 1, 0);
       $self->{'nb'}->insert_page($self->{'certbox'}, $certlabel, 1);
 
       if (not defined ($self->{'certbrowser'})) {
@@ -187,22 +192,27 @@ sub create_mframe {
                                          $cadir."/certs",
                                          $cadir."/crl/crl.pem",
                                          $cadir."/index.txt");
+
         $self->{'certbrowser'}->add_info();
+
+        # create popup menu
+        if(not defined($self->{'certmenu'})) {
+           _create_cert_menu($self);
+        }
+  
+        $self->{'certbrowser'}->{'x509clist'}->signal_connect(
+              'button_release_event', 
+              sub {  _show_popup_menu($self, 'cert', @_) });
+        $self->{'certbrowser'}->{'x509clist'}->signal_connect(
+              'button_press_event',
+              sub { _show_details_wrapper($self, 'cert', @_)});
+
         # $self->{'certbrowser'}->destroy();
       } else {
-      $self->{'certbrowser'}->update($cadir."/certs",
-                                     $cadir."/crl/crl.pem",
-                                     $cadir."/index.txt"); 
+        $self->{'certbrowser'}->update($cadir."/certs",
+                                       $cadir."/crl/crl.pem",
+                                       $cadir."/index.txt"); 
       }
-
-      # create popup menu
-      if(not defined($self->{'certmenu'})) {
-         _create_cert_menu($self);
-      }
-      $self->{'certbrowser'}->set_contextfunc(
-            \&_show_cert_menu, 'button_release_event', $self);
-      $self->{'certbrowser'}->set_contextfunc(
-            \&_show_details_wrapper, 'button_press_event', $self, 'cert');
 
    } else {
       $self->{'certbrowser'}->update($cadir."/certs",
@@ -213,48 +223,53 @@ sub create_mframe {
 
    ### notebooktab for keys (split info and buttons)
    @keytitles = (gettext("Common Name"),
-         gettext("eMail Address"),
-         gettext("Organizational Unit"),
-         gettext("Organization"),
-         gettext("Location"),
-         gettext("State"),
-         gettext("Country"), 
-         gettext("Type"), 
-         "index");
-
-   if(not defined($self->{'keybox'})) {
-      $self->{'keybox'} = Gtk::VBox->new(0, 0);
-      $keylabel = Gtk::Label->new(gettext("Keys"));
-      $self->{'nb'}->insert_page($self->{'keybox'}, $keylabel, 2);
-   
-      # now the list
-      $keylistwin = Gtk::ScrolledWindow->new(undef, undef);
-      $keylistwin->set_policy('automatic', 'automatic');
-      $self->{'keybox'}->add($keylistwin);
-      
-      $self->{'keylist'} = Gtk::CList->new_with_titles(@keytitles);
-      $self->{'keylist'}->set_sort_column (0);
-      $self->{'keylist'}->signal_connect('click_column', 
-            \&GUI::HELPERS::sort_clist);
-
-      for(my $i = 0; $i < 7; $i++) {
-         $self->{'keylist'}->set_column_auto_resize ($i, 1);
-      }
-      $self->{'keylist'}->set_column_visibility(8, 0);
-      $keylistwin->add($self->{'keylist'});
-      $self->{'keylist'}->signal_connect('button_release_event', 
-            \&_show_key_menu, $self);
-
-      # create popup menu
-      if(not defined($self->{'keymenu'})) {
-         _create_key_menu($self);
-      }
+                 gettext("eMail Address"),
+                 gettext("Organizational Unit"),
+                 gettext("Organization"),
+                 gettext("Location"),
+                 gettext("State"),
+                 gettext("Country"),
+                 gettext("Type"));
+   # delete old instance, force reinitialisation
+   if (defined($self->{'keybox'}) && $force) {
+      $self->{'keybox'}->destroy();
+      delete($self->{'keybox'});
+      $self->{'keybox'} = undef;
+      delete($self->{'keybrowser'}->{'OpenSSL'});
+      $self->{'keybrowser'}->{'OpenSSL'} = undef;
+      delete($self->{'keybrowser'});
+      $self->{'keybrowser'} = undef;
    }
 
-   $self->update_keys();
+   if(not defined($self->{'keybox'})) {
+      $self->{'keybox'} = Gtk2::VBox->new(0, 0);
+      $keylabel = GUI::HELPERS::create_label( gettext("Keys"), 'left', 1, 0);
+      $self->{'nb'}->insert_page($self->{'keybox'}, $keylabel, 2);
+
+      if (not defined ($self->{'keybrowser'})) {
+         $self->{'keybrowser'}=GUI::X509_browser->new($self, 'key');
+         $self->{'keybrowser'}->set_window($self->{'keybox'});
+         $self->{'keybrowser'}->add_list($ca, 
+                                         $cadir."/keys", 
+                                         $cadir."/crl/crl.pem", 
+                                         $cadir."/index.txt");
+
+         # create popup menu
+         if(not defined($self->{'keymenu'})) { 
+            _create_key_menu($self);
+         }
+
+         $self->{'keybrowser'}->{'x509clist'}->signal_connect(
+               'button_release_event', 
+               sub {  _show_popup_menu($self, 'key', @_) });
+
+      } else {
+         $self->{'keybrowser'}->update($cadir."/keys",
+                                       $cadir."/crl/crl.pem",
+                                       $cadir."/index.txt");
+      }
    
-   # now select the first row
-   $self->{'keylist'}->select_row(0, 0);
+   }
 
    # delete old instance, force reinitialisation
    if (defined($self->{'reqbox'}) && $force) {
@@ -269,8 +284,9 @@ sub create_mframe {
 
    ### notebooktab for requests (split info and buttons)
    if(not defined($self->{'reqbox'})) {
-      $self->{'reqbox'} = Gtk::VBox->new(0, 0);
-      $reqlabel = Gtk::Label->new(gettext("Requests"));
+      $self->{'reqbox'} = Gtk2::VBox->new(0, 0);
+      $reqlabel = GUI::HELPERS::create_label(
+            gettext("Requests"), 'left', 1, 0);
       $self->{'nb'}->insert_page($self->{'reqbox'}, $reqlabel, 3);
       
       if (not defined ($self->{'reqbrowser'})) {
@@ -280,21 +296,27 @@ sub create_mframe {
                                          $cadir."/req",
                                          $cadir."/crl/crl.pem",
                                          $cadir."/index.txt");
+
         $self->{'reqbrowser'}->add_info();
-        # $self->{'reqbrowser'}->destroy();
-        }
-      else {
-      $self->{'reqbrowser'}->update($cadir."/req",
-                                    $cadir."/crl/crl.pem",
-                                    $cadir."/index.txt"); 
+
+        # create popup menu
+        if(not defined($self->{'reqmenu'})) {
+              _create_req_menu($self);
         }
 
-      # create popup menu
-      _create_req_menu($self);
-      $self->{'reqbrowser'}->set_contextfunc(
-            \&_show_req_menu, 'button_release_event', $self);
-      $self->{'reqbrowser'}->set_contextfunc(
-            \&_show_details_wrapper, 'button_press_event', $self, 'req');
+        $self->{'reqbrowser'}->{'x509clist'}->signal_connect(
+              'button_release_event', 
+              sub {  _show_popup_menu($self, 'req', @_) });
+
+        $self->{'reqbrowser'}->{'x509clist'}->signal_connect(
+              'button_press_event',
+              sub { _show_details_wrapper($self, 'req', @_)});
+
+      } else { 
+         $self->{'reqbrowser'}->update($cadir."/req",
+                                       $cadir."/crl/crl.pem",
+                                       $cadir."/index.txt"); 
+      }
 
    } else {
       $self->{'reqbrowser'}->update($cadir."/req",
@@ -303,7 +325,8 @@ sub create_mframe {
    }
 
    $self->{'nb'}->show_all();
-   $self->{'nb'}->signal_connect('switch_page', \&_act_toolbar, $self);
+   $self->{'nb'}->signal_connect_after('switch-page' => 
+         sub { _act_toolbar($self->{'nb'}, $self) });
 
    return;
 }
@@ -314,9 +337,8 @@ sub create_mframe {
 sub create_nb {
    my $self = shift;
 
-   $self->{'nb'} = Gtk::Notebook->new();
+   $self->{'nb'} = Gtk2::Notebook->new();
    $self->{'nb'}->set_tab_pos('top');
-   $self->{'nb'}->set_homogeneous_tabs(1);
 
    return;
 }
@@ -327,10 +349,15 @@ sub create_nb {
 sub create_bar {
    my $self = shift;
    
-   $self->{'bar'} = Gnome::AppBar->new(1,1,"user");
-   $self->{'bar'}->set_status("   Watch out...");
-   $self->{'mw'}->set_statusbar($self->{'bar'});
+   $self->{'barbox'} = Gtk2::HBox->new();
+   $self->{'bar'}    = Gtk2::Statusbar->new();
 
+   $self->{'progress'} = Gtk2::ProgressBar->new();
+
+   $self->{'barbox'}->pack_start($self->{'bar'}, 1, 1, 0);
+
+   GUI::HELPERS::set_status($self, "   Watch out...");
+      
    return;
 }
 
@@ -338,7 +365,10 @@ sub create_bar {
 # keep toolbar in sync with notebook
 #
 sub _act_toolbar {
-   my ($nb, $self, $page, $page_num) = @_;
+   my ($nb, $self) = @_;
+
+   my $page_num = $nb->get_current_page();
+   
    my $mode = 'startup';
    my $t;
 
@@ -357,9 +387,10 @@ sub _act_toolbar {
          $t = gettext("  Actual CA: %s - Requests");
       }
    
-      $t = sprintf($t, $self->{'CA'}->{'actca'});
-   
-      $self->{'bar'}->set_status($t);
+      if(defined($self->{'CA'}->{'actca'})) {
+         $t = sprintf($t, $self->{'CA'}->{'actca'});
+         GUI::HELPERS::set_status($self, $t);
+      }
    }
 
    $self->create_toolbar($mode);
@@ -371,350 +402,215 @@ sub _act_toolbar {
 sub create_toolbar {
    my ($self, $mode) = @_;
 
-   my ($icon, $mask, $iconw, $item, @children, $c, $ca);
+   my ($icon, $mask, $iconw, $button, @children, $c, $ca);
 
    $ca = $self->{'CA'}->{'actca'};
+
+   if(not defined($self->{'separator'})) {
+      $self->{'separator'} = Gtk2::SeparatorToolItem->new();
+   }
    
    if(defined($self->{'toolbar'})) {
-      @children = $self->{'toolbar'}->children();
-      for(my $i = 5; $i < @children; $i++) {
+      @children = $self->{'toolbar'}->get_children();
+
+      for(my $i = 6; $i < @children; $i++) {
          $c = $children[$i];
          $c->destroy();
       }
    } else {
-      $self->{'toolbar'} = Gtk::Toolbar->new('horizontal', 'both');
-      $self->{'mw'}->set_toolbar($self->{'toolbar'});
+      $self->{'toolbar'} = Gtk2::Toolbar->new();
+      $self->{'toolbar'}->set_orientation('horizontal');
+      $self->{'toolbar'}->set_icon_size('small-toolbar');
 
       ## Buttons for all toolbars
-      # Exit 
-      ($icon, $mask) = Gnome::Stock->pixmap_gdk('Quit', 'GPixmap');
-      $iconw = Gtk::Pixmap->new($icon, $mask);
+      $self->{'toolbar'} = Gtk2::Toolbar->new();
+      $self->{'toolbar'}->set_orientation('horizontal');
+
+      $button = Gtk2::ToolButton->new_from_stock('gtk-quit');
+      $self->{'toolbar'}->insert($button, -1);
+      $button->signal_connect('clicked', sub { exit(4) });
+
+
+      $button = Gtk2::ToolButton->new_from_stock('gtk-open');
+      $self->{'toolbar'}->insert($button, -1);
+      $button->set_label(gettext("Open CA"));
+      $button->signal_connect('clicked', sub {
+            $self->{'CA'}->get_open_name($self)});
+
+      $button = Gtk2::ToolButton->new_from_stock('gtk-new');
+      $self->{'toolbar'}->insert($button, -1);
+      $button->set_label(gettext("New CA"));
+      $button->signal_connect('clicked', sub {
+            $self->{'CA'}->get_ca_create($self)});
+
+      $button = Gtk2::ToolButton->new_from_stock('gtk-convert');
+      $self->{'toolbar'}->insert($button, -1);
+      $button->set_label(gettext("Import CA"));
+      $button->signal_connect('clicked', sub {
+            $self->{'CA'}->get_ca_import($self)});
+
+      $button = Gtk2::ToolButton->new_from_stock('gtk-delete');
+      $self->{'toolbar'}->insert($button, -1);
+      $button->set_label(gettext("Delete CA"));
+      $button->signal_connect('clicked', sub {
+            $self->{'CA'}->get_ca_delete($self)});
    
-      $item = $self->{'toolbar'}->append_item(
-            gettext("Exit"),
-            gettext("Exit TinyCA"),
-            'Private',
-            $iconw);
-      $item->signal_connect('clicked', sub { HELPERS::exit_clean() });
-   
-      # Open
-      ($icon, $mask) = Gnome::Stock->pixmap_gdk('Open', 'GPixmap');
-      $iconw = Gtk::Pixmap->new($icon, $mask);
-   
-      $item = $self->{'toolbar'}->append_item(
-            gettext("Open CA"),
-            gettext("Open an existing CA"),
-            'Private',
-            $iconw);
-      $item->signal_connect('clicked', 
-            sub { $self->{'CA'}->get_open_name($self)});
-   
-      # New
-      ($icon, $mask) = Gnome::Stock->pixmap_gdk('New', 'GPixmap');
-      $iconw = Gtk::Pixmap->new($icon, $mask);
-   
-      $item = $self->{'toolbar'}->append_item(
-            gettext("New CA"),
-            gettext("Create a new CA"),
-            'Private',
-            $iconw);
-      $item->signal_connect('clicked', 
-            sub { $self->{'CA'}->get_ca_create($self)});
-   
-      # Import
-      ($icon, $mask) = Gnome::Stock->pixmap_gdk('Convert', 'GPixmap');
-      $iconw = Gtk::Pixmap->new($icon, $mask);
-   
-      $item = $self->{'toolbar'}->append_item(
-            gettext("Import CA"),
-            gettext("Import an existing CA"),
-            'Private',
-            $iconw);
-      $item->signal_connect('clicked', 
-            sub { $self->{'CA'}->get_ca_import($self)});
-   
-      # Delete
-      ($icon, $mask) = Gnome::Stock->pixmap_gdk('Trash', 'GPixmap');
-      $iconw = Gtk::Pixmap->new($icon, $mask);
-   
-      $item = $self->{'toolbar'}->append_item(
-            gettext("Delete CA"),
-            gettext("Delete an existing CA"),
-            'Private',
-            $iconw);
-      $item->signal_connect('clicked', 
-            sub { $self->{'CA'}->get_ca_delete($self)});
-   
-      $self->{'toolbar'}->append_space();
-   }
+      $self->{'toolbar'}->insert($self->{'separator'}, -1); }
 
    
    if($mode eq 'ca') {
-      # View certificate extensions
-      ($icon, $mask) = Gnome::Stock->pixmap_gdk('Search', 'GPixmap');
-      $iconw = Gtk::Pixmap->new($icon, $mask);
+      $button = Gtk2::ToolButton->new_from_stock('gtk-find');
+      $self->{'toolbar'}->insert($button, -1);
+      $button->set_label(gettext("Details"));
+      $button->signal_connect('clicked', sub {
+            $self->show_details('CA') });
 
-      $item = $self->{'toolbar'}->append_item(
-            gettext("Details"),
-            gettext("Show X.509 Extensions of the CA Certificate"),
-            'Private',
-            $iconw);
-      $item->signal_connect('clicked', 
-            sub { $self->show_details('CA') });
+      $button = Gtk2::ToolButton->new_from_stock('gtk-find-and-replace');
+      $self->{'toolbar'}->insert($button, -1);
+      $button->set_label(gettext("History"));
+      $button->signal_connect('clicked', sub {
+            $self->show_history() });
    
-      # Create SubCA
-      ($icon, $mask) = Gnome::Stock->pixmap_gdk('New', 'GPixmap');
-      $iconw = Gtk::Pixmap->new($icon, $mask);
+      $button = Gtk2::ToolButton->new_from_stock('gtk-new');
+      $self->{'toolbar'}->insert($button, -1);
+      $button->set_label(gettext("Sub CA"));
+      $button->signal_connect('clicked', sub {
+            $self->{'CA'}->get_ca_create($self, undef, undef, "sub")});
    
-      $item = $self->{'toolbar'}->append_item(
-            gettext("Sub CA"),
-            gettext("Create a new Sub CA"),
-            'Private',
-            $iconw);
-      $item->signal_connect('clicked', 
-            sub { $self->{'CA'}->get_ca_create($self, undef, undef, "sub")});
-      
-      # Export CA
-      ($icon, $mask) = Gnome::Stock->pixmap_gdk('Save', 'GPixmap');
-      $iconw = Gtk::Pixmap->new($icon, $mask);
-
-      $item = $self->{'toolbar'}->append_item(
-            gettext("Export CA"),
-            gettext("Export CA Certificate"),
-            'Private',
-            $iconw);
-      $item->signal_connect('clicked', 
-            sub { $self->{'CA'}->export_ca_cert($self)});
-
-      # Export CRL
-      ($icon, $mask) = Gnome::Stock->pixmap_gdk('Save', 'GPixmap');
-      $iconw = Gtk::Pixmap->new($icon, $mask);
-
-      $item = $self->{'toolbar'}->append_item(
-            gettext("Export CRL"),
-            gettext("Export Certificate Revocation List"),
-            'Private',
-            $iconw);
-      $item->signal_connect('clicked', 
-            sub { $self->{'CA'}->export_crl($self)});
+      $button = Gtk2::ToolButton->new_from_stock('gtk-save');
+      $self->{'toolbar'}->insert($button, -1);
+      $button->set_label(gettext("Export CA"));
+      $button->signal_connect('clicked', sub {
+            $self->{'CA'}->export_ca_cert($self)});
+   
+      $button = Gtk2::ToolButton->new_from_stock('gtk-save');
+      $self->{'toolbar'}->insert($button, -1);
+      $button->set_label(gettext("Export CRL"));
+      $button->signal_connect('clicked', sub {
+            $self->{'CA'}->export_crl($self)});
       
       if(-s $self->{'CA'}->{$ca}->{'dir'}."/cachain.pem") {
-         # Export CA-Chain
-         ($icon, $mask) = Gnome::Stock->pixmap_gdk('Save', 'GPixmap');
-         $iconw = Gtk::Pixmap->new($icon, $mask);
-   
-         $item = $self->{'toolbar'}->append_item(
-               gettext("Export Chain"),
-               gettext("Export CA Certificate Chain"),
-               'Private',
-               $iconw);
-         $item->signal_connect('clicked', 
-               sub { $self->{'CA'}->export_ca_chain($self)});
+         $button = Gtk2::ToolButton->new_from_stock('gtk-save');
+         $self->{'toolbar'}->insert($button, -1);
+         $button->set_label(gettext("Export Chain"));
+         $button->signal_connect('clicked', sub {
+               $self->{'CA'}->export_ca_chain($self)});
       }
 
    } elsif($mode eq 'cert') {
-      
-      # View certificate extensions
-      ($icon, $mask) = Gnome::Stock->pixmap_gdk('Search', 'GPixmap');
-      $iconw = Gtk::Pixmap->new($icon, $mask);
+      $button = Gtk2::ToolButton->new_from_stock('gtk-find');
+      $self->{'toolbar'}->insert($button, -1);
+      $button->set_label(gettext("Details"));
+      $button->signal_connect('clicked', sub {
+            $self->show_details('cert') });
 
-      $item = $self->{'toolbar'}->append_item(
-            gettext("Details"),
-            gettext("Show X.509 Extensions of the selected Certificate"),
-            'Private',
-            $iconw);
-      $item->signal_connect('clicked', 
-            sub { $self->show_details('cert') });
-
-      # Show Certificate
-      ($icon, $mask) = Gnome::Stock->pixmap_gdk('Search', 'GPixmap');
-      $iconw = Gtk::Pixmap->new($icon, $mask);
-
-      $item = $self->{'toolbar'}->append_item(
-            gettext("View"),
-            gettext("View selected Certificate"),
-            'Private',
-            $iconw);
-      $item->signal_connect('clicked', 
-            sub { $self->show_text('cert') });
-
-      # Create Certificate (Server)
-      ($icon, $mask) = Gnome::Stock->pixmap_gdk('New', 'GPixmap');
-      $iconw = Gtk::Pixmap->new($icon, $mask);
-
-      $item = $self->{'toolbar'}->append_item(
-            gettext("New"),
-            gettext("Generate new Key and Request and Sign as Certificate"),
-            'Private',
-            $iconw);
+      $button = Gtk2::ToolButton->new_from_stock('gtk-find');
+      $self->{'toolbar'}->insert($button, -1);
+      $button->set_label(gettext("View"));
+      $button->signal_connect('clicked', sub {
+            $self->show_text('cert') });
 
       if(not(defined($self->{'newcertmenu'}))) {
          _create_create_cert_menu($self);
       }
 
-      $item->signal_connect('clicked',
+      $button = Gtk2::ToolButton->new_from_stock('gtk-new');
+      $self->{'toolbar'}->insert($button, -1);
+      $button->set_label(gettext("New"));
+      $button->signal_connect('clicked' =>
             sub { $self->{'newcertmenu'}->popup( 
-               undef, undef, 0, 1, undef); });
+               undef, undef, undef, undef, 1, 0) });
       
-      # Export certificate
-      ($icon, $mask) = Gnome::Stock->pixmap_gdk('Save', 'GPixmap');
-      $iconw = Gtk::Pixmap->new($icon, $mask);
+      $button = Gtk2::ToolButton->new_from_stock('gtk-save');
+      $self->{'toolbar'}->insert($button, -1);
+      $button->set_label(gettext("Export"));
+      $button->signal_connect('clicked', sub {
+            $self->{'CERT'}->get_export_cert($self) });
 
-      $item = $self->{'toolbar'}->append_item(
-            gettext("Export"),
-            gettext("Export selected Certificate to file"),
-            'Private',
-            $iconw);
-      $item->signal_connect('clicked', 
-            sub { $self->{'CERT'}->get_export_cert($self) });
-
-      # Revoke certificate
-      ($icon, $mask) = Gnome::Stock->pixmap_gdk('Stop', 'GPixmap');
-      $iconw = Gtk::Pixmap->new($icon, $mask);
-
-      $item = $self->{'toolbar'}->append_item(
-            gettext("Revoke"),
-            gettext("Revoke selected Certificate"),
-            'Private',
-            $iconw);
-      $item->signal_connect('clicked', 
-            sub { $self->{'CERT'}->get_revoke_cert($self) });
-
-      # Renew certificate
-      ($icon, $mask) = Gnome::Stock->pixmap_gdk('Refresh', 'GPixmap');
-      $iconw = Gtk::Pixmap->new($icon, $mask);
-
-      $item = $self->{'toolbar'}->append_item(
-            gettext("Renew"),
-            gettext("Renew selected Certificate"),
-            'Private',
-            $iconw);
+      $button = Gtk2::ToolButton->new_from_stock('gtk-stop');
+      $self->{'toolbar'}->insert($button, -1);
+      $button->set_label(gettext("Revoke"));
+      $button->signal_connect('clicked', sub {
+            $self->{'CERT'}->get_revoke_cert($self) });
 
       if(not defined($self->{'renewcertmenu'})) {
          _create_renew_cert_menu($self);
       }
 
-      $item->signal_connect('clicked', 
+      $button = Gtk2::ToolButton->new_from_stock('gtk-refresh');
+      $self->{'toolbar'}->insert($button, -1);
+      $button->set_label(gettext("Renew"));
+      $button->signal_connect('clicked' =>
             sub { $self->{'renewcertmenu'}->popup(
-               undef, undef, 0, 1, undef); });
+               undef, undef, undef, undef, 1, 0) });
 
-      # Delete certificate
-      ($icon, $mask) = Gnome::Stock->pixmap_gdk('Trash', 'GPixmap');
-      $iconw = Gtk::Pixmap->new($icon, $mask);
-
-      $item = $self->{'toolbar'}->append_item(
-            gettext("Delete"),
-            gettext("Delete selected (revoked) Certificate"),
-            'Private',
-            $iconw);
-      $item->signal_connect('clicked', 
-            sub { $self->{'CERT'}->get_del_cert($self) });
+      $button = Gtk2::ToolButton->new_from_stock('gtk-delete');
+      $self->{'toolbar'}->insert($button, -1);
+      $button->set_label(gettext("Delete"));
+      $button->signal_connect('clicked', sub {
+            $self->{'CERT'}->get_del_cert($self) });
       
    } elsif($mode eq 'key') {
-      
-      # Export key
-      ($icon, $mask) = Gnome::Stock->pixmap_gdk('Save', 'GPixmap');
-      $iconw = Gtk::Pixmap->new($icon, $mask);
 
-      $item = $self->{'toolbar'}->append_item(
-            gettext("Export"),
-            gettext("Export selected Key to file"),
-            'Private',
-            $iconw);
-      $item->signal_connect('clicked', 
-            sub { $self->{'KEY'}->get_export_key($self) });
+      $button = Gtk2::ToolButton->new_from_stock('gtk-save');
+      $self->{'toolbar'}->insert($button, -1);
+      $button->set_label(gettext("Export"));
+      $button->signal_connect('clicked', sub {
+            $self->{'KEY'}->get_export_key($self) });
 
-      # Delete key
-      ($icon, $mask) = Gnome::Stock->pixmap_gdk('Trash', 'GPixmap');
-      $iconw = Gtk::Pixmap->new($icon, $mask);
-
-      $item = $self->{'toolbar'}->append_item(
-            gettext("Delete"),
-            gettext("Delete selected Key"),
-            'Private',
-            $iconw);
-      $item->signal_connect('clicked', 
-            sub { $self->{'KEY'}->get_del_key($self) });
+      $button = Gtk2::ToolButton->new_from_stock('gtk-delete');
+      $self->{'toolbar'}->insert($button, -1);
+      $button->set_label(gettext("Delete"));
+      $button->signal_connect('clicked', sub {
+            $self->{'KEY'}->get_del_key($self) });
       
    } elsif($mode eq 'req') {
 
-      # Show Details
-      ($icon, $mask) = Gnome::Stock->pixmap_gdk('Search', 'GPixmap');
-      $iconw = Gtk::Pixmap->new($icon, $mask);
+      $button = Gtk2::ToolButton->new_from_stock('gtk-find');
+      $self->{'toolbar'}->insert($button, -1);
+      $button->set_label(gettext("Details"));
+      $button->signal_connect('clicked', sub {
+            $self->show_details('req') });
 
-      $item = $self->{'toolbar'}->append_item(
-            gettext("Details"),
-            gettext("Show Details of the selected Request"),
-            'Private',
-            $iconw);
-      $item->signal_connect('clicked', 
-            sub { $self->show_details('req') });
-
-      # Show Request
-      ($icon, $mask) = Gnome::Stock->pixmap_gdk('Search', 'GPixmap');
-      $iconw = Gtk::Pixmap->new($icon, $mask);
-
-      $item = $self->{'toolbar'}->append_item(
-            gettext("View"),
-            gettext("View selected Request"),
-            'Private',
-            $iconw);
-      $item->signal_connect('clicked', 
-            sub { $self->show_text('req') });
+      $button = Gtk2::ToolButton->new_from_stock('gtk-find');
+      $self->{'toolbar'}->insert($button, -1);
+      $button->set_label(gettext("View"));
+      $button->signal_connect('clicked', sub {
+            $self->show_text('req') });
       
-      # New Request
-      ($icon, $mask) = Gnome::Stock->pixmap_gdk('New', 'GPixmap');
-      $iconw = Gtk::Pixmap->new($icon, $mask);
-
-      $item = $self->{'toolbar'}->append_item(
-            gettext("New"),
-            gettext("Generate new Key and Certificate Request"),
-            'Private',
-            $iconw);
-      $item->signal_connect('clicked', 
-            sub { $self->{'REQ'}->get_req_create($self) });
+      $button = Gtk2::ToolButton->new_from_stock('gtk-new');
+      $self->{'toolbar'}->insert($button, -1);
+      $button->set_label(gettext("New"));
+      $button->signal_connect('clicked', sub {
+            $self->{'REQ'}->get_req_create($self) });
       
-      # Import Request
-      ($icon, $mask) = Gnome::Stock->pixmap_gdk('Revert', 'GPixmap');
-      $iconw = Gtk::Pixmap->new($icon, $mask);
-
-      $item = $self->{'toolbar'}->append_item(
-            gettext("Import"),
-            gettext("Import a Certificate Request"),
-            'Private',
-            $iconw);
-      $item->signal_connect('clicked', 
-            sub { $self->{'REQ'}->get_import_req($self) });
-
-      # Sign Request
-      ($icon, $mask) = Gnome::Stock->pixmap_gdk('Properties', 'GPixmap');
-      $iconw = Gtk::Pixmap->new($icon, $mask);
-
-      $item = $self->{'toolbar'}->append_item(
-            gettext("Sign"),
-            gettext("Sign Certificate Request/Create Certificate"),
-            'Private',
-            $iconw);
+      $button = Gtk2::ToolButton->new_from_stock('gtk-revert-to-saved');
+      $self->{'toolbar'}->insert($button, -1);
+      $button->set_label(gettext("Import"));
+      $button->signal_connect('clicked', sub {
+            $self->{'REQ'}->get_import_req($self) });
 
       if(not(defined($self->{'reqsignmenu'}))) {
          _create_sign_req_menu($self);
       }
 
-      $item->signal_connect('clicked',
-            sub { $self->{'reqsignmenu'}->popup( undef, undef, 0, 1, undef); });
+      $button = Gtk2::ToolButton->new_from_stock('gtk-properties');
+      $self->{'toolbar'}->insert($button, -1);
+      $button->set_label(gettext("Sign"));
+      $button->signal_connect('clicked' =>
+            sub { $self->{'reqsignmenu'}->popup(
+               undef, undef, undef, undef, 1, 0) });
 
-      # Delete Request
-      ($icon, $mask) = Gnome::Stock->pixmap_gdk('Trash', 'GPixmap');
-      $iconw = Gtk::Pixmap->new($icon, $mask);
-
-      $item = $self->{'toolbar'}->append_item(
-            gettext("Delete"),
-            gettext("Delete selected Certificate Request"),
-            'Private',
-            $iconw);
-      $item->signal_connect('clicked', 
-            sub { $self->{'REQ'}->get_del_req($self) });
+      $button = Gtk2::ToolButton->new_from_stock('gtk-delete');
+      $self->{'toolbar'}->insert($button, -1);
+      $button->set_label(gettext("Delete"));
+      $button->signal_connect('clicked', sub {
+            $self->{'REQ'}->get_del_req($self) });
    }
+
+   $self->{'toolbar'}->set_icon_size('small-toolbar');
+
+   $self->{'toolbar'}->show_all();
 
    return;
 }
@@ -725,70 +621,68 @@ sub create_toolbar {
 sub create_menu {
    my $self = shift;
 
-    $self->{'mw'}->create_menus(
-               { type    => 'subtree',
-                 label   => gettext("_CA"),
-                 subtree => [
-                    { type        => 'item',
-                      label       => gettext("_Open CA"),
-                      pixmap_type => 'stock',
-                      pixmap_info => 'Menu_Open',
-                      callback    => sub { $self->{'CA'}->get_open_name($self) }
-                    },
-                    { type        => 'item',
-                      label       => gettext("_New CA"),
-                      pixmap_type => 'stock',
-                      pixmap_info => 'Menu_New',
-                      callback    => sub { $self->{'CA'}->get_ca_create($self)}
-                    },
-                    { type        => 'item',
-                      label       => gettext("_Delete CA"),
-                      pixmap_type => 'stock',
-                      pixmap_info => 'Menu_Trash',
-                      callback    => sub { $self->{'CA'}->get_ca_delete($self)}
-                    },
-                    { type => 'separator',
-                    },
-                    { type        => 'item',
-                      label       => gettext("_Exit"),
-                      pixmap_type => 'stock',
-                      pixmap_info => 'Menu_Quit',
-                      callback    => sub { HELPERS::exit_clean() }
-                    },
-                 ]
-               },
-               { type    => 'subtree',
-                 label   => gettext("_Preferences"),
-                 subtree => [
-                    { type  => 'item',
-                      label => gettext("Experts Only!!")
-                    },
-                    { type => 'separator'
-                    },
-                    { type        => 'item',
-                      label       => gettext("OpenSSL _Configuration"),
-                      pixmap_type => 'stock',
-                      pixmap_info => 'Menu_Properties',
-                      callback    => sub{ $self->{'TCONFIG'}->config_openssl($self) }
-                    }
-                 ]
-               },
-               { type    => 'subtree',
-                 label   => gettext("_Help"),
-                 subtree => [
-                    { type     => 'item', 
-                      label    => gettext("_Help"),
-                      callback => sub{ $self->show_help() }
-                    },
-                    {type => 'item', 
-                     label => gettext("_About TinyCA"),
-                     pixmap_type => 'stock',
-                     pixmap_info => 'Menu_About',
-                     callback => sub { $self->about() }
-                    }
-                 ]
-               }
-              );
+   my $menu_tree = [
+      gettext("_CA") => {
+         item_type => '<Branch>',
+         children => [
+            gettext("_Open CA") => {
+               callback   => sub { $self->{'CA'}->get_open_name($self) },
+               item_type  => '<StockItem>',
+               extra_data => 'gtk-open'
+            },
+            gettext("_New CA") => {
+               callback    => sub { $self->{'CA'}->get_ca_create($self)},
+               item_type   => '<StockItem>',
+               extra_data => 'gtk-new'
+            },
+            gettext("_Delete CA") => {
+               callback    => sub { $self->{'CA'}->get_ca_delete($self)},
+               item_type   => '<StockItem>',
+               extra_data  => 'gtk-delete'
+            },
+            Separator => {
+               item_type => '<Separator>',
+            },
+            gettext("_Exit") => {
+               callback    => sub { exit(3) },
+               item_type   => '<StockItem>',
+               extra_data  => 'gtk-close'
+            }
+         ],
+      },
+      gettext("_Preferences") => {
+         item_type => '<Branch>',
+         children => [
+            gettext("Experts Only!!") => {
+            },
+            Separator => {
+               item_type => '<Separator>',
+            },
+            gettext("OpenSSL _Configuration") => {
+               callback    => sub{ $self->{'TCONFIG'}->config_openssl($self) },
+               item_type   => '<StockItem>',
+               extra_data => 'gtk-preferences'
+            }
+         ],
+      },
+      gettext("_Help") => {
+         item_type => '<Branch>',
+         children => [
+            gettext("_Help") => {
+               callback    => sub{ $self->show_help() },
+               item_type   => '<StockItem>',
+               extra_data => 'gtk-help'
+            },
+            gettext("_About TinyCA") => {
+               callback    => sub { $self->about() },
+               item_type   => '<StockItem>',
+               extra_data => 'gtk-about'
+            }
+         ],
+      }
+   ];
+
+   $self->{'menu'} = Gtk2::SimpleMenu->new(menu_tree => $menu_tree);
 
    return;
 }
@@ -800,7 +694,7 @@ sub show_text {
    my ($self, $mode) = @_;
 
    my($parsed, $t, $box, $label, $text, $vscrollbar, $name, $button_ok,
-         $status, $scrolled, $ca);
+         $status, $scrolled, $ca, $buffer);
 
    $ca = $self->{'CA'}->{'actca'};
 
@@ -822,9 +716,7 @@ sub show_text {
       return;
    }
 
-   if($mode eq 'req') {
-      $status = $self->{'reqbrowser'}->selection_status();
-   }elsif($mode eq 'cert') {
+   if($mode eq 'cert') {
       $status = $self->{'certbrowser'}->selection_status();
    }
 
@@ -839,8 +731,8 @@ sub show_text {
    defined($parsed) || GUI::HELPERS::print_error(gettext("Can't read file"));
 
    $t = $mode eq 'req'?gettext("Request"):gettext("Certificate");
-
-   $button_ok = Gnome::Stock->button('Button_Ok');
+   
+   $button_ok = Gtk2::Button->new_from_stock('gtk-ok');
    $button_ok->signal_connect('clicked', sub { $box->destroy() });
    $button_ok->can_default(1);
 
@@ -849,18 +741,20 @@ sub show_text {
    $box->set_default_size(550, 440);
    $button_ok->grab_default();
 
-   $scrolled = Gtk::ScrolledWindow->new(undef, undef);
+   $scrolled = Gtk2::ScrolledWindow->new(undef, undef);
    $scrolled->set_policy('automatic', 'automatic');
+   $scrolled->set_shadow_type('etched-in');
    $box->vbox->pack_start($scrolled, 1, 1, 0);
 
-   $text = Gtk::Text->new();
+   $buffer = Gtk2::TextBuffer->new();
+   $buffer->set_text($parsed->{'TEXT'});
+
+   $text = Gtk2::TextView->new_with_buffer($buffer);
    $text->set_editable(0);
-   $text->set_word_wrap(0);
-   $text->set_line_wrap(0);
-   if($self->{'stylefix'}) {
-      $text->set_style($self->{'stylefix'});
-   }
-   $text->insert(undef, undef, undef, $parsed->{'TEXT'});
+   $text->set_wrap_mode('none');
+
+   $text->modify_font($self->{'fontfix'});
+
    $scrolled->add($text);
 
    $box->show_all();
@@ -871,15 +765,39 @@ sub show_text {
 # completeley sick, but needed for doubleclick
 #
 sub _show_details_wrapper {
-   my ($list, $self, $mode, $event) = @_;
+   my ($self, $mode, $list, $event) = @_;
 
-   if($event->{'type'} ne "2button_press") {
-      return(0);
-   }
+   return(0) if($event->type() ne '2button-press');
 
    show_details($self, $mode);
 
    return(1);
+}
+
+#
+# called on rightclick in [key|cert|reqlist]
+#
+sub _show_popup_menu {
+   my ($self, $mode, $list, $event) = @_;
+
+   my $t;
+
+   if ($event->button() == 3) {
+      if($mode eq 'cert') {
+         $self->{'certmenu'}->popup(undef, undef, undef, undef, 3, 0);
+      } elsif ($mode eq 'req') {
+         $self->{'reqmenu'}->popup(undef, undef, undef, undef, 3, 0);
+      } elsif ($mode eq 'key') {
+         $self->{'keymenu'}->popup(undef, undef, undef, undef, 3, 0);
+      } else { 
+         $t = sprintf(
+               gettext("Invalid mode for _show_popup_menu(): %s"), $mode);
+         GUI::HELPERS::print_error($t);
+      }
+      return(1); 
+   }
+
+   return(0);
 }
 
 #
@@ -888,8 +806,8 @@ sub _show_details_wrapper {
 sub show_details {
    my ($self, $mode) = @_;
 
-   my($name, $status, $parsed, $row, $ind, $label, $table, 
-         $box, $button_ok, $t, @fields, $ca);
+   my($name, $status, $parsed, $row, $ind, $label, $table, $tree, $box,
+         $button_ok, $t, @fields, $ca);
 
    $ca   = $self->{'CA'}->{'actca'};
 
@@ -909,13 +827,11 @@ sub show_details {
       GUI::HELPERS::print_info(gettext("Please select a Request first"));
       return;
    }elsif((not defined $name) && ($mode eq 'cert')) {
-      GUI::HELPERS::print_info(gettext("Please select a certificate first"));
+      GUI::HELPERS::print_info(gettext("Please select a Certificate first"));
       return;
    }
 
-   if($mode eq 'req') {
-      $status = $self->{'reqbrowser'}->selection_status();
-   }elsif($mode eq 'cert') {
+   if($mode eq 'cert') {
       $status = $self->{'certbrowser'}->selection_status();
    }
 
@@ -931,20 +847,22 @@ sub show_details {
 
    $t = $mode eq 'req'?gettext("Request Details"):gettext("Certificate Details");
    
-   $button_ok = Gnome::Stock->button('Button_Ok');
+   $button_ok = Gtk2::Button->new_from_stock('gtk-ok');
    $button_ok->can_default(1);
    $button_ok->signal_connect('clicked', sub { $box->destroy() });
 
    $box = GUI::HELPERS::dialog_box($t, $t, $button_ok);
+   $box->set_default_size(700, 400);
 
    $button_ok->grab_default();
 
    $mode = 'cert' if($mode eq 'CA');
    
-   my $tree = $self->create_detail_tree($parsed, $mode);
+   $tree = $self->create_detail_tree($parsed, $mode);
    $box->vbox->add($tree);
 
    $box->show_all();
+   $tree->{'tree'}->columns_autosize();
 }
 
 #
@@ -955,7 +873,7 @@ sub show_import_verification {
 
    my($box, $button_ok, $button_cancel, $label, $rows, $tree, $t);
 
-   $button_ok = Gnome::Stock->button('Button_Ok');
+   $button_ok = Gtk2::Button->new_from_stock('gtk-ok');
    $button_ok->can_default(1);
    if($mode eq "req") {
       $button_ok->signal_connect('clicked', 
@@ -965,7 +883,7 @@ sub show_import_verification {
          sub { $self->{'CA'}->import_ca($self, $opts, $box) });
    }
 
-   $button_cancel = Gnome::Stock->button('Button_Cancel');
+   $button_cancel = Gtk2::Button->new_from_stock('gtk-cancel');
    $button_cancel->signal_connect('clicked', sub { $box->destroy() });
 
    if($mode eq "req") {
@@ -974,6 +892,7 @@ sub show_import_verification {
       $t = gettext("Import CA Certificate");
    }
    $box = GUI::HELPERS::dialog_box( $t, $t, $button_ok, $button_cancel);
+   $box->set_default_size(700, 400);
 
    $button_ok->grab_default();
 
@@ -983,10 +902,10 @@ sub show_import_verification {
       $t = gettext("Do you want to import the following CA Certificate?");
    }
    $label = GUI::HELPERS::create_label($t, 'center', 1, 0);
-   $box->vbox->add($label);
+   $box->vbox->pack_start($label, 0, 0, 0);
 
    $tree = $self->create_detail_tree($parsed, $mode);
-   $box->vbox->add($tree);
+   $box->vbox->pack_start($tree, 1, 1, 0);
 
    $box->show_all();
 
@@ -1001,43 +920,57 @@ sub create_detail_tree {
 
    # print STDERR "DEBUG: create_detail_tree called with mode $mode\n";
 
-   my ($tree, $tree_scrolled, $t, $leaf, $rootleaf, $subtree, $mleaf,
-         $mtree, $nsext, @no_leaf_exp, @no_leaf, @is_leaf);
+   my ($tree, $tree_scrolled, $t, $root, $store, $piter, $citer, $column,
+         $ind, $nsext);
 
-   @no_leaf_exp = ( 3, undef, undef, undef, undef, 0, 1);
-   @no_leaf     = ( 3, undef, undef, undef, undef, 0, 0);
-   @is_leaf     = ( 3, undef, undef, undef, undef, 1, 0);
-
-   $tree_scrolled = Gtk::ScrolledWindow->new(undef, undef);
-   $tree_scrolled->set_usize(700, 400);
+   $tree_scrolled = Gtk2::ScrolledWindow->new(undef, undef);
    $tree_scrolled->set_policy('automatic', 'automatic');
+   $tree_scrolled->set_shadow_type('etched-in');
 
-   $tree = Gtk::CTree->new(2, 0);
-   $tree->set_column_width(0, 250);
-   $tree->set_line_style('none');
-   $tree->set_expander_style('triangle');
+   $store = Gtk2::TreeStore->new('Glib::String','Glib::String');
+   $tree  = Gtk2::TreeView->new_with_model($store);
+   $tree->get_selection->set_mode('none');
+   $tree->set_headers_visible(0);
+
+   $tree_scrolled->{'tree'} = $tree;
+
+   my @titles = ("", "");
+   $ind = 0;
+   foreach my $title (@titles) {
+      $column   = Gtk2::TreeViewColumn->new_with_attributes(
+            $title, Gtk2::CellRendererText->new(), 'text' => $ind);
+      $tree->append_column($column);
+      $ind++;
+   }
+
    $tree_scrolled->add_with_viewport($tree);
 
    $t = $mode eq 'req'?gettext("Request Details"):gettext("Certificate Details"); 
    $t .= " - $parsed->{'CN'}";
    
-   $rootleaf = $tree->insert_node(undef, undef, [$t, ""], @no_leaf_exp);
+   $root = $store->append(undef);
+   $store->set($root, 0 => $t);
 
    # Information about Subject DN
 
    $t = gettext("Subject DN").":";
-   $mleaf = $tree->insert_node($rootleaf, undef, [$t, ""], @no_leaf);
+   $piter = $store->append($root);
+   $store->set($piter, 0 => $t);
 
    for my $l qw(CN EMAIL O OU C ST L) {
       if(defined($parsed->{$l})) {
          if($l eq "OU") {
             foreach my $ou (@{$parsed->{'OU'}}) {
-               $t = [$self->{'words'}{$l}, $ou];
-               $leaf = $tree->insert_node($mleaf, undef, $t, @is_leaf);
+               $citer = $store->append($piter);
+               $store->set($citer, 
+                     0 => $self->{'words'}{$l}, 
+                     1 => $ou);
             }
          } else {
-            $t =  [$self->{'words'}{$l}, $parsed->{$l}];
-            $leaf = $tree->insert_node($mleaf, undef, $t, @is_leaf);
+            $citer = $store->append($piter);
+            $store->set($citer, 
+                  0 => $self->{'words'}{$l}, 
+                  1 => $parsed->{$l});
          }
       }
    }
@@ -1046,18 +979,23 @@ sub create_detail_tree {
       # Information about Issuer
       $t = gettext("Issuer").":";
 
-      $mleaf = $tree->insert_node($rootleaf, undef, [$t, ""], @no_leaf);
+      $piter = $store->append($root);
+      $store->set($piter, 0 => $t);
    
       for my $l qw(CN EMAIL O OU C ST L) {
          if(defined($parsed->{'ISSUERDN'}->{$l})) {
             if($l eq "OU") {
                foreach my $ou (@{$parsed->{'ISSUERDN'}->{'OU'}}) {
-                  $t =  [$self->{'words'}{$l}, $ou];
-                  $leaf = $tree->insert_node($mleaf, undef, $t, @is_leaf);
+                  $citer = $store->append($piter);
+                  $store->set($citer, 
+                        0 => $self->{'words'}{$l}, 
+                        1 => $ou);
                }
             } else {
-               $t =  [$self->{'words'}{$l}, $parsed->{'ISSUERDN'}->{$l}];
-               $leaf = $tree->insert_node($mleaf, undef, $t, @is_leaf);
+               $citer = $store->append($piter);
+               $store->set($citer, 
+                     0 => $self->{'words'}{$l}, 
+                     1 => $parsed->{'ISSUERDN'}->{$l});
             }
          }
       }
@@ -1066,36 +1004,47 @@ sub create_detail_tree {
    if($mode ne "req") {
       # Information about Validity
       $t = gettext("Validity").":";
-      $mleaf = $tree->insert_node($rootleaf, undef, [$t, ""], @no_leaf);
+
+      $piter = $store->append($root);
+      $store->set($piter, 0 => $t);
    
       for my $l qw(STATUS NOTBEFORE NOTAFTER) {
          if(defined($parsed->{$l})) {
-            $t = [$self->{'words'}{$l}, $parsed->{$l}];
-            $leaf = $tree->insert_node($mleaf, undef, $t, @is_leaf);
+            $citer = $store->append($piter);
+            $store->set($citer, 
+                  0 => $self->{'words'}{$l}, 
+                  1 => $parsed->{$l});
          }
       }
    }
 
    # Information about Key/Certificate
    $t = $mode eq 'req'?gettext("Key/Request Details:"):gettext("Key/Certificate Details:"); 
-   $mleaf = $tree->insert_node($rootleaf, undef, [$t, ""], @no_leaf);
+   $piter = $store->append($root);
+   $store->set($piter, 0 => $t);
+
 
    for my $l qw(STATUS SERIAL KEYSIZE PK_ALGORITHM SIG_ALGORITHM TYPE) {
       if(defined($parsed->{$l})) {
-         $t = [$self->{'words'}{$l}, $parsed->{$l}];
-         $leaf = $tree->insert_node($mleaf, undef, $t, @is_leaf);
+         $citer = $store->append($piter);
+         $store->set($citer, 
+               0 => $self->{'words'}{$l}, 
+               1 => $parsed->{$l});
       }
    }
 
    if($mode ne "req") {
       # Fingerprints
       $t = gettext("Fingerprints").":";
-      $mleaf = $tree->insert_node($rootleaf, undef, [$t, ""], @no_leaf);
+      $piter = $store->append($root);
+      $store->set($piter, 0 => $t);
    
       for my $l qw(FINGERPRINTMD5 FINGERPRINTSHA1) {
          if(defined($parsed->{$l})) {
-            $t =  [$self->{'words'}{$l}, $parsed->{$l}];
-            $leaf = $tree->insert_node($mleaf, undef, $t, @is_leaf);
+            $citer = $store->append($piter);
+            $store->set($citer, 
+                  0 => $self->{'words'}{$l}, 
+                  1 => $parsed->{$l});
          }
       }
    }
@@ -1103,44 +1052,56 @@ sub create_detail_tree {
    # Information about Key/Certificate
    if(keys(%{$parsed->{'EXT'}})) {
       $t = $mode eq 'req'?gettext("Requested X.509 Extensions"):gettext("X.509v3 Extensions");
-      $mleaf = $tree->insert_node($rootleaf, undef, [$t.":", ""], @no_leaf);
+      $piter = $store->append($root);
+      $store->set($piter, 0 => $t);
    
       while(my ($key, $val) = each(%{$parsed->{'EXT'}})) { 
          if($key =~ /^netscape/i) {
             $nsext = 1; next;
          }
-         $t =  [$key, $val->[0]];
          # print STDERR "DEBUG: print key: >$key< val: >$val->[0]<\n";
-         $leaf = $tree->insert_node($mleaf, undef, $t, @is_leaf);
+         $citer = $store->append($piter);
+         $store->set($citer,
+               0 => $key,
+               1 => $val->[0]);
 
          if(@{$val} > 1) {
             for(my $i = 1; $val->[$i]; $i++) { 
-               $t =  [$key, $val->[$i]];
-               $leaf = $tree->insert_node($mleaf, undef, $t, @is_leaf);
+               $citer = $store->append($piter);
+               $store->set($citer,
+                     0 => $key,
+                     1 => $val->[$i]);
             }
          }
       }
 
       if($nsext) {
          $t = $mode eq 'req'?gettext("Requested Netscape Extensions"):gettext("Netscape Extensions");
-         $mleaf = $tree->insert_node($rootleaf, undef, [$t.":", ""], @no_leaf);
+         $piter = $store->append($root);
+         $store->set($piter, 0 => $t);
       
          while(my ($key, $val) = each(%{$parsed->{'EXT'}})) { 
             if($key !~ /^netscape/i) {
                next;
             }
-            $t = [$key, $val->[0]];
-            $leaf = $tree->insert_node($mleaf, undef, $t, @is_leaf);
+            $citer = $store->append($piter);
+            $store->set($citer,
+                  0 => $key,
+                  1 => $val->[0]);
    
             if(@{$val} > 1) {
                for(my $i = 1; $val->[$i]; $i++) { 
                   $t = [$key, $val->[$i]];
-                  $leaf = $tree->insert_node($mleaf, undef, $t, @is_leaf);
+                  $citer = $store->append($piter);
+                  $store->set($citer,
+                        0 => $key,
+                        1 => $val->[$i]);
                }
             }
          }
       }
    }
+   $tree->expand_to_path(Gtk2::TreePath->new_first());
 
    return($tree_scrolled);
 }
@@ -1153,7 +1114,7 @@ sub show_select_ca_dialog {
    my ($self, $action, $opts)= @_;
 
    my ($box, $button_ok, $button_cancel, $label, $scrolled, $list, 
-         $item, $name, $t);
+         $model, $name, $t, $store, $column, $iter);
 
    if($action eq 'open') {
       $t = gettext("Open CA");
@@ -1164,38 +1125,63 @@ sub show_select_ca_dialog {
       return;
    }
    
-   $button_ok     = Gnome::Stock->button('Button_Ok');
+   $button_ok = Gtk2::Button->new_from_stock('gtk-ok');
    $button_ok->can_default(1);
 
-   $button_cancel = Gnome::Stock->button('Button_Cancel');
+   $button_cancel = Gtk2::Button->new_from_stock('gtk-cancel');
+   $button_cancel->signal_connect('clicked', sub { $box->destroy() });
+
+   $button_ok->signal_connect('clicked', 
+         sub { 
+            $iter = $list->get_selection->get_selected();
+            if(defined($iter)) {
+               $name = $store->get($iter);
+               if($action eq 'open') {
+                  $opts->{'name'} = $name;
+                  $self->{'CA'}->open_ca($self, $opts, $box);
+               }elsif($action eq 'delete') {
+                  $self->{'CA'}->delete_ca($self, $name, $box);
+               }else {
+                  GUI::HELPERS::print_error(
+                     gettext("Invalid action for show_select_ca_dialog(): ").$action);
+               }
+            }
+         }
+   );
 
    $box = GUI::HELPERS::dialog_box($t, $t, $button_ok, $button_cancel);
 
    $button_ok->grab_default();
 
-   $scrolled = Gtk::ScrolledWindow->new(undef, undef);
+   $scrolled = Gtk2::ScrolledWindow->new(undef, undef);
    $scrolled->set_policy('automatic', 'automatic' );
-   $scrolled->border_width(0 );
-   $scrolled->hscrollbar->set_update_policy('continuous' );
-   $scrolled->vscrollbar->set_update_policy('continuous' );
+   $scrolled->set_shadow_type('etched-in');
    $box->vbox->add($scrolled);
 
-   $list = Gtk::List->new();
+   $store = Gtk2::ListStore->new('Glib::String');
+
+   $list = Gtk2::TreeView->new_with_model ($store);
+   $list->get_selection->set_mode('single');
    $scrolled->add_with_viewport($list);
+
+   $column   = Gtk2::TreeViewColumn->new_with_attributes(
+         gettext("Available CAs"), Gtk2::CellRendererText->new(), 'text' => 0);
+   $list->append_column($column);
 
    foreach(@{$self->{'CA'}->{'calist'}}) {
       next if (not defined $_ );
-      $item = Gtk::ListItem->new($_);
-      $item->{'name'} = $_;
-      $list->append_items($item);
+      $iter = $store->append();
+      $store->set($iter, 0, $_);
    }
 
    # activate doubleclick in the list
    $list->signal_connect('button_press_event', 
          sub { 
-            if($_[1]->{'type'} eq '2button_press') {
-               if(defined($list->selection)) {
-                  $name = ($list->selection)[0]->{'name'};
+            if($_[1]->type() eq '2button-press') {
+               $iter = $list->get_selection->get_selected();
+               if($iter) {
+                  $name = $store->get($iter);
+
                   if($action eq 'open') {
                      $opts->{'name'} = $name;
                      $self->{'CA'}->open_ca($self, $opts, $box);
@@ -1212,23 +1198,6 @@ sub show_select_ca_dialog {
          }
    );
 
-   $button_ok->signal_connect('clicked', 
-         sub { 
-            if(defined($list->selection)) {
-               $name = ($list->selection)[0]->{'name'};
-               if($action eq 'open') {
-                  $opts->{'name'} = $name;
-                  $self->{'CA'}->open_ca($self, $opts, $box);
-               }elsif($action eq 'delete') {
-                  $self->{'CA'}->delete_ca($self, $name, $box);
-               }else {
-                  GUI::HELPERS::print_error(
-                     gettext("Invalid action for show_select_ca_dialog(): ").$action);
-               }
-            }
-         }
-   );
-   $button_cancel->signal_connect('clicked', sub { $box->destroy() });
    $button_ok->grab_default();
 
    $box->show_all();
@@ -1243,16 +1212,17 @@ sub show_req_dialog {
    my ($box, $button_ok, $button_cancel, $reqtable, $radiobox, $key1, $key2,
          $key3, $key4, $key5, $entry, $label);
 
-   $button_ok     = Gnome::Stock->button('Button_Ok');
+   $button_ok = Gtk2::Button->new_from_stock('gtk-ok');
+   $button_ok->can_default(1);
    $button_ok->signal_connect('clicked', 
-         sub { $self->{'REQ'}->get_req_create($self, $opts, $box) });
+      sub { $self->{'REQ'}->get_req_create($self, $opts, $box) });
 
-   $button_cancel = Gnome::Stock->button('Button_Cancel');
-   $button_cancel->signal_connect('clicked', 
-         sub { $box->destroy() });
+   $button_cancel = Gtk2::Button->new_from_stock('gtk-cancel');
+   $button_cancel->signal_connect('clicked', sub { $box->destroy() });
 
    $box = GUI::HELPERS::dialog_box(
-         gettext("Create Request"), gettext("Create a new Certificate Request"),
+         gettext("Create Request"), 
+         gettext("Create a new Certificate Request"),
          $button_ok, $button_cancel);
 
    # table for request data
@@ -1261,115 +1231,129 @@ sub show_req_dialog {
    if(defined($opts->{'OU'})) {
       $ous = @{$opts->{'OU'}} - 1;
    }
-   $reqtable = Gtk::Table->new(1, 13 + $ous, 0);
+   $reqtable = Gtk2::Table->new(1, 13 + $ous, 0);
    $reqtable->set_col_spacing(0, 7);
    $box->vbox->add($reqtable);
 
-   $entry = GUI::HELPERS::entry_to_table(gettext("Common Name (eg, your Name,"),
+   $entry = GUI::HELPERS::entry_to_table(
+         gettext("Common Name (eg, your Name,"),
          \$opts->{'CN'}, $reqtable, 0, 1);
    $entry->grab_focus();
 
-   $label = GUI::HELPERS::create_label(gettext("your eMail Address"), 'right', 0, 0);
+   $label = GUI::HELPERS::create_label(
+         gettext("your eMail Address"), 'right', 0, 0);
    $reqtable->attach_defaults($label, 0, 1, 2, 3);
 
-   $label = GUI::HELPERS::create_label(gettext("or the Servers Name)"), 'right', 0, 0);
+   $label = GUI::HELPERS::create_label(
+         gettext("or the Servers Name)"), 'right', 0, 0);
    $reqtable->attach_defaults($label, 0, 1, 3, 4);
 
-   $entry = GUI::HELPERS::entry_to_table(gettext("eMail Address").":",
+   $entry = GUI::HELPERS::entry_to_table(
+         gettext("eMail Address").":",
          \$opts->{'EMAIL'}, $reqtable, 4, 1);
 
-   $entry = GUI::HELPERS::entry_to_table(gettext("Password (protect your private Key):"),
+   $entry = GUI::HELPERS::entry_to_table(
+         gettext("Password (protect your private Key):"),
          \$opts->{'passwd'}, $reqtable, 5, 0);
 
-   $entry = GUI::HELPERS::entry_to_table(gettext("Password (confirmation):"),
+   $entry = GUI::HELPERS::entry_to_table(
+         gettext("Password (confirmation):"),
          \$opts->{'passwd2'}, $reqtable, 6, 0);
 
-   $entry = GUI::HELPERS::entry_to_table(gettext("Country Name (2 letter code):"),
+   $entry = GUI::HELPERS::entry_to_table(
+         gettext("Country Name (2 letter code):"),
          \$opts->{'C'}, $reqtable, 7, 1);
 
-   $entry = GUI::HELPERS::entry_to_table(gettext("State or Province Name:"),
+   $entry = GUI::HELPERS::entry_to_table(
+         gettext("State or Province Name:"),
          \$opts->{'ST'}, $reqtable, 8, 1);
 
-   $entry = GUI::HELPERS::entry_to_table(gettext("Locality Name (eg. city):"),
+   $entry = GUI::HELPERS::entry_to_table(
+         gettext("Locality Name (eg. city):"),
          \$opts->{'L'}, $reqtable, 9, 1);
 
-   $entry = GUI::HELPERS::entry_to_table(gettext("Organization Name (eg. company):"),
+   $entry = GUI::HELPERS::entry_to_table(
+         gettext("Organization Name (eg. company):"),
          \$opts->{'O'}, $reqtable, 10, 1);
 
    if(defined($opts->{'OU'})) {
       foreach my $ou (@{$opts->{'OU'}}) {
-         $entry = GUI::HELPERS::entry_to_table(gettext("Organizational Unit Name (eg. section):"),
+         $entry = GUI::HELPERS::entry_to_table(
+               gettext("Organizational Unit Name (eg. section):"),
             \$ou, $reqtable, 11 + $cc++, 1);
       }
    } else {
-      $entry = GUI::HELPERS::entry_to_table(gettext("Organizational Unit Name (eg. section):"),
+      $entry = GUI::HELPERS::entry_to_table(
+            gettext("Organizational Unit Name (eg. section):"),
             \$opts->{'OU'}, $reqtable, 11, 1);
    }
 
-   $label = GUI::HELPERS::create_label(gettext("Keylength").":", 'left', 0, 0);
+   $label = GUI::HELPERS::create_label(
+         gettext("Keylength").":", 'left', 0, 0);
    $reqtable->attach_defaults($label, 0, 1, 13, 14);
 
-   $radiobox = Gtk::HBox->new(0, 0);
-   $key1 = Gtk::RadioButton->new('1024');
+   $radiobox = Gtk2::HBox->new(0, 0);
+   $key1 = Gtk2::RadioButton->new(undef, '1024');
    $key1->set_active(1) 
       if(defined($opts->{'bits'}) && $opts->{'bits'} == '1024');
-   $key1->signal_connect('toggled', \&GUI::CALLBACK::toggle_to_var, 
-         \$opts->{'bits'}, 1024);
+   $key1->signal_connect('toggled' =>
+        sub{GUI::CALLBACK::toggle_to_var($key1, \$opts->{'bits'}, 1024)});
    $radiobox->add($key1);
 
-   $key2 = Gtk::RadioButton->new('2048', $key1);
+   $key2 = Gtk2::RadioButton->new($key1, '2048');
    $key2->set_active(1) 
       if(defined($opts->{'bits'}) && $opts->{'bits'} == '2048');
-   $key2->signal_connect('toggled', \&GUI::CALLBACK::toggle_to_var, 
-         \$opts->{'bits'}, 2048);
+   $key2->signal_connect('toggled' => 
+         sub{GUI::CALLBACK::toggle_to_var($key2, \$opts->{'bits'}, 2048)});
    $radiobox->add($key2);
 
-   $key3 = Gtk::RadioButton->new('4096', $key1);
+   $key3 = Gtk2::RadioButton->new($key1, '4096');
    $key3->set_active(1) 
       if(defined($opts->{'bits'}) && $opts->{'bits'} == '4096');
-   $key3->signal_connect('toggled', \&GUI::CALLBACK::toggle_to_var, 
-         \$opts->{'bits'}, 4096);
+   $key3->signal_connect('toggled' =>
+         sub{GUI::CALLBACK::toggle_to_var($key3, \$opts->{'bits'}, 4096)});
    $radiobox->add($key3);
 
    $reqtable->attach_defaults($radiobox, 1, 2, 13, 14);
 
-   $label = GUI::HELPERS::create_label(gettext("Digest").":", 'left', 0, 0);
+   $label = GUI::HELPERS::create_label(
+         gettext("Digest").":", 'left', 0, 0);
    $reqtable->attach_defaults($label, 0, 1, 15, 16);
 
-   $radiobox = Gtk::HBox->new(0, 0);
-   $key1 = Gtk::RadioButton->new('MD5');
+   $radiobox = Gtk2::HBox->new(0, 0);
+   $key1 = Gtk2::RadioButton->new(undef, 'MD5');
    $key1->set_active(1) 
       if(defined($opts->{'digest'}) && $opts->{'digest'} eq 'md5');
-   $key1->signal_connect('toggled', \&GUI::CALLBACK::toggle_to_var, 
-         \$opts->{'digest'}, 'md5');
+   $key1->signal_connect('toggled' =>
+        sub{GUI::CALLBACK::toggle_to_var($key1, \$opts->{'digest'}, 'md5')});
    $radiobox->add($key1);
 
-   $key2 = Gtk::RadioButton->new('SHA1', $key1);
+   $key2 = Gtk2::RadioButton->new($key1, 'SHA1');
    $key2->set_active(1) 
       if(defined($opts->{'digest'}) && $opts->{'digest'} eq 'sha1');
-   $key2->signal_connect('toggled', \&GUI::CALLBACK::toggle_to_var, 
-         \$opts->{'digest'}, 'sha1');
+   $key2->signal_connect('toggled' =>
+        sub{GUI::CALLBACK::toggle_to_var($key2, \$opts->{'digest'}, 'sha1')});
    $radiobox->add($key2);
 
-   $key3 = Gtk::RadioButton->new('MD2', $key1);
+   $key3 = Gtk2::RadioButton->new($key1, 'MD2');
    $key3->set_active(1) 
       if(defined($opts->{'digest'}) && $opts->{'digest'} eq 'md2');
-   $key3->signal_connect('toggled', \&GUI::CALLBACK::toggle_to_var, 
-         \$opts->{'digest'}, 'md2');
+   $key3->signal_connect('toggled' =>
+        sub{GUI::CALLBACK::toggle_to_var($key3, \$opts->{'digest'}, 'md2')});
    $radiobox->add($key3);
 
-   $key4 = Gtk::RadioButton->new('MDC2', $key1);
+   $key4 = Gtk2::RadioButton->new($key1, 'MDC2');
    $key4->set_active(1) 
       if(defined($opts->{'digest'}) && $opts->{'digest'} eq 'mdc2');
-   $key4->signal_connect('toggled', \&GUI::CALLBACK::toggle_to_var, 
-         \$opts->{'digest'}, 'mdc2');
+   $key4->signal_connect('toggled' =>
+        sub{GUI::CALLBACK::toggle_to_var($key4, \$opts->{'digest'}, 'mdc2')});
    $radiobox->add($key4);
 
-   $key5 = Gtk::RadioButton->new('MD4', $key1);
+   $key5 = Gtk2::RadioButton->new($key1, 'MD4');
    $key5->set_active(1) 
       if(defined($opts->{'digest'}) && $opts->{'digest'} eq 'md4');
-   $key5->signal_connect('toggled', \&GUI::CALLBACK::toggle_to_var, 
-         \$opts->{'digest'}, 'md4');
+   $key5->signal_connect('toggled' =>
+        sub{GUI::CALLBACK::toggle_to_var($key5, \$opts->{'digest'}, 'md4')});
    $radiobox->add($key5);
 
    $reqtable->attach_defaults($radiobox, 1, 2, 15, 16);
@@ -1377,19 +1361,19 @@ sub show_req_dialog {
    $label = GUI::HELPERS::create_label(gettext("Algorithm").":", 'left', 0, 0);
    $reqtable->attach_defaults($label, 0, 1, 16, 17);
 
-   $radiobox = Gtk::HBox->new(0, 0);
-   $key1 = Gtk::RadioButton->new('RSA');
+   $radiobox = Gtk2::HBox->new(0, 0);
+   $key1 = Gtk2::RadioButton->new(undef, 'RSA');
    $key1->set_active(1) 
       if(defined($opts->{'algo'}) && $opts->{'algo'} eq 'rsa');
-   $key1->signal_connect('toggled', \&GUI::CALLBACK::toggle_to_var, 
-         \$opts->{'algo'}, 'rsa');
+   $key1->signal_connect('toggled' =>
+        sub{GUI::CALLBACK::toggle_to_var($key1, \$opts->{'algo'}, 'rsa')});
    $radiobox->add($key1);
 
-   $key2 = Gtk::RadioButton->new('DSA', $key1);
+   $key2 = Gtk2::RadioButton->new($key1, 'DSA');
    $key2->set_active(1) 
       if(defined($opts->{'algo'}) && $opts->{'algo'} eq 'dsa');
-   $key2->signal_connect('toggled', \&GUI::CALLBACK::toggle_to_var, 
-         \$opts->{'algo'}, 'dsa');
+   $key2->signal_connect('toggled' =>
+        sub{GUI::CALLBACK::toggle_to_var($key2, \$opts->{'algo'}, 'dsa')});
    $radiobox->add($key2);
 
    $reqtable->attach_defaults($radiobox, 1, 2, 16, 17);
@@ -1408,25 +1392,24 @@ sub show_cert_revoke_dialog {
    my ($box, $button_ok, $button_cancel, $table, $entry, $t, $label, $combo,
          @combostrings);
 
-   $button_ok = Gnome::Stock->button('Button_Ok');
+   $button_ok = Gtk2::Button->new_from_stock('gtk-ok');
    $button_ok->signal_connect('clicked', 
-         sub { $self->{'CERT'}->get_revoke_cert($self, $opts, $box) });
+      sub { $self->{'CERT'}->get_revoke_cert($self, $opts, $box) });
 
-   $button_cancel = Gnome::Stock->button('Button_Cancel');
-   $button_cancel->signal_connect('clicked', 
-         sub { $box->destroy() });
+   $button_cancel = Gtk2::Button->new_from_stock('gtk-cancel');
+   $button_cancel->signal_connect('clicked', sub { $box->destroy() });
 
    $box = GUI::HELPERS::dialog_box(
          gettext("Revoke Certificate"), gettext("Revoke Certificate"),
          $button_ok, $button_cancel);
 
    # small table for data
-   $table = Gtk::Table->new(1, 2, 0);
+   $table = Gtk2::Table->new(1, 2, 0);
    $table->set_col_spacing(0, 10);
    $box->vbox->add($table);
 
-   $entry = GUI::HELPERS::entry_to_table(gettext("CA Password:"),
-         \$opts->{'passwd'}, $table, 0, 0);
+   $entry = GUI::HELPERS::entry_to_table(
+         gettext("CA Password:"), \$opts->{'passwd'}, $table, 0, 0);
    $entry->grab_focus();
 
    if($self->{'OpenSSL'}->{'version'} eq "0.9.7") {
@@ -1435,7 +1418,7 @@ sub show_cert_revoke_dialog {
    
       $table->attach_defaults($label, 0, 1, 1, 2);
    
-      $combo = Gtk::Combo->new();
+      $combo = Gtk2::Combo->new();
       @combostrings = qw(
             unspecified 
             keyCompromise 
@@ -1448,15 +1431,11 @@ sub show_cert_revoke_dialog {
       $combo->set_use_arrows(1);
       $combo->set_value_in_list(1, 0);
    
-      $combo->entry->signal_connect('changed',
-            \&GUI::CALLBACK::entry_to_var,
-            $combo->entry,
-            \$opts->{'reason'},
-            undef,
-            undef);
+      $combo->entry->signal_connect('changed' =>
+            sub{GUI::CALLBACK::entry_to_var(
+               $combo, $combo->entry, \$opts->{'reason'}, undef, undef)});
    
-      $table->attach_defaults($combo, 1, 2, 1, 2);
-   }
+      $table->attach_defaults($combo, 1, 2, 1, 2); }
 
    $box->show_all();
          
@@ -1469,40 +1448,41 @@ sub show_cert_revoke_dialog {
 sub show_crl_export_dialog {
    my ($self, $opts) = @_;
 
-   my ($box, $button_ok, $button_cancel, $label, $format1, $format2,
+   my ($box, $button_ok, $button_cancel, $button, $label, $format1, $format2,
          $format3, $table, $entry, $fileentry, $hbox);
 
-   $button_ok     = Gnome::Stock->button('Button_Ok');
-   $button_ok->signal_connect('clicked', 
+   $button_ok = Gtk2::Button->new_from_stock('gtk-save');
+   $button_ok->signal_connect('clicked' =>
          sub { $self->{'CA'}->export_crl($self, $opts, $box) });
 
-   $button_cancel = Gnome::Stock->button('Button_Cancel');
-   $button_cancel->signal_connect('clicked', 
-         sub { $box->destroy() });
+   $button_cancel = Gtk2::Button->new_from_stock('gtk-cancel');
+   $button_cancel->signal_connect('clicked', sub { $box->destroy() });
 
    $box = GUI::HELPERS::dialog_box(
          gettext("Export CRL"), gettext("Export Revocation List to File"),
          $button_ok, $button_cancel);
 
    # small table for file selection
-   $table = Gtk::Table->new(3, 2, 0);
+   $table = Gtk2::Table->new(3, 3, 0);
    $table->set_col_spacing(0, 10);
    $box->vbox->add($table);
 
    $label = GUI::HELPERS::create_label(gettext("File:"), 'left', 0, 0);
    $table->attach_defaults($label, 0, 1, 0, 1);
 
-   $fileentry = Gnome::FileEntry->new('', gettext("Export CRL"));
-   $fileentry->gnome_entry->set_max_saved(10);
-   $fileentry->set_directory(0);
+   $fileentry = Gtk2::Entry->new();
    $table->attach_defaults($fileentry, 1, 2, 0, 1);
-   $fileentry->gnome_entry->entry->set_text($opts->{'outfile'})
-      if(defined($opts->{'outfile'}));
-   $fileentry->gnome_entry->entry->signal_connect(
-         'changed', \&GUI::CALLBACK::entry_to_var,
-         $fileentry->gnome_entry->entry,
-         \$opts->{'outfile'});
+   $fileentry->set_text($opts->{'outfile'}) if(defined($opts->{'outfile'}));
+   $fileentry->signal_connect( 'changed' => 
+         sub{GUI::CALLBACK::entry_to_var(
+            $fileentry, $fileentry, \$opts->{'outfile'})});
    $fileentry->grab_focus();
+
+   $button = Gtk2::Button->new(gettext("Browse..."));
+   $button->signal_connect('clicked' =>
+      sub{GUI::HELPERS::browse_file(
+         gettext("Export CA Certificate"), $fileentry, 'save')});
+   $table->attach_defaults($button, 2, 3, 0, 1);
 
    $entry = GUI::HELPERS::entry_to_table(gettext("CA Password:"),
          \$opts->{'passwd'}, $table, 1, 0);
@@ -1511,36 +1491,38 @@ sub show_crl_export_dialog {
    $entry = GUI::HELPERS::entry_to_table(gettext("Valid for (Days):"),
          \$opts->{'days'}, $table, 2, 1);
 
-   $label = GUI::HELPERS::create_label(gettext("Export Format:"), 'left', 0, 0);
+   $label = GUI::HELPERS::create_label(
+      gettext("Export Format:"), 'left', 0, 0);
    $box->vbox->add($label);
 
-   $hbox = Gtk::HBox->new(0, 0);
+   $hbox = Gtk2::HBox->new(0, 0);
    $box->vbox->add($hbox);
 
-   $format1 = Gtk::RadioButton->new(gettext("PEM"));
+   $format1 = Gtk2::RadioButton->new(undef, gettext("PEM"));
    $format1->set_active(1)
       if(defined($opts->{'format'}) && $opts->{'format'} eq 'PEM');
-   $format1->signal_connect('toggled', \&GUI::CALLBACK::toggle_to_var, 
+   $format1->signal_connect('toggled' =>
+     sub{GUI::CALLBACK::toggle_to_var($format1,
          \$opts->{'format'}, 'PEM', \$opts->{'outfile'}, 
-         \$opts->{'format'}, $fileentry);
+         \$opts->{'format'}, $fileentry)});
    $hbox->add($format1);
 
-   $format2 = Gtk::RadioButton->new(
-         gettext("DER"), $format1);
+   $format2 = Gtk2::RadioButton->new($format1, gettext("DER"));
    $format2->set_active(1)
       if(defined($opts->{'format'}) && $opts->{'format'} eq 'DER');
-   $format2->signal_connect('toggled', \&GUI::CALLBACK::toggle_to_var, 
+   $format2->signal_connect('toggled' =>
+     sub{GUI::CALLBACK::toggle_to_var($format2,
          \$opts->{'format'}, 'DER', \$opts->{'outfile'}, 
-         \$opts->{'format'}, $fileentry);
+         \$opts->{'format'}, $fileentry)});
    $hbox->add($format2);
 
-   $format3 = Gtk::RadioButton->new(
-         gettext("TXT"), $format1);
+   $format3 = Gtk2::RadioButton->new($format1, gettext("TXT"));
    $format3->set_active(1)
       if(defined($opts->{'format'}) && $opts->{'format'} eq 'TXT');
-   $format3->signal_connect('toggled', \&GUI::CALLBACK::toggle_to_var, 
+   $format3->signal_connect('toggled' =>
+        sub{ GUI::CALLBACK::toggle_to_var($format3,
          \$opts->{'format'}, 'TXT', \$opts->{'outfile'}, 
-         \$opts->{'format'}, $fileentry);
+         \$opts->{'format'}, $fileentry)});
    $hbox->add($format3);
 
    $box->show_all();
@@ -1554,16 +1536,15 @@ sub show_crl_export_dialog {
 sub show_ca_chain_export_dialog {
    my ($self, $opts) = @_;
 
-   my ($box, $button_ok, $button_cancel, $label, $format1, $format2,
-         $format3, $table, $entry, $fileentry, $hbox);
+   my ($box, $button_ok, $button_cancel, $button, $label, $format1, $format2,
+         $format3, $table, $fileentry, $hbox);
 
-   $button_ok     = Gnome::Stock->button('Button_Ok');
+   $button_ok     = Gtk2::Button->new_from_stock('gtk-save');
    $button_ok->signal_connect('clicked', 
          sub { $self->{'CA'}->export_ca_chain($self, $opts, $box) });
 
-   $button_cancel = Gnome::Stock->button('Button_Cancel');
-   $button_cancel->signal_connect('clicked', 
-         sub { $box->destroy() });
+   $button_cancel = Gtk2::Button->new_from_stock('gtk-cancel');
+   $button_cancel->signal_connect('clicked', sub { $box->destroy() });
 
    $box = GUI::HELPERS::dialog_box(
          gettext("Export CA Certificate Chain"), 
@@ -1571,25 +1552,25 @@ sub show_ca_chain_export_dialog {
          $button_ok, $button_cancel);
 
    # small table for file selection
-   $table = Gtk::Table->new(1, 2, 0);
-   $table->set_col_spacing(0, 10);
+   $table = Gtk2::Table->new(1, 3, 0);
    $box->vbox->add($table);
 
    $label = GUI::HELPERS::create_label(gettext("File:"), 'left', 0, 0);
    $table->attach_defaults($label, 0, 1, 0, 1);
 
-   $fileentry = Gnome::FileEntry->new('', 
-         gettext("Export CA Certificate Chain"));
-   $fileentry->gnome_entry->set_max_saved(10);
-   $fileentry->set_directory(0);
+   $fileentry = Gtk2::Entry->new();
    $table->attach_defaults($fileentry, 1, 2, 0, 1);
-   $fileentry->gnome_entry->entry->set_text($opts->{'outfile'})
-      if(defined($opts->{'outfile'}));
-   $fileentry->gnome_entry->entry->signal_connect(
-         'changed', \&GUI::CALLBACK::entry_to_var,
-         $fileentry->gnome_entry->entry,
-         \$opts->{'outfile'});
+   $fileentry->set_text($opts->{'outfile'}) if(defined($opts->{'outfile'}));
+   $fileentry->signal_connect( 'changed' =>
+        sub { GUI::CALLBACK::entry_to_var(
+           $fileentry, $fileentry, \$opts->{'outfile'}) });
    $fileentry->grab_focus();
+
+   $button = Gtk2::Button->new(gettext("Browse..."));
+   $button->signal_connect('clicked' =>
+      sub{GUI::HELPERS::browse_file(
+         gettext("Export CA Certificate Chain"), $fileentry, 'save')});
+   $table->attach_defaults($button, 2, 3, 0, 1);
 
    $box->show_all();
 
@@ -1603,15 +1584,14 @@ sub show_ca_export_dialog {
    my ($self, $opts) = @_;
 
    my ($box, $button_ok, $button_cancel, $label, $format1, $format2,
-         $format3, $table, $entry, $fileentry, $hbox);
+         $format3, $table, $entry, $fileentry, $hbox, $button);
 
-   $button_ok     = Gnome::Stock->button('Button_Ok');
+   $button_ok = Gtk2::Button->new_from_stock('gtk-save');
    $button_ok->signal_connect('clicked', 
          sub { $self->{'CA'}->export_ca_cert($self, $opts, $box) });
 
-   $button_cancel = Gnome::Stock->button('Button_Cancel');
-   $button_cancel->signal_connect('clicked', 
-         sub { $box->destroy() });
+   $button_cancel = Gtk2::Button->new_from_stock('gtk-cancel');
+   $button_cancel->signal_connect('clicked', sub { $box->destroy() });
 
    $box = GUI::HELPERS::dialog_box(
          gettext("Export CA Certificate"), 
@@ -1619,55 +1599,59 @@ sub show_ca_export_dialog {
          $button_ok, $button_cancel);
 
    # small table for file selection
-   $table = Gtk::Table->new(1, 2, 0);
+   $table = Gtk2::Table->new(1, 3, 0);
    $table->set_col_spacing(0, 10);
    $box->vbox->add($table);
 
    $label = GUI::HELPERS::create_label(gettext("File:"), 'left', 0, 0);
    $table->attach_defaults($label, 0, 1, 0, 1);
 
-   $fileentry = Gnome::FileEntry->new('', gettext("Export CA Certificate"));
-   $fileentry->gnome_entry->set_max_saved(10);
-   $fileentry->set_directory(0);
+   $fileentry = Gtk2::Entry->new();
    $table->attach_defaults($fileentry, 1, 2, 0, 1);
-   $fileentry->gnome_entry->entry->set_text($opts->{'outfile'})
-      if(defined($opts->{'outfile'}));
-   $fileentry->gnome_entry->entry->signal_connect(
-         'changed', \&GUI::CALLBACK::entry_to_var,
-         $fileentry->gnome_entry->entry,
-         \$opts->{'outfile'});
+   $fileentry->set_text($opts->{'outfile'}) if(defined($opts->{'outfile'}));
+   $fileentry->signal_connect('changed' =>
+        sub{GUI::CALLBACK::entry_to_var(
+           $fileentry, $fileentry, \$opts->{'outfile'})});
    $fileentry->grab_focus();
 
-   $label = GUI::HELPERS::create_label(gettext("Export Format:"), 'left', 0, 0);
+   $button = Gtk2::Button->new(gettext("Browse..."));
+   $button->signal_connect('clicked' => 
+         sub{GUI::HELPERS::browse_file(
+            gettext("Export CA Certificate"), $fileentry, 'save')});
+   $table->attach_defaults($button, 2, 3, 0, 1);
+
+   $label = GUI::HELPERS::create_label(
+         gettext("Export Format:"), 'left', 0, 0);
    $box->vbox->add($label);
 
-   $hbox = Gtk::HBox->new(0, 0);
+   $hbox = Gtk2::HBox->new(0, 0);
    $box->vbox->add($hbox);
 
-   $format1 = Gtk::RadioButton->new(gettext("PEM"));
+   $format1 = Gtk2::RadioButton->new(undef, gettext("PEM"));
    $format1->set_active(1)
       if(defined($opts->{'format'}) && $opts->{'format'} eq 'PEM');
-   $format1->signal_connect('toggled', \&GUI::CALLBACK::toggle_to_var, 
-         \$opts->{'format'}, 'PEM', \$opts->{'outfile'}, 
-         \$opts->{'format'}, $fileentry);
+   $format1->signal_connect_after('toggled' =>
+        sub{GUI::CALLBACK::toggle_to_var($format1, 
+           \$opts->{'format'}, 'PEM', \$opts->{'outfile'}, 
+           \$opts->{'format'}, $fileentry)});
    $hbox->add($format1);
 
-   $format2 = Gtk::RadioButton->new(
-         gettext("DER"), $format1);
+   $format2 = Gtk2::RadioButton->new($format1, gettext("DER"));
    $format2->set_active(1)
       if(defined($opts->{'format'}) && $opts->{'format'} eq 'DER');
-   $format2->signal_connect('toggled', \&GUI::CALLBACK::toggle_to_var, 
+   $format2->signal_connect_after('toggled' =>
+        sub{GUI::CALLBACK::toggle_to_var($format2,
          \$opts->{'format'}, 'DER', \$opts->{'outfile'}, 
-         \$opts->{'format'}, $fileentry);
+         \$opts->{'format'}, $fileentry)});
    $hbox->add($format2);
 
-   $format3 = Gtk::RadioButton->new(
-         gettext("TXT"), $format1);
+   $format3 = Gtk2::RadioButton->new($format1, gettext("TXT"));
    $format3->set_active(1)
       if(defined($opts->{'format'}) && $opts->{'format'} eq 'TXT');
-   $format3->signal_connect('toggled', \&GUI::CALLBACK::toggle_to_var, 
+   $format3->signal_connect_after('toggled' => 
+      sub{GUI::CALLBACK::toggle_to_var($format3,
          \$opts->{'format'}, 'TXT', \$opts->{'outfile'}, 
-         \$opts->{'format'}, $fileentry);
+         \$opts->{'format'}, $fileentry)});
    $hbox->add($format3);
 
    $box->show_all();
@@ -1683,19 +1667,17 @@ sub show_key_nopasswd_dialog {
 
    my ($box, $button_ok, $button_cancel, $label, $table, $entry);
 
-   $button_ok     = Gnome::Stock->button('Button_Ok');
+   $button_ok = Gtk2::Button->new_from_stock('gtk-ok');
    $button_ok->signal_connect('clicked', 
          sub { $self->{'KEY'}->get_export_key($self, $opts, $box) });
 
-   $button_cancel = Gnome::Stock->button('Button_Cancel');
-   $button_cancel->signal_connect('clicked', 
-         sub { $box->destroy() });
+   $button_cancel = Gtk2::Button->new_from_stock('gtk-cancel');
+   $button_cancel->signal_connect('clicked', sub { $box->destroy() });
 
    $box = GUI::HELPERS::dialog_box(
          gettext("Export Key without Passphrase"), 
          gettext("Export Key without Passphrase"),
          $button_ok, $button_cancel);
-
 
    $label = GUI::HELPERS::create_label(
          gettext("I hope you know what you\'re doing?"), 'center', 1, 0);
@@ -1707,7 +1689,7 @@ sub show_key_nopasswd_dialog {
    $box->vbox->add($label);
 
    # small table for data
-   $table = Gtk::Table->new(1, 2, 0);
+   $table = Gtk2::Table->new(1, 2, 0);
    $table->set_col_spacing(0, 10);
    $box->vbox->add($table);
 
@@ -1727,37 +1709,39 @@ sub show_req_import_dialog {
    my $self = shift;
 
    my $opts = {};
-   my($box, $button_ok, $button_cancel, $entry, $table, $label);
+   my($box, $button_ok, $button_cancel, $button, $entry, $table, $label);
 
-   $button_ok = Gnome::Stock->button('Button_Ok');
+   $button_ok = Gtk2::Button->new_from_stock('gtk-ok');
    $button_ok->signal_connect('clicked', 
          sub { $self->{'REQ'}->get_import_req($self, $opts, $box) });
 
-   $button_cancel = Gnome::Stock->button('Button_Cancel');
-   $button_cancel->signal_connect('clicked', 
-         sub { $box->destroy() });
+   $button_cancel = Gtk2::Button->new_from_stock('gtk-cancel');
+   $button_cancel->signal_connect('clicked', sub { $box->destroy() });
 
    $box = GUI::HELPERS::dialog_box(
          gettext("Import Request"), gettext("Import Request from File"),
          $button_ok, $button_cancel);
 
    # small table for data
-   $table = Gtk::Table->new(2, 2, 0);
+   $table = Gtk2::Table->new(2, 3, 0);
    $table->set_col_spacing(0, 10);
    $box->vbox->add($table);
 
    $label = GUI::HELPERS::create_label(gettext("File:"), 'left', 0, 0);
    $table->attach_defaults($label, 0, 1, 0, 1);
 
-   $entry = Gnome::FileEntry->new('', gettext("Import Request File"));
-   $entry->gnome_entry->set_max_saved(10);
-   $entry->set_directory(0);
+   $entry = Gtk2::Entry->new();
    $table->attach_defaults($entry, 1, 2, 0, 1);
-   $entry->gnome_entry->entry->signal_connect(
-         'changed', \&GUI::CALLBACK::entry_to_var,
-         $entry->gnome_entry->entry,
-         \$opts->{'infile'});
+   $entry->signal_connect( 'changed' =>
+        sub{ GUI::CALLBACK::entry_to_var($entry,
+         $entry, \$opts->{'infile'})});
    $entry->grab_focus();
+
+   $button = Gtk2::Button->new(gettext("Browse..."));
+   $button->signal_connect('clicked' =>
+         sub{GUI::HELPERS::browse_file(
+            gettext("Import Request from File"), $entry, 'open')});
+   $table->attach_defaults($button, 2, 3, 0, 1);
 
    $box->show_all();
 
@@ -1771,9 +1755,10 @@ sub show_req_import_dialog {
 sub show_export_dialog {
    my ($self, $opts, $mode) = @_;
 
-   my ($box, $button_ok, $button_cancel, $label, $table, $entry, $fileentry,
-         $format1, $format2, $format3, $format4, $format5, $passbox, $pass1,
-         $pass2, $title, $text, $t);
+   my ($box, $button_ok, $button_cancel, $button, $label, $table, $entry,
+         $fileentry, $format1, $format2, $format3, $format4, $format5,
+         $passbox, $pass1, $pass2, $title, $text, $t, $incbox, $inc1, $inc2,
+         $fpbox, $incfp1, $incfp2);
 
    if($mode eq 'cert') {
       $title = gettext("Export Certificate");
@@ -1785,8 +1770,8 @@ sub show_export_dialog {
       return;
    }
          
-   $button_ok     = Gnome::Stock->button('Button_Ok');
-   $button_cancel = Gnome::Stock->button('Button_Cancel');
+   $button_ok     = Gtk2::Button->new_from_stock('gtk-save');
+   $button_cancel = Gtk2::Button->new_from_stock('gtk-cancel');
 
    if($mode eq 'cert') {
       $button_ok->signal_connect('clicked', 
@@ -1806,7 +1791,7 @@ sub show_export_dialog {
    $box = GUI::HELPERS::dialog_box($title, $text, $button_ok, $button_cancel);
 
    # small table for file selection
-   $table = Gtk::Table->new(1, 2, 0);
+   $table = Gtk2::Table->new(1, 3, 0);
    $table->set_col_spacing(0, 10);
    $box->vbox->add($table);
 
@@ -1819,19 +1804,22 @@ sub show_export_dialog {
       $t = gettext("Export Key");
    }
    
-   $fileentry = Gnome::FileEntry->new('', $t);
-   $fileentry->gnome_entry->set_max_saved(10);
-   $fileentry->set_directory(0);
+   $fileentry = Gtk2::Entry->new();
    $table->attach_defaults($fileentry, 1, 2, 0, 1);
-   $fileentry->gnome_entry->entry->set_text($opts->{'outfile'})
-      if(defined($opts->{'outfile'}));
-   $fileentry->gnome_entry->entry->signal_connect(
-         'changed', \&GUI::CALLBACK::entry_to_var,
-         $fileentry->gnome_entry->entry,
-         \$opts->{'outfile'});
+   $fileentry->set_text($opts->{'outfile'}) if(defined($opts->{'outfile'}));
+   $fileentry->signal_connect( 'changed', 
+         sub{ GUI::CALLBACK::entry_to_var(
+            $fileentry, $fileentry, \$opts->{'outfile'})});
    $fileentry->grab_focus();
 
-   $label = GUI::HELPERS::create_label(gettext("Export Format:"), 'center', 0, 0);
+   $button = Gtk2::Button->new(gettext("Browse..."));
+   $button->signal_connect('clicked' => 
+         sub{GUI::HELPERS::browse_file(
+            $t, $fileentry, 'save')});
+   $table->attach_defaults($button, 2, 3, 0, 1);
+
+   $label = GUI::HELPERS::create_label(
+      gettext("Export Format:"), 'center', 0, 0);
    $box->vbox->add($label);
    
    if($mode eq 'cert') {
@@ -1840,7 +1828,7 @@ sub show_export_dialog {
       $t = gettext("PEM (Key)");
    }
    
-   $format1 = Gtk::RadioButton->new($t);
+   $format1 = Gtk2::RadioButton->new(undef, $t);
    $format1->set_active(1)
       if(defined($opts->{'format'}) && $opts->{'format'} eq 'PEM');
    $box->vbox->add($format1);
@@ -1851,21 +1839,21 @@ sub show_export_dialog {
       $t = gettext("DER (Key without Passphrase)");
    }
 
-   $format2 = Gtk::RadioButton->new($t, $format1);
+   $format2 = Gtk2::RadioButton->new($format1, $t);
    $format2->set_active(1)
       if(defined($opts->{'format'}) && $opts->{'format'} eq 'DER');
    $box->vbox->add($format2);
 
    $t = gettext("PKCS#12 (Certificate & Key)");
 
-   $format3 = Gtk::RadioButton->new($t, $format1);
+   $format3 = Gtk2::RadioButton->new($format1, $t);
    $format3->set_active(1)
       if(defined($opts->{'format'}) && $opts->{'format'} eq 'P12');
    $box->vbox->add($format3);
 
    $t = gettext("Zip (Certificate & Key)");
 
-   $format4 = Gtk::RadioButton->new($t, $format1);
+   $format4 = Gtk2::RadioButton->new($format1, $t);
    $format4->set_active(1)
       if(defined($opts->{'format'}) && $opts->{'format'} eq 'ZIP');
    $box->vbox->add($format4);
@@ -1874,63 +1862,141 @@ sub show_export_dialog {
    }
 
    if($mode eq 'cert') {
-      $format5 = Gtk::RadioButton->new(
-            gettext("TXT (Certificate)"), $format1);
+      $format5 = Gtk2::RadioButton->new(
+            $format1, gettext("TXT (Certificate)"));
       $format5->set_active(1)
          if(defined($opts->{'format'}) && $opts->{'format'} eq 'TXT');
       $box->vbox->add($format5);
-   } else {
+   } else { # no password for PEM key
       $label = GUI::HELPERS::create_label(
             gettext("Without Passphrase (PEM)"), 'left', 0, 0);
       $box->vbox->add($label);
 
-      $passbox = Gtk::HBox->new(0, 0);
+      $passbox = Gtk2::HBox->new(0, 0);
       $box->vbox->add($passbox);
 
-      $pass1 = Gtk::RadioButton->new(gettext("Yes"));
+      $pass1 = Gtk2::RadioButton->new(undef, gettext("Yes"));
       $pass1->set_active(1)
          if(defined($opts->{'nopass'}) && $opts->{'nopass'} == 1);
-      $pass1->signal_connect('toggled',
-            \&GUI::CALLBACK::toggle_to_var, \$opts->{'nopass'}, 1);
       $passbox->add($pass1);
 
-      $pass2 = Gtk::RadioButton->new(gettext("No"), $pass1);
+      $pass2 = Gtk2::RadioButton->new($pass1, gettext("No"));
       $pass2->set_active(1)
          if(defined($opts->{'nopass'}) && $opts->{'nopass'} == 0);
-      $pass2->signal_connect('toggled',
-            \&GUI::CALLBACK::toggle_to_var, \$opts->{'nopass'}, 0);
       $passbox->add($pass2);
+   }
+   
+   # add key/certificate
+   if($mode eq 'cert') {
+      $label = GUI::HELPERS::create_label(
+            gettext("Include Key (PEM)"), 'left', 0, 0);
+      $box->vbox->add($label);
+
+      $incbox = Gtk2::HBox->new(0, 0);
+      $box->vbox->add($incbox);
+
+      $inc1 = Gtk2::RadioButton->new(undef, gettext("Yes"));
+      $inc1->set_active(1)
+         if(defined($opts->{'include'}) && $opts->{'include'} == 1);
+      $incbox->add($inc1);
+
+      $inc2 = Gtk2::RadioButton->new($inc1, gettext("No"));
+      $inc2->set_active(1)
+         if(defined($opts->{'include'}) && $opts->{'include'} == 0);
+      $incbox->add($inc2);
+   } else {
+      $label = GUI::HELPERS::create_label(
+            gettext("Include Certificate (PEM)"), 'left', 0, 0);
+      $box->vbox->add($label);
+
+      $incbox = Gtk2::HBox->new(0, 0);
+      $box->vbox->add($incbox);
+
+      $inc1 = Gtk2::RadioButton->new(undef, gettext("Yes"));
+      $inc1->set_active(1)
+         if(defined($opts->{'include'}) && $opts->{'include'} == 1);
+      $incbox->add($inc1);
+
+      $inc2 = Gtk2::RadioButton->new($inc1, gettext("No"));
+      $inc2->set_active(1)
+         if(defined($opts->{'include'}) && $opts->{'include'} == 0);
+      $incbox->add($inc2);
+   }
+   
+   # add fingerprint
+   if($mode eq 'cert') {
+      $label = GUI::HELPERS::create_label(
+            gettext("Include Fingerprint (PEM)"), 'left', 0, 0);
+      $box->vbox->add($label);
+
+      $fpbox = Gtk2::HBox->new(0, 0);
+      $box->vbox->add($fpbox);
+
+      $incfp1 = Gtk2::RadioButton->new(undef, gettext("Yes"));
+      $incfp1->set_active(1)
+         if(defined($opts->{'incfp'}) && $opts->{'incfp'} == 1);
+      $fpbox->add($incfp1);
+
+      $incfp2 = Gtk2::RadioButton->new($incfp1, gettext("No"));
+      $incfp2->set_active(1)
+         if(defined($opts->{'incfp'}) && $opts->{'incfp'} == 0);
+      $fpbox->add($incfp2);
    }
 
    if($mode eq 'cert') {
-      $format1->signal_connect('toggled', \&GUI::CALLBACK::toggle_to_var, 
+      $format1->signal_connect('toggled' =>
+        sub{ GUI::CALLBACK::toggle_to_var($format1,
             \$opts->{'format'}, 'PEM', \$opts->{'outfile'}, 
-            \$opts->{'format'}, $fileentry);
-      $format2->signal_connect('toggled', \&GUI::CALLBACK::toggle_to_var, 
+            \$opts->{'format'}, $fileentry)});
+      $format2->signal_connect('toggled' =>
+           sub{ &GUI::CALLBACK::toggle_to_var($format2,
             \$opts->{'format'}, 'DER', \$opts->{'outfile'}, 
-            \$opts->{'format'}, $fileentry);
-      $format3->signal_connect('toggled', \&GUI::CALLBACK::toggle_to_var, 
+            \$opts->{'format'}, $fileentry)});
+      $format3->signal_connect('toggled' =>
+           sub{ GUI::CALLBACK::toggle_to_var($format3,
             \$opts->{'format'}, 'P12', \$opts->{'outfile'}, 
-            \$opts->{'format'}, $fileentry);
-      $format4->signal_connect('toggled', \&GUI::CALLBACK::toggle_to_var, 
+            \$opts->{'format'}, $fileentry)});
+      $format4->signal_connect('toggled' =>
+           sub{ GUI::CALLBACK::toggle_to_var($format4,
             \$opts->{'format'}, 'ZIP', \$opts->{'outfile'}, 
-            \$opts->{'format'}, $fileentry);
-      $format5->signal_connect('toggled', \&GUI::CALLBACK::toggle_to_var, 
+            \$opts->{'format'}, $fileentry)});
+      $format5->signal_connect('toggled' =>
+           sub{ GUI::CALLBACK::toggle_to_var($format5,
             \$opts->{'format'}, 'TXT', \$opts->{'outfile'}, 
-            \$opts->{'format'}, $fileentry);
+            \$opts->{'format'}, $fileentry)});
+      $inc1->signal_connect('toggled' => 
+            sub { GUI::CALLBACK::toggle_to_var($incfp1, \$opts->{'incfp'}, 1)});
+      $inc2->signal_connect('toggled' => 
+            sub { GUI::CALLBACK::toggle_to_var($incfp2, \$opts->{'incfp'}, 0)});
+      $incfp1->signal_connect('toggled' => 
+            sub { GUI::CALLBACK::toggle_to_var($incfp1, \$opts->{'incfp'}, 1)});
+      $incfp2->signal_connect('toggled' => 
+            sub { GUI::CALLBACK::toggle_to_var($incfp2, \$opts->{'incfp'}, 0)});
    }else {
-      $format1->signal_connect('toggled', \&GUI::CALLBACK::toggle_to_var, 
+      $format1->signal_connect('toggled' =>
+           sub{ GUI::CALLBACK::toggle_to_var($format1,
             \$opts->{'format'}, 'PEM', \$opts->{'outfile'}, 
-            \$opts->{'format'}, $fileentry, $pass1, $pass2);
-      $format2->signal_connect('toggled', \&GUI::CALLBACK::toggle_to_var, 
+            \$opts->{'format'}, $fileentry, $pass1, $pass2)});
+      $format2->signal_connect('toggled' =>
+           sub{ &GUI::CALLBACK::toggle_to_var($format2,
             \$opts->{'format'}, 'DER', \$opts->{'outfile'}, 
-            \$opts->{'format'}, $fileentry, $pass1, $pass2);
-      $format3->signal_connect('toggled', \&GUI::CALLBACK::toggle_to_var, 
+            \$opts->{'format'}, $fileentry, $pass1, $pass2)});
+      $format3->signal_connect('toggled' =>
+           sub{ GUI::CALLBACK::toggle_to_var($format3,
             \$opts->{'format'}, 'P12', \$opts->{'outfile'}, 
-            \$opts->{'format'}, $fileentry, $pass1, $pass2);
-      $format4->signal_connect('toggled', \&GUI::CALLBACK::toggle_to_var, 
+            \$opts->{'format'}, $fileentry, $pass1, $pass2)});
+      $format4->signal_connect('toggled' =>
+           sub{ GUI::CALLBACK::toggle_to_var($format4,
             \$opts->{'format'}, 'ZIP', \$opts->{'outfile'}, 
-            \$opts->{'format'}, $fileentry, $pass1, $pass2);
+            \$opts->{'format'}, $fileentry, $pass1, $pass2)});
+      $pass1->signal_connect('toggled' => 
+            sub { GUI::CALLBACK::toggle_to_var($pass1, \$opts->{'nopass'}, 1)});
+      $pass2->signal_connect('toggled' => 
+            sub { GUI::CALLBACK::toggle_to_var($pass2, \$opts->{'nopass'}, 0)});
+      $inc1->signal_connect('toggled' => 
+            sub { GUI::CALLBACK::toggle_to_var($inc1, \$opts->{'include'}, 1)});
+      $inc2->signal_connect('toggled' => 
+            sub { GUI::CALLBACK::toggle_to_var($inc2, \$opts->{'include'}, 0)});
    }
 
    $box->show_all();
@@ -1947,7 +2013,7 @@ sub show_p12_export_dialog {
    my ($box, $label, $table, $entry, $button_ok, $button_cancel, $radiobox,
          $includeca1, $includeca2);
 
-   $button_ok     = Gnome::Stock->button('Button_Ok');
+   $button_ok = Gtk2::Button->new_from_stock('gtk-ok');
    if($mode eq 'key') {
       $button_ok->signal_connect('clicked', 
          sub { $self->{'KEY'}->get_export_key($self, $opts, $box) });
@@ -1956,16 +2022,16 @@ sub show_p12_export_dialog {
          sub { $self->{'CERT'}->get_export_cert($self, $opts, $box) });
    }
 
-   $button_cancel = Gnome::Stock->button('Button_Cancel');
+   $button_cancel = Gtk2::Button->new_from_stock('gtk-cancel');
    $button_cancel->signal_connect('clicked', sub { $box->destroy() });
 
    $box = GUI::HELPERS::dialog_box(
-         gettext("Export to PKCS#12"), gettext("Export to PKCS#12"),
+         gettext("Export to PKCS#12"), 
+         gettext("Export to PKCS#12"),
          $button_ok, $button_cancel);
 
    # small table for storage name
-   $table = Gtk::Table->new(2, 2, 0);
-   $table->set_col_spacing(0, 10);
+   $table = Gtk2::Table->new(2, 2, 0);
    $box->vbox->add($table);
 
    $entry = GUI::HELPERS::entry_to_table(gettext("Key Password:"),
@@ -1979,21 +2045,23 @@ sub show_p12_export_dialog {
          gettext("Add CA Certificate to PKCS#12 structure"), 'left', 0, 0);
    $box->vbox->add($label);
 
-   $radiobox = Gtk::HBox->new(0, 0);
+   $radiobox = Gtk2::HBox->new(0, 0);
    $box->vbox->add($radiobox);
 
-   $includeca1 = Gtk::RadioButton->new(gettext("Yes"));
+   $includeca1 = Gtk2::RadioButton->new(undef, gettext("Yes"));
    $includeca1->set_active(1) 
       if(defined($opts->{'includeca'}) && $opts->{'includeca'} == 1);
-   $includeca1->signal_connect('toggled', 
-         \&GUI::CALLBACK::toggle_to_var, \$opts->{'includeca'}, 1);
+   $includeca1->signal_connect('toggled' => 
+         sub { GUI::CALLBACK::toggle_to_var(
+            $includeca1, \$opts->{'includeca'}, 1) });
    $radiobox->add($includeca1);
 
-   $includeca2 = Gtk::RadioButton->new(gettext("No"), $includeca1);
+   $includeca2 = Gtk2::RadioButton->new($includeca1, gettext("No"));
    $includeca2->set_active(1) 
       if(defined($opts->{'includeca'}) && $opts->{'includeca'} == 0);
-   $includeca2->signal_connect('toggled', 
-         \&GUI::CALLBACK::toggle_to_var, \$opts->{'includeca'}, 0);
+   $includeca2->signal_connect('toggled' => 
+         sub { GUI::CALLBACK::toggle_to_var(
+           $includeca2, \$opts->{'includeca'}, 0) });
    $radiobox->add($includeca2);
 
    $box->show_all();
@@ -2012,20 +2080,19 @@ sub show_req_sign_dialog {
 
    $rows = 0;
 
-   $button_ok     = Gnome::Stock->button('Button_Ok');
+   $button_ok = Gtk2::Button->new_from_stock('gtk-ok');
    $button_ok->signal_connect('clicked', 
-         sub { $self->{'REQ'}->get_sign_req($self, $opts, $box) });
+      sub { $self->{'REQ'}->get_sign_req($self, $opts, $box) });
 
-   $button_cancel = Gnome::Stock->button('Button_Cancel');
-   $button_cancel->signal_connect('clicked', 
-         sub { $box->destroy() });
+   $button_cancel = Gtk2::Button->new_from_stock('gtk-cancel');
+   $button_cancel->signal_connect('clicked', sub { $box->destroy() });
 
    $box = GUI::HELPERS::dialog_box(
          gettext("Sign Request"), gettext("Sign Request/Create Certificate"), 
          $button_ok, $button_cancel);
 
    # small table for data
-   $table = Gtk::Table->new(2, 2, 0);
+   $table = Gtk2::Table->new(2, 2, 0);
    $table->set_col_spacing(0, 10);
    $box->vbox->add($table);
 
@@ -2061,26 +2128,28 @@ sub show_req_sign_dialog {
       if(defined($self->{'TCONFIG'}->{'server_cert'}->{'extendedKeyUsage'}) &&
          $self->{'TCONFIG'}->{'server_cert'}->{'extendedKeyUsage'} eq 'user') { 
          $t = gettext("Extended Key Usage:");
-         
          $entry = GUI::HELPERS::entry_to_table($t,
                \$opts->{'extendedKeyUsage'}, $table, $rows, 1);
          $rows++;
       }
       if(defined($self->{'TCONFIG'}->{'server_cert'}->{'nsSslServerName'}) && 
          $self->{'TCONFIG'}->{'server_cert'}->{'nsSslServerName'} eq 'user') { 
-         $entry = GUI::HELPERS::entry_to_table(gettext("Netscape SSL Server Name:"), 
+         $t = gettext("Netscape SSL Server Name:");
+         $entry = GUI::HELPERS::entry_to_table($t, 
                \$opts->{'nsSslServerName'}, $table, $rows, 1);
          $rows++;
       }
       if(defined($self->{'TCONFIG'}->{'server_cert'}->{'nsRevocationUrl'}) && 
          $self->{'TCONFIG'}->{'server_cert'}->{'nsRevocationUrl'} eq 'user') { 
-         $entry = GUI::HELPERS::entry_to_table(gettext("Netscape Revocation URL:"), 
+         $t = gettext("Netscape Revocation URL:");
+         $entry = GUI::HELPERS::entry_to_table($t, 
                \$opts->{'nsRevocationUrl'}, $table, $rows, 1);
          $rows++;
       }
       if(defined($self->{'TCONFIG'}->{'server_cert'}->{'nsRenewalUrl'}) && 
          $self->{'TCONFIG'}->{'server_cert'}->{'nsRenewalUrl'} eq 'user') { 
-         $entry = GUI::HELPERS::entry_to_table(gettext("Netscape Renewal URL:"), 
+         $t = gettext("Netscape Renewal URL:");
+         $entry = GUI::HELPERS::entry_to_table($t, 
                \$opts->{'nsRenewalUrl'}, $table, $rows, 1);
          $rows++;
       }
@@ -2107,20 +2176,21 @@ sub show_req_sign_dialog {
       if(defined($self->{'TCONFIG'}->{'client_cert'}->{'extendedKeyUsage'}) &&
          $self->{'TCONFIG'}->{'client_cert'}->{'extendedKeyUsage'} eq 'user') { 
          $t = gettext("Extended Key Usage:");
-         
          $entry = GUI::HELPERS::entry_to_table($t,
                \$opts->{'extendedKeyUsage'}, $table, $rows, 1);
          $rows++;
       }
       if(defined($self->{'TCONFIG'}->{'client_cert'}->{'nsRevocationUrl'}) && 
          $self->{'TCONFIG'}->{'client_cert'}->{'nsRevocationUrl'} eq 'user') { 
-         $entry = GUI::HELPERS::entry_to_table(gettext("Netscape Revocation URL:"), 
+         $t = gettext("Netscape Revocation URL:");
+         $entry = GUI::HELPERS::entry_to_table($t, 
                \$opts->{'nsRevocationUrl'}, $table, $rows, 1);
          $rows++;
       }
       if(defined($self->{'TCONFIG'}->{'client_cert'}->{'nsRenewalUrl'}) && 
          $self->{'TCONFIG'}->{'client_cert'}->{'nsRenewalUrl'} eq 'user') { 
-         $entry = GUI::HELPERS::entry_to_table(gettext("Netscape Renewal URL:"), 
+         $t = gettext("Netscape Renewal URL:");
+         $entry = GUI::HELPERS::entry_to_table($t, 
                \$opts->{'nsRenewalUrl'}, $table, $rows, 1);
          $rows++;
       }
@@ -2128,16 +2198,16 @@ sub show_req_sign_dialog {
 
    if(($self->{'OpenSSL'}->{'version'} eq "0.9.7") ||
       ($self->{'OpenSSL'}->{'version'} eq "0.9.8")) {
-      $radiobox = Gtk::HBox->new(0, 0);
-      $key1 = Gtk::RadioButton->new(gettext("Yes"));
+      $radiobox = Gtk2::HBox->new(0, 0);
+      $key1 = Gtk2::RadioButton->new(undef, gettext("Yes"));
       $key1->set_active(1);
-      $key1->signal_connect('toggled', \&GUI::CALLBACK::toggle_to_var,
-            \$opts->{'noemaildn'}, 0);
+      $key1->signal_connect('toggled' =>
+           sub{GUI::CALLBACK::toggle_to_var($key1, \$opts->{'noemaildn'}, 0)});
       $radiobox->add($key1);
          
-      $key2 = Gtk::RadioButton->new(gettext("No"), $key1);
-      $key2->signal_connect('toggled', \&GUI::CALLBACK::toggle_to_var,
-            \$opts->{'noemaildn'}, 1);
+      $key2 = Gtk2::RadioButton->new($key1, gettext("No"));
+      $key2->signal_connect('toggled' =>
+           sub{GUI::CALLBACK::toggle_to_var($key2, \$opts->{'noemaildn'}, 1)});
       $radiobox->add($key2);
             
       $label = GUI::HELPERS::create_label(
@@ -2161,13 +2231,12 @@ sub show_ca_dialog {
          $catable, $pwtable, $radiobox, $key1, $key2, $key3,
          $key4, $key5);
 
-   $button_ok = Gnome::Stock->button('Button_Ok');
+   $button_ok = Gtk2::Button->new_from_stock('gtk-ok');
    $button_ok->can_default(1);
-
    $button_ok->signal_connect('clicked', 
       sub { $self->{'CA'}->get_ca_create($self, $opts, $box, $mode) });
 
-   $button_cancel = Gnome::Stock->button('Button_Cancel');
+   $button_cancel = Gtk2::Button->new_from_stock('gtk-cancel');
    $button_cancel->signal_connect('clicked', sub { $box->destroy() });
 
    if(defined($mode) && $mode eq "sub") {
@@ -2180,12 +2249,11 @@ sub show_ca_dialog {
             $button_ok, $button_cancel);
    }
 
-
    $button_ok->grab_default();
 
    if(defined($mode) && $mode eq "sub") {
       # small table for ca-password
-      $pwtable = Gtk::Table->new(1, 2, 0);
+      $pwtable = Gtk2::Table->new(1, 2, 0);
       $pwtable->set_col_spacing(0, 10);
       $box->vbox->add($pwtable);
    
@@ -2196,7 +2264,7 @@ sub show_ca_dialog {
    }
 
    # small table for storage name
-   $table = Gtk::Table->new(1, 2, 0);
+   $table = Gtk2::Table->new(1, 2, 0);
    $table->set_col_spacing(0, 10);
    $box->vbox->add($table);
 
@@ -2212,7 +2280,7 @@ sub show_ca_dialog {
    $box->vbox->add($label);
 
    # table for ca data
-   $catable = Gtk::Table->new(1, 13, 0);
+   $catable = Gtk2::Table->new(1, 13, 0);
    $catable->set_col_spacing(0, 10);
    $box->vbox->add($catable);
 
@@ -2260,67 +2328,70 @@ sub show_ca_dialog {
          gettext("Keylength").":", 'left', 0, 0);
    $catable->attach_defaults($label, 0, 1, 10, 11);
 
-   $radiobox = Gtk::HBox->new(0, 0);
-   $key1 = Gtk::RadioButton->new('1024');
-   $key1->set_active(1) 
-      if(defined($opts->{'bits'}) && $opts->{'bits'} == '1024');
-   $key1->signal_connect('toggled', \&GUI::CALLBACK::toggle_to_var, 
-         \$opts->{'bits'}, 1024);
+   $radiobox = Gtk2::HBox->new(0, 0);
+   $key1 = Gtk2::RadioButton->new(undef, '1024');
+   $key1->signal_connect('toggled' => 
+         sub { GUI::CALLBACK::toggle_to_var($key1, \$opts->{'bits'}, 1024)});
    $radiobox->add($key1);
 
-   $key2 = Gtk::RadioButton->new('2048', $key1);
-   $key2->set_active(1) 
-      if(defined($opts->{'bits'}) && $opts->{'bits'} == '2048');
-   $key2->signal_connect('toggled', \&GUI::CALLBACK::toggle_to_var, 
-         \$opts->{'bits'}, 2048);
+   $key2 = Gtk2::RadioButton->new($key1, '2048');
+   $key2->signal_connect('toggled' => 
+         sub { GUI::CALLBACK::toggle_to_var($key2, \$opts->{'bits'}, 2048)});
    $radiobox->add($key2);
 
-   $key3 = Gtk::RadioButton->new('4096', $key1);
-   $key3->set_active(1) 
-      if(defined($opts->{'bits'}) && $opts->{'bits'} == '4096');
-   $key3->signal_connect('toggled', \&GUI::CALLBACK::toggle_to_var, 
-         \$opts->{'bits'}, 4096);
+   $key3 = Gtk2::RadioButton->new($key1, '4096');
+   $key3->signal_connect('toggled' => 
+         sub { GUI::CALLBACK::toggle_to_var($key3, \$opts->{'bits'}, 4096)});
    $radiobox->add($key3);
+
+   # set default
+   if(defined($opts->{'bits'}) && $opts->{'bits'} == 1024) {
+      $key1->set_active(1);
+   } elsif (defined($opts->{'bits'}) && $opts->{'bits'} == 2048) { 
+      $key2->set_active(1);
+   } elsif (defined($opts->{'bits'}) && $opts->{'bits'} == 4096) { 
+      $key3->set_active(1);
+   }
 
    $catable->attach_defaults($radiobox, 1, 2, 10, 11);
 
    $label = GUI::HELPERS::create_label(gettext("Digest").":", 'left', 0, 0);
    $catable->attach_defaults($label, 0, 1, 15, 16);
 
-   $radiobox = Gtk::HBox->new(0, 0);
-   $key1 = Gtk::RadioButton->new('MD5');
+   $radiobox = Gtk2::HBox->new(0, 0);
+   $key1 = Gtk2::RadioButton->new(undef, 'MD5');
    $key1->set_active(1) 
       if(defined($opts->{'digest'}) && $opts->{'digest'} eq 'md5');
-   $key1->signal_connect('toggled', \&GUI::CALLBACK::toggle_to_var, 
-         \$opts->{'digest'}, 'md5');
+   $key1->signal_connect('toggled' =>
+        sub { GUI::CALLBACK::toggle_to_var($key1, \$opts->{'digest'}, 'md5')});
    $radiobox->add($key1);
 
-   $key2 = Gtk::RadioButton->new('SHA1', $key1);
+   $key2 = Gtk2::RadioButton->new($key1, 'SHA1');
    $key2->set_active(1) 
       if(defined($opts->{'digest'}) && $opts->{'digest'} eq 'sha1');
-   $key2->signal_connect('toggled', \&GUI::CALLBACK::toggle_to_var, 
-         \$opts->{'digest'}, 'sha1');
+   $key2->signal_connect('toggled' => 
+         sub {GUI::CALLBACK::toggle_to_var($key2, \$opts->{'digest'}, 'sha1')});
    $radiobox->add($key2);
 
-   $key3 = Gtk::RadioButton->new('MD2', $key1);
+   $key3 = Gtk2::RadioButton->new($key1, 'MD2');
    $key3->set_active(1) 
       if(defined($opts->{'digest'}) && $opts->{'digest'} eq 'md2');
-   $key3->signal_connect('toggled', \&GUI::CALLBACK::toggle_to_var, 
-         \$opts->{'digest'}, 'md2');
+   $key3->signal_connect('toggled' =>
+        sub {GUI::CALLBACK::toggle_to_var($key3, \$opts->{'digest'}, 'md2')});
    $radiobox->add($key3);
 
-   $key4 = Gtk::RadioButton->new('MDC2', $key1);
+   $key4 = Gtk2::RadioButton->new($key1, 'MDC2');
    $key4->set_active(1) 
       if(defined($opts->{'digest'}) && $opts->{'digest'} eq 'mdc2');
-   $key4->signal_connect('toggled', \&GUI::CALLBACK::toggle_to_var, 
-         \$opts->{'digest'}, 'mdc2');
+   $key4->signal_connect('toggled' =>
+        sub {GUI::CALLBACK::toggle_to_var($key4, \$opts->{'digest'}, 'mdc2')});
    $radiobox->add($key4);
 
-   $key5 = Gtk::RadioButton->new('MD4', $key1);
+   $key5 = Gtk2::RadioButton->new($key1, 'MD4');
    $key5->set_active(1) 
       if(defined($opts->{'digest'}) && $opts->{'digest'} eq 'md4');
-   $key5->signal_connect('toggled', \&GUI::CALLBACK::toggle_to_var, 
-         \$opts->{'digest'}, 'md4');
+   $key5->signal_connect('toggled' =>
+        sub {GUI::CALLBACK::toggle_to_var($key5, \$opts->{'digest'}, 'md4')});
    $radiobox->add($key5);
 
    $catable->attach_defaults($radiobox, 1, 2, 15, 16);
@@ -2336,16 +2407,15 @@ sub show_ca_dialog {
 sub show_ca_import_dialog {
    my ($self, $opts) = @_;
 
-   my ($box, $button_ok, $button_cancel, $label, $table, $filetable, $pwtable,
-         $entry, $certentry, $keyentry, $direntry, $indexentry);
+   my ($box, $button, $button_ok, $button_cancel, $label, $table, $filetable,
+         $pwtable, $entry, $certentry, $keyentry, $direntry, $indexentry);
 
-   $button_ok = Gnome::Stock->button('Button_Ok');
+   $button_ok = Gtk2::Button->new_from_stock('gtk-ok');
    $button_ok->can_default(1);
-
    $button_ok->signal_connect('clicked', 
       sub { $self->{'CA'}->get_ca_import($self, $opts, $box) });
 
-   $button_cancel = Gnome::Stock->button('Button_Cancel');
+   $button_cancel = Gtk2::Button->new_from_stock('gtk-cancel');
    $button_cancel->signal_connect('clicked', sub { $box->destroy() });
 
    $box = GUI::HELPERS::dialog_box( 
@@ -2355,7 +2425,7 @@ sub show_ca_import_dialog {
    $button_ok->grab_default();
 
    # small table for old ca-password
-   $pwtable = Gtk::Table->new(1, 2, 0);
+   $pwtable = Gtk2::Table->new(1, 2, 0);
    $pwtable->set_col_spacing(0, 10);
    $box->vbox->add($pwtable);
    
@@ -2365,7 +2435,7 @@ sub show_ca_import_dialog {
    $entry->grab_focus();
 
    # small table for storage name and new passwords
-   $table = Gtk::Table->new(1, 2, 0);
+   $table = Gtk2::Table->new(1, 2, 0);
    $table->set_col_spacing(0, 10);
    $box->vbox->add($table);
 
@@ -2386,8 +2456,7 @@ sub show_ca_import_dialog {
          gettext("Files/Directories to import"), 'center', 0, 1);
    $box->vbox->add($label);
 
-   $filetable = Gtk::Table->new(1, 3, 0);
-   $filetable->set_col_spacing(0, 10);
+   $filetable = Gtk2::Table->new(1, 3, 0);
    $box->vbox->add($filetable);
 
    # CA certificate
@@ -2395,65 +2464,76 @@ sub show_ca_import_dialog {
          gettext("CA Certificate (PEM/DER):"), 'left', 0, 0);
    $filetable->attach_defaults($label, 0, 1, 0, 1);
 
-   $certentry = Gnome::FileEntry->new('', gettext("Import CA Certificate"));
-   $certentry->gnome_entry->set_max_saved(10);
-   $certentry->set_directory(0);
+   $certentry = Gtk2::Entry->new();
    $filetable->attach_defaults($certentry, 1, 2, 0, 1);
-   $certentry->gtk_entry->set_text($opts->{'cacertfile'})
+   $certentry->set_text($opts->{'cacertfile'})
       if(defined($opts->{'cacertfile'}));
-   $certentry->gnome_entry->entry->signal_connect(
-         'changed', \&GUI::CALLBACK::entry_to_var,
-         $certentry->gnome_entry->entry,
-         \$opts->{'cacertfile'});
+   $certentry->signal_connect( 'changed' =>
+        sub { GUI::CALLBACK::entry_to_var(
+           $certentry, $certentry, \$opts->{'cacertfile'}) });
+
+   $button = Gtk2::Button->new(gettext("Browse..."));
+   $button->signal_connect('clicked' =>
+      sub{ GUI::HELPERS::browse_file(
+         gettext("Import CA Certificate"), $certentry, 'save') });
+   $filetable->attach_defaults($button, 2, 3, 0, 1);
 
    # CA private key
    $label = GUI::HELPERS::create_label(
          gettext("CA private key (PEM/DER):"), 'left', 0, 0);
    $filetable->attach_defaults($label, 0, 1, 1, 2);
 
-   $keyentry = Gnome::FileEntry->new('', gettext("Import CA private key"));
-   $keyentry->gnome_entry->set_max_saved(10);
-   $keyentry->set_directory(0);
+   $keyentry = Gtk2::Entry->new();
    $filetable->attach_defaults($keyentry, 1, 2, 1, 2);
-   $keyentry->gtk_entry->set_text($opts->{'cakeyfile'})
+   $keyentry->set_text($opts->{'cakeyfile'})
       if(defined($opts->{'cakeyfile'}));
-   $keyentry->gnome_entry->entry->signal_connect(
-         'changed', \&GUI::CALLBACK::entry_to_var,
-         $keyentry->gnome_entry->entry,
-         \$opts->{'cakeyfile'});
+   $keyentry->signal_connect( 'changed' =>
+        sub { GUI::CALLBACK::entry_to_var(
+           $keyentry, $keyentry, \$opts->{'cakeyfile'}) });
+
+   $button = Gtk2::Button->new(gettext("Browse..."));
+   $button->signal_connect('clicked' =>
+      sub{ GUI::HELPERS::browse_file(
+         gettext("Import CA private Key"), $keyentry, 'save') });
+   $filetable->attach_defaults($button, 2, 3, 1, 2);
 
    # Index file
    $label = GUI::HELPERS::create_label(
-         gettext("Index File (index.txt):"), 'left', 0, 0);
+         gettext("OpenSSL Index File (index.txt):"), 'left', 0, 0);
    $filetable->attach_defaults($label, 0, 1, 2, 3);
 
-   $indexentry = Gnome::FileEntry->new('', gettext("Import Index File"));
-   $indexentry->gnome_entry->set_max_saved(10);
-   $indexentry->set_directory(0);
+   $indexentry = Gtk2::Entry->new();
    $filetable->attach_defaults($indexentry, 1, 2, 2, 3);
-   $indexentry->gtk_entry->set_text($opts->{'indexfile'})
+   $indexentry->set_text($opts->{'indexfile'})
       if(defined($opts->{'indexfile'}));
-   $indexentry->gnome_entry->entry->signal_connect(
-         'changed', \&GUI::CALLBACK::entry_to_var,
-         $indexentry->gnome_entry->entry,
-         \$opts->{'indexfile'});
+   $indexentry->signal_connect( 'changed' =>
+     sub { GUI::CALLBACK::entry_to_var(
+        $indexentry, $indexentry, \$opts->{'indexfile'}) });
+
+   $button = Gtk2::Button->new(gettext("Browse..."));
+   $button->signal_connect('clicked' =>
+      sub{ GUI::HELPERS::browse_file(
+         gettext("Import Index File"), $indexentry, 'save') });
+   $filetable->attach_defaults($button, 2, 3, 2, 3);
 
    # certificate directory
    $label = GUI::HELPERS::create_label(
          gettext("Directory containing certificates (PEM/DER):"), 'left', 0, 0);
    $filetable->attach_defaults($label, 0, 1, 3, 4);
 
-   $direntry = Gnome::FileEntry->new('', 
-         gettext("Import certificates from directory"));
-   $direntry->gnome_entry->set_max_saved(10);
-   $direntry->set_directory(1);
+   $direntry = Gtk2::Entry->new();
    $filetable->attach_defaults($direntry, 1, 2, 3, 4);
-   $direntry->gtk_entry->set_text($opts->{'certdir'})
+   $direntry->set_text($opts->{'certdir'})
       if(defined($opts->{'certdir'}));
-   $direntry->gnome_entry->entry->signal_connect(
-         'changed', \&GUI::CALLBACK::entry_to_var,
-         $direntry->gnome_entry->entry,
-         \$opts->{'certdir'});
+   $direntry->signal_connect( 'changed' =>
+         sub { GUI::CALLBACK::entry_to_var(
+            $direntry, $direntry, \$opts->{'certdir'}) });
+
+   $button = Gtk2::Button->new(gettext("Browse..."));
+   $button->signal_connect('clicked' =>
+      sub{ GUI::HELPERS::browse_file(
+         gettext("Import Certificates from directory"), $direntry, 'save') });
+   $filetable->attach_defaults($button, 2, 3, 3, 4);
 
    $box->show_all();
 
@@ -2479,42 +2559,20 @@ sub about {
 
    my ($aboutdialog, $href, $label);
 
-   $aboutdialog = Gnome::About->new(
-         'TinyCA', $self->{'version'}, 
-         '(C) 2002-2004 Stephan Martin',
-         'Stephan Martin <sm@sm-zone.net>', 
-         "This program is free software published under the GNU Public License");
+   $aboutdialog = Gtk2::AboutDialog->new();
+   $aboutdialog->set_name("TinyCA2");
+   $aboutdialog->set_version("0.7.0");
+   $aboutdialog->set_copyright("2002-2005 Stephan Martin");
+   $aboutdialog->set_license("GNU Public License (GPL)");
+   $aboutdialog->set_website("http://tinyca.sm-zone.net/");
+   $aboutdialog->set_authors("Stephan Martin <sm\@sm-zone.net>");
+   $aboutdialog->set_translator_credits(
+         gettext("Spanish: Ramon Pons Vivanco <rpons\@rinu.org>")."\n".
+         gettext("Czech: Robert Wolf <gentoo\@slave.umbr.cas.cz>")."\n".
+         gettext("French: Thibault Le Meur <Thibault.Lemeur\@supelec.fr>"));
 
-   $aboutdialog->set_title(('About').' TinyCA');
-   $aboutdialog->set_position('mouse' );
-   $aboutdialog->set_policy(1, 1, 0);
-   $aboutdialog->set_modal(1);
-
-   $label = GUI::HELPERS::create_label( 
-         gettext("Translations contributed by").":", 'left', 0, 0);
-   $aboutdialog->vbox->pack_start($label, 1, 1, 0);
-
-   $label = GUI::HELPERS::create_label( 
-         gettext("Spanish: Ramon Pons Vivanco <rpons\@rinu.org>"),
-         'center', 0, 0); 
-   $aboutdialog->vbox->pack_start($label, 1, 1, 0);
-
-   $label = GUI::HELPERS::create_label( 
-         gettext("Czech: Robert Wolf <gentoo\@slave.umbr.cas.cz>"),
-         'center', 0, 0); 
-   $aboutdialog->vbox->pack_start($label, 1, 1, 0);
-
-   $label = GUI::HELPERS::create_label( " ", 'center', 0, 0);
-   $aboutdialog->vbox->pack_start($label, 1, 1, 0);
-
-   $href = Gnome::HRef->new (
-         "http://tinyca.sm-zone.net/",
-         "http://tinyca.sm-zone.net/");
-   $aboutdialog->vbox->pack_start($href, 1, 1, 0);
-
-   $aboutdialog->realize();
    $aboutdialog->show_all();
-   
+
    return;
 }
 
@@ -2524,7 +2582,8 @@ sub about {
 sub show_del_confirm {
    my ($self, $file, $type) = @_;
 
-   my $t = '';
+   my($t, $button_ok, $button_cancel, $box);
+
    if($type eq 'req') {
       $t = gettext("Do you really want to delete the selected Request?");
    }elsif($type eq 'key') {
@@ -2534,43 +2593,30 @@ sub show_del_confirm {
    }else{
       GUI::HELPERS::print_error("Invalid type in show_del_confirm(): ".$type);
    }
-      
-   my $box = Gnome::MessageBox->new($t, 'question');
-   $box->close_hides(0);
-   $box->set_close(1);
-   $box->set_position('mouse' );
-   $box->set_policy(0, 0, 0);
-   $box->set_modal(1);
-   $box->realize();
 
-   my $actionarea = Gtk::HButtonBox->new();
-   $actionarea->set_layout('spread');
-   $actionarea->set_spacing(6);
-   $actionarea->set_child_ipadding(7, 0);
-   $box->vbox->add($actionarea);
-
-   my $button = Gnome::Stock->button('Button_Ok');
+   $button_ok = Gtk2::Button->new_from_stock('gtk-ok');
    if($type eq 'req') {
-      $button->signal_connect('clicked', sub { 
+      $button_ok->signal_connect('clicked', sub { 
            $self->{'REQ'}->del_req($self, $file);
            $box->destroy() });
    }elsif($type eq 'key') {
-      $button->signal_connect('clicked', sub { 
+      $button_ok->signal_connect('clicked', sub { 
            $self->{'KEY'}->del_key($self, $file);
            $box->destroy() });
    }elsif($type eq 'cert') {
-      $button->signal_connect('clicked', sub {
+      $button_ok->signal_connect('clicked', sub {
             $self->{'CERT'}->del_cert($self, $file);
             $box->destroy() });
    }
 
-   $actionarea->pack_start($button, 1, 1, 0);
-   $button->can_default(1);
-   $button->grab_default();
+   $button_cancel = Gtk2::Button->new_from_stock('gtk-cancel');
+   $button_cancel->signal_connect('clicked', sub { $box->destroy(); return });
+      
+   $box = Gtk2::MessageDialog->new(
+          undef, [qw/destroy-with-parent modal/], 'question', 'none', $t);
 
-   $button = Gnome::Stock->button('Button_Cancel');
-   $button->signal_connect('clicked', sub { $box->destroy(); return });
-   $actionarea->pack_start($button, 1, 1, 0);
+   $box->add_action_widget($button_ok, 0);
+   $box->add_action_widget($button_cancel, 1);
 
    $box->show_all();
 }
@@ -2581,38 +2627,37 @@ sub show_del_confirm {
 sub show_req_overwrite_warning {
    my ($self, $opts) = @_;
 
-   my ($box, $actionarea, $button, $t);
+   my ($box, $actionarea, $button_ok, $button_cancel, $label);
 
-   $t = gettext("The Key or the Request is already existing!");
-   $t .= "\n\n";
-   $t .= gettext("If the corresponding certificate it\'s not expired or revoked ");
-   $t .= gettext("you won\'t be able to sign this request!");
+   $button_ok = Gtk2::Button->new_from_stock('gtk-ok');
+   $button_ok->signal_connect('clicked' => 
+         sub { $self->{'REQ'}->create_req($self, $opts); 
+               $box->destroy() });
 
-   $box = Gnome::MessageBox->new($t, 'warning');
-   $box->close_hides(0);
-   $box->set_close(1);
-   $box->set_position('mouse' );
-   $box->set_policy(0, 0, 0);
-   $box->set_modal(1);
-   $box->realize();
+   $button_cancel = Gtk2::Button->new_from_stock('gtk-cancel');
+   $button_cancel->can_default(1);
+   $button_cancel->signal_connect('clicked', sub { $box->destroy() });
 
-   $actionarea = Gtk::HButtonBox->new();
-   $box->vbox->add($actionarea);
-   $actionarea->set_layout('end');
-   $actionarea->set_spacing(6);
-   $actionarea->set_child_ipadding(7, 0);
+   $box = GUI::HELPERS::dialog_box(
+         gettext("Overwrite Request/Key"), gettext("Overwrite Request/Key"),
+         $button_ok, $button_cancel);
 
-   $button = Gnome::Stock->button('Button_Ok');
-   $button->signal_connect('clicked', 
-         sub { $self->{'REQ'}->create_req($self, $opts); $box->destroy() });
-   $actionarea->pack_start($button, 1, 1, 0);
+   $button_cancel->grab_default();
 
-   $button = Gnome::Stock->button('Button_Cancel');
-   $button->signal_connect('clicked', sub { 
-         $box->destroy() });
-   $button->can_default(1);
-   $actionarea->pack_start($button, 1, 1, 0);
-   $button->grab_default();
+   $label = GUI::HELPERS::create_label(
+         gettext("The Key or the Request is already existing!"), 
+         'center', 1, 0);
+   $box->vbox->add($label);
+
+   $label = GUI::HELPERS::create_label(
+         gettext("You won't be able to sign this Request"), 
+         'center', 1, 0);
+   $box->vbox->add($label);
+
+   $label = GUI::HELPERS::create_label(
+         gettext("if the corresponding certificate is still valid"), 
+         'center', 1, 0);
+   $box->vbox->add($label);
 
    $box->show_all();
 
@@ -2631,12 +2676,12 @@ sub show_req_date_warning {
    $t .= "\n";
    $t .= gettext("This may cause problems with some software!!");
 
-   $button_ok = Gnome::Stock->button('Button_Ok');
+   $button_ok = Gtk2::Button->new_from_stock('gtk-ok');
    $button_ok->signal_connect('clicked', 
          sub { $opts->{'ignoredate'} = 'true';
                $self->{'REQ'}->get_sign_req($self, $opts, $box); });
 
-   $button_cancel = Gnome::Stock->button('Button_Cancel');
+   $button_cancel = Gtk2::Button->new_from_stock('gtk-cancel');
    $button_cancel->signal_connect('clicked', sub { 
          $self->show_req_sign_dialog($opts);
          $box->destroy();
@@ -2650,7 +2695,102 @@ sub show_req_date_warning {
    $button_cancel->grab_default();
 
    $box->show_all();
+}
 
+#
+# show CA history
+#
+sub show_history {
+   my $self = shift;
+
+   my ($box, $button_ok, @index, $list, $list_scrolled, $store, @titles,
+         $column, $t, $iter, $dn, $state, $expdate, $revdate, $renderer);
+
+   @index =
+      $self->{'OpenSSL'}->read_index($self->{'CA'}->{'cadir'}."/index.txt");
+
+   $list_scrolled = Gtk2::ScrolledWindow->new(undef, undef);
+   $list_scrolled->set_policy('automatic', 'automatic');
+   $list_scrolled->set_shadow_type('etched-in');
+   $store = Gtk2::ListStore->new(
+         'Glib::String',  # common name
+         'Glib::String',  # status
+         'Glib::String',  # serial
+         'Glib::String',  # expiration
+         'Glib::String',  # revocation
+         'Glib::String'   # reason
+         );
+
+   $list = Gtk2::TreeView->new_with_model($store);
+   $list->get_selection->set_mode('none');
+   @titles = ( 
+         gettext("Serial"),
+         gettext("Common Name"),
+         gettext("Status"),
+         gettext("Expiration Date"),
+         gettext("Revocation Date"),
+         gettext("Revocation Reason")
+         );
+
+   for (my $i = 0; $titles[$i]; $i++) {
+      $renderer = Gtk2::CellRendererText->new();
+      $column = Gtk2::TreeViewColumn->new_with_attributes( 
+            $titles[$i], $renderer, 'text' => $i);
+      $column->set_sort_column_id($i);
+      $column->set_resizable(1);
+      if ($i == 2) {
+         $column->set_cell_data_func ($renderer, sub {
+               my ($column, $cell, $model, $iter) = @_;
+               my $text = $model->get($iter, 2);
+               my $color = $text eq gettext("VALID")?'green':'red';
+               $cell->set (text => $text, foreground => $color);
+               });
+      }
+      $list->append_column($column);
+   }
+
+   foreach my $tmp (@index) {
+      $iter = $store->append();
+      $dn   = HELPERS::parse_dn($tmp->{'DN'});
+      if($tmp->{'STATUS'} eq 'V') {
+         $state = gettext("VALID");
+      } elsif($tmp->{'STATUS'} eq 'E') {
+         $state = gettext("EXPIRED");
+      } elsif($tmp->{'STATUS'} eq 'R') {
+         $state = gettext("REVOKED");
+      }
+
+      $expdate = strftime("%F", localtime($tmp->{'EXPDATE'}));
+      if(defined($tmp->{'REVDATE'})) {
+         $revdate = strftime("%F", localtime($tmp->{'REVDATE'}));
+      }
+
+      $store->set($iter,
+            0 => $tmp->{'SERIAL'},
+            1 => $dn->{'CN'},
+            2 => $state,
+            3 => $expdate,
+            4 => $revdate,
+            5 => $tmp->{'REVREASON'}
+            );
+   }
+
+   $list_scrolled->add_with_viewport($list);
+
+   $t = gettext("CA History");
+   
+   $button_ok = Gtk2::Button->new_from_stock('gtk-ok');
+   $button_ok->can_default(1);
+   $button_ok->signal_connect('clicked', sub { $box->destroy() });
+
+   $box = GUI::HELPERS::dialog_box($t, $t, $button_ok);
+   $box->set_default_size(700, 400);
+
+   $button_ok->grab_default();
+
+   $box->vbox->add($list_scrolled);
+
+   $box->show_all();
 }
 
 #
@@ -2661,12 +2801,12 @@ sub show_cert_overwrite_confirm {
 
    my($box, $button_ok, $button_cancel, $label);
    
-   $button_ok = Gnome::Stock->button('Button_Ok');
+   $button_ok = Gtk2::Button->new_from_stock('gtk-ok');
    $button_ok->signal_connect('clicked', 
          sub { $opts->{'overwrite'} = 'true';
                $self->{'REQ'}->get_sign_req($self, $opts, $box) });
 
-   $button_cancel = Gnome::Stock->button('Button_Cancel');
+   $button_cancel = Gtk2::Button->new_from_stock('gtk-cancel');
    $button_cancel->can_default(1);
    $button_cancel->signal_connect('clicked', sub { $box->destroy() });
 
@@ -2677,7 +2817,8 @@ sub show_cert_overwrite_confirm {
    $button_cancel->grab_default();
 
    $label = GUI::HELPERS::create_label(
-         gettext("There seems to be an certificate already."), 'center', 1, 0);
+      gettext("There seems to be a certificate with the same Subject already."),
+      'center', 1, 0);
    $box->vbox->add($label);
 
    $label = GUI::HELPERS::create_label(
@@ -2702,7 +2843,7 @@ sub show_ca_convert_dialog {
 
    my($box, $label, $button_ok, $button_cancel, $t);
 
-   $button_ok     = Gnome::Stock->button('Button_Ok');
+   $button_ok = Gtk2::Button->new_from_stock('gtk-ok');
    $button_ok->signal_connect('clicked', 
          sub { 
             $opts->{'doconv'} = 1;
@@ -2711,7 +2852,7 @@ sub show_ca_convert_dialog {
    );
    $button_ok->can_default(1);
 
-   $button_cancel = Gnome::Stock->button('Button_Cancel');
+   $button_cancel = Gtk2::Button->new_from_stock('gtk-cancel');
    $button_cancel->signal_connect('clicked', 
          sub { 
             $opts->{'noconv'} = 1;
@@ -2759,60 +2900,27 @@ sub show_ca_convert_dialog {
 sub _create_key_menu {
    my $self = shift;
 
-   my ($menu_item, @menus, $width, $style, $font, $string);
+   my ($item, $image);
 
-   $self->{'keymenu'} = Gtk::Menu->new();
+   $self->{'keymenu'} = Gtk2::Menu->new();
 
-   @menus = ( gettext("Export Key"), gettext("Delete Key"));
-
-   $string = 0;
-   foreach(@menus) {
-      $string = $_ if(length($_) > length($string));
-   }
-
-   $menu_item = Gnome::Stock->menu_item('Menu_Save', gettext("Export Key"));
-
-   $style = $menu_item->get_style();
-   $font  = $style->font();
-   $width = $font->string_width($string);
-   $width += 50;
-
-   $menu_item->set_usize($width, 0);
-   
-   $self->{'keymenu'}->append($menu_item);
-   $menu_item->signal_connect( 'activate', 
+   $item = Gtk2::ImageMenuItem->new( gettext("Export Key"));
+   $item->signal_connect(activate => 
          sub { $self->{'KEY'}->get_export_key($self) });
+   $image = Gtk2::Image->new_from_stock('gtk-save', 'menu');
+   $item->set_image($image);
+   $self->{'keymenu'}->insert($item, -1);
 
-   $menu_item = Gnome::Stock->menu_item('Menu_Trash',
-         gettext("Delete Key"));
-   $self->{'keymenu'}->append($menu_item);
-   $menu_item->signal_connect( 'activate', 
+   $item = Gtk2::ImageMenuItem->new( gettext("Delete Key"));
+   $item->signal_connect(activate => 
          sub { $self->{'KEY'}->get_del_key($self) });
+   $image = Gtk2::Image->new_from_stock('gtk-delete', 'menu');
+   $item->set_image($image);
+   $self->{'keymenu'}->insert($item, -1);
 
    $self->{'keymenu'}->show_all();
 
    return;
-}
-
-#
-# called on rightclick in keylist
-#
-sub _show_key_menu {
-   my ($clist, $self, $event) = @_;
-
-   if ((defined($event->{'type'})) &&
-         $event->{'button'} == 3) {
-      $self->{'keymenu'}->popup( 
-            undef,
-            undef,
-            0,
-            $event->{'button'},
-            undef);
-
-      return(1);
-   }
-
-   return(0);
 }
 
 #
@@ -2821,87 +2929,56 @@ sub _show_key_menu {
 sub _create_cert_menu {
    my $self = shift;
 
-   my ($menu_item, @menus, $width, $style, $font, $string);
+   my ($item, $image);
 
-   $self->{'certmenu'} = Gtk::Menu->new();
+   $self->{'certmenu'} = Gtk2::Menu->new();
 
-   @menus = (
-         gettext("Certificate Details"),
-         gettext("View Certificate"),
-         gettext("Export Certificate"),
-         gettext("Revoke Certificate"),
-         gettext("Delete Certificate"));
-
-   $string = 0;
-   foreach(@menus) {
-      $string = $_ if(length($_) > length($string));
-   }
-
-   $menu_item = Gnome::Stock->menu_item('Menu_Search', 
-         gettext("Certificate Details"));
-
-   $style = $menu_item->get_style();
-   $font  = $style->font();
-   $width = $font->string_width($string);
-   $width += 50;
-
-   $menu_item->set_usize($width, 0);
-   
-   $self->{'certmenu'}->append($menu_item);
-   $menu_item->signal_connect( 'activate', 
+   $item = Gtk2::ImageMenuItem->new( gettext("Certificate Details"));
+   $item->signal_connect(activate => 
          sub { $self->show_details('cert') });
+   $image = Gtk2::Image->new_from_stock('gtk-new', 'menu');
+   $item->set_image($image);
+   $self->{'certmenu'}->insert($item, -1);
 
-   $menu_item = Gnome::Stock->menu_item('Menu_Search', 
-         gettext("View Certificate"));
-   $self->{'certmenu'}->append($menu_item);
-   $menu_item->signal_connect( 'activate', 
+   $item = Gtk2::ImageMenuItem->new( gettext("View Certificate"));
+   $item->signal_connect(activate => 
          sub { $self->show_text('cert') });
+   $image = Gtk2::Image->new_from_stock('gtk-find', 'menu');
+   $item->set_image($image);
+   $self->{'certmenu'}->insert($item, -1);
 
-   $menu_item = Gtk::MenuItem->new();
-   $self->{'certmenu'}->append($menu_item);
-
-   $menu_item = Gnome::Stock->menu_item('Menu_Save',
-         gettext("Export Certificate"));
-   $self->{'certmenu'}->append($menu_item);
-   $menu_item->signal_connect( 'activate', 
+   $item = Gtk2::ImageMenuItem->new( gettext("Export Certificate"));
+   $item->signal_connect(activate => 
          sub { $self->{'CERT'}->get_export_cert($self) });
+   $image = Gtk2::Image->new_from_stock('gtk-save', 'menu');
+   $item->set_image($image);
+   $self->{'certmenu'}->insert($item, -1);
 
-   $menu_item = Gnome::Stock->menu_item('Menu_Stop',
-         gettext("Revoke Certificate"));
-   $self->{'certmenu'}->append($menu_item);
-   $menu_item->signal_connect( 'activate', 
+   $item = Gtk2::ImageMenuItem->new( gettext("Revoke Certificate"));
+   $item->signal_connect(activate => 
          sub { $self->{'CERT'}->get_revoke_cert($self) });
+   $image = Gtk2::Image->new_from_stock('gtk-stop', 'menu');
+   $item->set_image($image);
+   $self->{'certmenu'}->insert($item, -1);
 
-   $menu_item = Gnome::Stock->menu_item('Menu_Trash',
-         gettext("Delete Certificate"));
-   $self->{'certmenu'}->append($menu_item);
-   $menu_item->signal_connect( 'activate', 
+   $item = Gtk2::ImageMenuItem->new( gettext("Renew Certificate"));
+   $item->signal_connect(activate => 
+         sub { $self->{'renewcertmenu'}->popup(
+                           undef, undef, undef, undef, 1, 0) });
+   $image = Gtk2::Image->new_from_stock('gtk-refresh', 'menu');
+   $item->set_image($image);
+   $self->{'certmenu'}->insert($item, -1);
+
+   $item = Gtk2::ImageMenuItem->new( gettext("Delete Certificate"));
+   $item->signal_connect(activate => 
          sub { $self->{'CERT'}->get_del_cert($self) });
+   $image = Gtk2::Image->new_from_stock('gtk-delete', 'menu');
+   $item->set_image($image);
+   $self->{'certmenu'}->insert($item, -1);
 
    $self->{'certmenu'}->show_all();
 
    return;
-}
-
-#
-# called on rightclick in certlist
-#
-sub _show_cert_menu {
-   my ($clist, $self, $event) = @_;
-
-   if ((defined($event->{'type'})) &&
-         $event->{'button'} == 3) {
-      $self->{'certmenu'}->popup( 
-            undef,
-            undef,
-            0,
-            $event->{'button'},
-            undef);
-
-      return(1);
-   }
-
-   return(0);
 }
 
 #
@@ -2910,95 +2987,23 @@ sub _show_cert_menu {
 sub _create_create_cert_menu {
    my $self = shift;
    
-   my ($menu_item, $opts, @menus, $width, $style, $font, $string);
+   my ($item);
 
-   $self->{'newcertmenu'} = Gtk::Menu->new();
+   $self->{'newcertmenu'} = Gtk2::Menu->new();
 
-   @menus = (
-         gettext("Create Key and Certificate (Server)"),
-         gettext("Create Key and Certificate (Client)"),
-         );
-
-   $string = 0;
-   foreach(@menus) {
-      $string = $_ if(length($_) > length($string));
-   }
-   $menu_item = Gnome::Stock->menu_item('Menu_Properties',
+   $item = Gtk2::MenuItem->new( 
          gettext("Create Key and Certificate (Server)"));
-
-   $style = $menu_item->get_style();
-   $font  = $style->font();
-   $width = $font->string_width($string);
-   $width += 50;
-
-   $menu_item->set_usize($width, 0);
-
-   $menu_item = Gnome::Stock->menu_item('Menu_Properties',
-         gettext("Create Key and Certificate (Server)"));
-   $self->{'newcertmenu'}->append($menu_item);
-   $menu_item->signal_connect( 'activate', 
+   $item->signal_connect(activate => 
          sub { $self->{'REQ'}->get_req_create($self, "signserver") });
+   $self->{'newcertmenu'}->insert($item, 0);
 
-   $menu_item = Gnome::Stock->menu_item('Menu_Properties',
+   $item = Gtk2::MenuItem->new( 
          gettext("Create Key and Certificate (Client)"));
-   $self->{'newcertmenu'}->append($menu_item);
-   $menu_item->signal_connect( 'activate', 
+   $item->signal_connect(activate => 
          sub { $self->{'REQ'}->get_req_create($self, "signclient") });
-
-   $self->{'newcertmenu'}->set_title(gettext("Create Certificate"));
+   $self->{'newcertmenu'}->insert($item, 1);
 
    $self->{'newcertmenu'}->show_all();
-
-   return;
-}
-
-#
-# create popup menus for sign request button
-#
-sub _create_sign_req_menu {
-   my $self = shift;
-   
-   my ($menu_item, $opts, @menus, $width, $style, $font, $string);
-
-   $self->{'reqsignmenu'} = Gtk::Menu->new();
-
-   @menus = (
-         gettext("Sign Request (Server)"),
-         gettext("Sign Request (Client)"),
-         );
-
-   $string = 0;
-   foreach(@menus) {
-      $string = $_ if(length($_) > length($string));
-   }
-
-   $menu_item = Gnome::Stock->menu_item('Menu_Search',
-         gettext("Request Details"));
-
-   $style = $menu_item->get_style();
-   $font  = $style->font();
-   $width = $font->string_width($string);
-   $width += 50;
-
-   $menu_item->set_usize($width, 0);
-
-   $menu_item = Gnome::Stock->menu_item('Menu_Properties',
-         gettext("Sign Request (Server)"));
-   $self->{'reqsignmenu'}->append($menu_item);
-   $menu_item->signal_connect( 'activate', 
-         sub { $opts->{'type'} = 'server';
-         $self->{'REQ'}->get_sign_req($self, $opts) });
-
-   $menu_item = Gnome::Stock->menu_item('Menu_Properties',
-         gettext("Sign Request (Client)"));
-   $self->{'reqsignmenu'}->append($menu_item);
-   $menu_item->signal_connect( 'activate', 
-         sub { $opts->{'type'} = 'client';
-         $self->{'REQ'}->get_sign_req($self, $opts) });
-
-   $self->{'reqsignmenu'}->set_title(gettext("Sign Request"));
-
-   $self->{'reqsignmenu'}->show_all();
 
    return;
 }
@@ -3009,47 +3014,54 @@ sub _create_sign_req_menu {
 sub _create_renew_cert_menu {
    my $self = shift;
    
-   my ($menu_item, $opts, @menus, $width, $style, $font, $string);
+   my ($item, $opts);
 
-   $self->{'renewcertmenu'} = Gtk::Menu->new();
+   $self->{'renewcertmenu'} = Gtk2::Menu->new();
 
-   @menus = (
-         gettext("Sign Request (Server)"),
-         gettext("Sign Request (Client)"),
-         );
-
-   $string = 0;
-   foreach(@menus) {
-      $string = $_ if(length($_) > length($string));
-   }
-
-   $menu_item = Gnome::Stock->menu_item('Menu_Search',
-         gettext("Request Details"));
-
-   $style = $menu_item->get_style();
-   $font  = $style->font();
-   $width = $font->string_width($string);
-   $width += 50;
-
-   $menu_item->set_usize($width, 0);
-
-   $menu_item = Gnome::Stock->menu_item('Menu_Properties',
-         gettext("Sign Request (Server)"));
-   $self->{'renewcertmenu'}->append($menu_item);
-   $menu_item->signal_connect( 'activate', 
+   $item = Gtk2::MenuItem->new( 
+         gettext("Renew Certificate (Server)"));
+   $item->signal_connect(activate => 
          sub { $opts->{'type'} = 'server';
-         $self->{'CERT'}->get_renew_cert($self, $opts) });
+               $self->{'CERT'}->get_renew_cert($self, $opts) });
+   $self->{'renewcertmenu'}->insert($item, 0);
 
-   $menu_item = Gnome::Stock->menu_item('Menu_Properties',
-         gettext("Sign Request (Client)"));
-   $self->{'renewcertmenu'}->append($menu_item);
-   $menu_item->signal_connect( 'activate', 
+   $item = Gtk2::MenuItem->new( 
+         gettext("Renew Certificate (Client)"));
+   $item->signal_connect(activate => 
          sub { $opts->{'type'} = 'client';
-         $self->{'CERT'}->get_renew_cert($self, $opts) });
-
-   $self->{'renewcertmenu'}->set_title(gettext("Renew Certificate"));
+               $self->{'CERT'}->get_renew_cert($self, $opts) });
+   $self->{'renewcertmenu'}->insert($item, 1);
 
    $self->{'renewcertmenu'}->show_all();
+
+   return;
+}
+
+#
+# create popup menus for sign request button
+#
+sub _create_sign_req_menu {
+   my $self = shift;
+   
+   my ($item, $opts);
+
+   $self->{'reqsignmenu'} = Gtk2::Menu->new();
+
+   $item = Gtk2::MenuItem->new( 
+         gettext("Sign Request (Server)"));
+   $item->signal_connect(activate => 
+         sub { $opts->{'type'} = 'server';
+               $self->{'REQ'}->get_sign_req($self, $opts) });
+   $self->{'reqsignmenu'}->insert($item, 0);
+
+   $item = Gtk2::MenuItem->new( 
+         gettext("Sign Request (Client)"));
+   $item->signal_connect(activate => 
+         sub { $opts->{'type'} = 'client';
+               $self->{'REQ'}->get_sign_req($self, $opts) });
+   $self->{'reqsignmenu'}->insert($item, 1);
+
+   $self->{'reqsignmenu'}->show_all();
 
    return;
 }
@@ -3060,136 +3072,56 @@ sub _create_renew_cert_menu {
 sub _create_req_menu {
    my $self = shift;
    
-   my ($menu_item, $opts, @menus, $width, $style, $font, $string);
+   my ($item, $opts, $image);
 
-   $self->{'reqmenu'} = Gtk::Menu->new();
+   $self->{'reqmenu'} = Gtk2::Menu->new();
 
-   @menus = (
-         gettext("Request Details"),
-         gettext("View Request"),
-         gettext("Sign Request (Server)"),
-         gettext("Sign Request (Client)"),
-         gettext("Import Request"),
-         gettext("New Request"),
-         gettext("Delete Request"));
-
-   $string = 0;
-   foreach(@menus) {
-      $string = $_ if(length($_) > length($string));
-   }
-
-   $menu_item = Gnome::Stock->menu_item('Menu_Search',
-         gettext("Request Details"));
-
-   $style = $menu_item->get_style();
-   $font  = $style->font();
-   $width = $font->string_width($string);
-   $width += 50;
-
-   $menu_item->set_usize($width, 0);
-
-   $self->{'reqmenu'}->append($menu_item);
-   $menu_item->signal_connect( 'activate', 
+   $item = Gtk2::ImageMenuItem->new( gettext("Request Details"));
+   $item->signal_connect(activate => 
          sub { $self->show_details('req') });
+   $image = Gtk2::Image->new_from_stock('gtk-find', 'menu');
+   $item->set_image($image);
+   $self->{'reqmenu'}->insert($item, -1);
 
-   $menu_item = Gnome::Stock->menu_item('Menu_Search',
-         gettext("View Request"));
-   $self->{'reqmenu'}->append($menu_item);
-   $menu_item->signal_connect( 'activate', 
+   $item = Gtk2::ImageMenuItem->new( gettext("View Request"));
+   $item->signal_connect(activate => 
          sub { $self->show_text('req') });
+   $image = Gtk2::Image->new_from_stock('gtk-find', 'menu');
+   $item->set_image($image);
+   $self->{'reqmenu'}->insert($item, -1);
 
-   $menu_item = Gtk::MenuItem->new();
-   $self->{'reqmenu'}->append($menu_item);
-
-   $menu_item = Gnome::Stock->menu_item('Menu_Properties',
-         gettext("Sign Request (Server)"));
-   $self->{'reqmenu'}->append($menu_item);
-   $menu_item->signal_connect( 'activate', 
-         sub { $opts->{'type'} = 'server';
-         $self->{'REQ'}->get_sign_req($self, $opts) });
-
-   $menu_item = Gnome::Stock->menu_item('Menu_Properties',
-         gettext("Sign Request (Client)"));
-   $self->{'reqmenu'}->append($menu_item);
-   $menu_item->signal_connect( 'activate', 
-         sub { $opts->{'type'} = 'client';
-         $self->{'REQ'}->get_sign_req($self, $opts) });
-
-   $menu_item = Gtk::MenuItem->new();
-   $self->{'reqmenu'}->append($menu_item);
-
-   $menu_item = Gnome::Stock->menu_item('Menu_Revert',
-         gettext("Import Request"));
-   $self->{'reqmenu'}->append($menu_item);
-   $menu_item->signal_connect( 'activate', 
-         sub { $self->{'REQ'}->get_import_req($self) });
-
-   $menu_item = Gnome::Stock->menu_item('Menu_New',
-         gettext("New Request"));
-   $self->{'reqmenu'}->append($menu_item);
-   $menu_item->signal_connect( 'activate', 
+   $item = Gtk2::ImageMenuItem->new( gettext("New Request"));
+   $item->signal_connect(activate => 
          sub { $self->{'REQ'}->get_req_create($self) });
+   $image = Gtk2::Image->new_from_stock('gtk-new', 'menu');
+   $item->set_image($image);
+   $self->{'reqmenu'}->insert($item, -1);
 
-   $menu_item = Gtk::MenuItem->new();
-   $self->{'reqmenu'}->append($menu_item);
+   $item = Gtk2::ImageMenuItem->new( gettext("Import Request"));
+   $item->signal_connect(activate => 
+         sub { $self->{'REQ'}->get_import_req($self) });
+   $image = Gtk2::Image->new_from_stock('gtk-revert-to-saved', 'menu');
+   $item->set_image($image);
+   $self->{'reqmenu'}->insert($item, -1);
 
-   $menu_item = Gnome::Stock->menu_item('Menu_Trash',
-         gettext("Delete Request"));
-   $self->{'reqmenu'}->append($menu_item);
-   $menu_item->signal_connect( 'activate', 
+   $item = Gtk2::ImageMenuItem->new( gettext("Sign Request"));
+   $item->signal_connect(activate => 
+         sub { $self->{'reqsignmenu'}->popup( 
+            undef, undef, undef, undef, 1, 0) });
+   $image = Gtk2::Image->new_from_stock('gtk-properties', 'menu');
+   $item->set_image($image);
+   $self->{'reqmenu'}->insert($item, -1);
+
+   $item = Gtk2::ImageMenuItem->new( gettext("Delete Request"));
+   $item->signal_connect(activate => 
          sub { $self->{'REQ'}->get_del_req($self) });
+   $image = Gtk2::Image->new_from_stock('gtk-delete', 'menu');
+   $item->set_image($image);
+   $self->{'reqmenu'}->insert($item, -1);
 
    $self->{'reqmenu'}->show_all();
 
    return;
-}
-
-#
-# called on rightclick in reqlist
-#
-sub _show_req_menu {
-   my ($clist, $self, $event) = @_;
-
-   if ((defined($event->{'type'})) &&
-         $event->{'button'} == 3) {
-      $self->{'reqmenu'}->popup( 
-            undef,
-            undef,
-            0,
-            $event->{'button'},
-            undef);
-
-      return(1);
-   }
-
-   return(0);
-}
-
-#
-# reread keylist and update display
-#
-sub update_keys {
-   my $self = shift;
-
-   $self->{'KEY'}->read_keylist($self);
-
-   $self->{'keylist'}->clear();
-
-   my $ind = 0;
-   foreach my $n (@{$self->{'KEY'}->{'keylist'}}) {
-      my ($name, $type) = split(/\%/, $n);
-      my @line = split(/\:/, $name);
-      my $row = $self->{'keylist'}->append(@line);
-      if(defined $type) {
-         $self->{'keylist'}->set_text($row, 7, $type);
-      } else {
-         $self->{'keylist'}->set_text($row, 7, "");
-      }
-      $self->{'keylist'}->set_text($row, 8, $ind);
-      $ind++;
-   }
-
-   return();
 }
 
 1

@@ -1,6 +1,6 @@
 # Copyright (c) Stephan Martin <sm@sm-zone.net>
 #
-# $Id: KEY.pm,v 1.23 2004/11/27 16:56:10 sm Exp $
+# $Id: KEY.pm,v 1.3 2005/04/08 13:48:11 sm Exp $
 # 
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -39,17 +39,13 @@ sub get_del_key {
 
    my($keyname, $key, $keyfile, $row, $ind, $ca, $type);
 
-   $ca   = $main->{'CA'}->{'actca'};
+   $ca  = $main->{'keybrowser'}->selection_caname();
+   $key = $main->{'keybrowser'}->selection_dn();
 
-   $row = $main->{'keylist'}->selection(); 
-   $ind = $main->{'keylist'}->get_text($row, 8);
-
-   if(not defined $ind) {
+   if(not defined $key) {
       GUI::HELPERS::print_info(gettext("Please select a Key first"));
       return;
    }
-
-   ($key, $type) = split(/%/, $self->{'keylist'}->[$ind]);
 
    $keyname = MIME::Base64::encode($key, '');
 
@@ -73,7 +69,12 @@ sub del_key {
 
    unlink($file);
 
-   $main->update_keys();
+   my $cadir = $main->{'keybrowser'}->selection_cadir();
+
+   $main->{'keybrowser'}->update($cadir."/keys",
+                                 $cadir."/crl/crl.pem",
+                                 $cadir."/index.txt",
+                                 0);
 
    return;
 }
@@ -128,31 +129,32 @@ sub get_export_key {
 
    $box->destroy() if(defined($box));
 
-   my($ca, $ind, $row, $t, $out, $cn, $email, $ret, $ext);
-   
-   $ca = $main->{'CA'}->{'actca'};
+   my($ca, $ind, $row, $t, $out, $cn, $email, $ret, $ext, $cadir);
 
    if(not defined($opts)) {
-      $row   = $main->{'keylist'}->selection();
-      $ind   = $main->{'keylist'}->get_text($row, 8);
-      $cn    = $main->{'keylist'}->get_text($row, 0);
-      $email = $main->{'keylist'}->get_text($row, 1);
+      $cn = $main->{'keybrowser'}->selection_cn();
 
-      if(not defined $ind) {
+      if(not defined $cn) {
          GUI::HELPERS::print_info(gettext("Please select a Key first"));
          return;
       }
+      
+      $ca    = $main->{'keybrowser'}->selection_caname();
+      $cadir = $main->{'keybrowser'}->selection_cadir();
+      $email = $main->{'keybrowser'}->selection_email();
 
-      ($opts->{'key'}, $opts->{'type'}) = 
-                                    split(/%/, $self->{'keylist'}->[$ind]);
+      $opts->{'type'} = $main->{'keybrowser'}->selection_type();
+      $opts->{'key'}  = $main->{'keybrowser'}->selection_dn();
 
       $opts->{'keyname'}  = MIME::Base64::encode($opts->{'key'}, '');
-      $opts->{'keyfile'}  = 
-         $main->{'cadir'}."/keys/".$opts->{'keyname'}.".pem";
+      $opts->{'keyfile'}  = $cadir."/keys/".$opts->{'keyname'}.".pem";
+      $opts->{'certfile'} = $cadir."/certs/".$opts->{'keyname'}.".pem";
       
       # set some defaults
       $opts->{'nopass'}  = 0;
+      $opts->{'include'} = 0;
       $opts->{'format'}  = 'PEM';
+
       if((defined($email)) && $email ne '' && $email ne ' ') {
          $opts->{'outfile'} = "$main->{'exportdir'}/$email-key.pem";
       }elsif((defined($cn)) && $cn ne '' && $cn ne ' ') {
@@ -173,7 +175,8 @@ sub get_export_key {
 
    if($opts->{'nopass'} && $opts->{'format'} eq 'P12') {
       $main->show_export_dialog($opts, 'key');
-      GUI::HELPERS::print_warning(gettext("Can't export PKCS#12 without passphrase"));
+      GUI::HELPERS::print_warning(
+            gettext("Can't export PKCS#12 without passphrase"));
       return;
    }
 
@@ -215,6 +218,17 @@ sub get_export_key {
          $out .= $_ while(<IN>);
          close(IN);
       }
+      if($opts->{'include'}) {
+         open(IN, "<$opts->{'certfile'}") || do {
+            $t = sprintf(gettext("Can't open Certificate file: %s: %s"), 
+                  $opts->{'certfile'}, $!);
+            GUI::HELPERS::print_warning($t);
+            return;
+         };
+         $out .= "\n";
+         $out .= $_ while(<IN>);
+         close(IN);
+      }
 
       open(OUT, ">$opts->{'outfile'}") || do {
             $t = sprintf(gettext("Can't open output file: %s: %s"), 
@@ -226,7 +240,7 @@ sub get_export_key {
       print OUT $out;
       close(OUT);
 
-      $main->{'exportdir'} = HELPERS::write_export_dir($main, 
+      $main->{'exportdir'} = HELPERS::write_export_dir($main,
             $opts->{'outfile'});
 
       $t = sprintf(gettext("Key succesfully exported to %s"), 
@@ -472,91 +486,3 @@ sub key_change_passwd {
 }
 
 1
-
-#
-# $Log: KEY.pm,v $
-# Revision 1.23  2004/11/27 16:56:10  sm
-# fixed warning, when keytype is undefined.
-#
-# Revision 1.22  2004/11/05 14:42:50  sm
-# first working import function
-#
-# Revision 1.21  2004/10/28 15:05:15  sm
-# import improvements
-#
-# Revision 1.20  2004/07/15 10:45:47  sm
-# removed references to create_mframe, always recreate only one list
-#
-# Revision 1.19  2004/07/08 20:18:21  sm
-# remeber last used export directory
-#
-# Revision 1.18  2004/07/08 13:47:36  sm
-# use the same tmpdir for everything
-#
-# Revision 1.17  2004/07/08 13:36:50  sm
-# changed default export directory to users home
-#
-# Revision 1.16  2004/06/09 13:48:29  sm
-# fixed all calls to OpenSSL containing $main
-# fixed callbacks with wrong $words reference
-# fixed some typos and wordings
-#
-# Revision 1.15  2004/05/26 10:28:32  sm
-# added extended errormessages to every call of openssl
-#
-# Revision 1.14  2004/05/26 07:48:36  sm
-# adapted functions once more :-)
-#
-# Revision 1.13  2004/05/11 18:33:59  sm
-# corrected generation of exportfile names
-#
-# Revision 1.12  2004/05/06 19:22:23  sm
-# added display and export for DSA and RSA keys
-#
-# Revision 1.11  2004/05/05 16:05:28  sm
-# added patch for cachain from Olaf Gellert
-#
-# Revision 1.10  2004/05/02 18:39:30  sm
-# added possibility to create SubCA
-# add new section to config for that
-#
-# Revision 1.8  2003/08/27 21:34:05  sm
-# some more errorhandling
-#
-# Revision 1.7  2003/08/22 20:36:56  sm
-# code cleanup
-#
-# Revision 1.6  2003/08/19 15:49:07  sm
-# code cleanup
-#
-# Revision 1.5  2003/08/16 22:05:24  sm
-# first release with Gtk-Perl
-#
-# Revision 1.3  2003/08/13 20:38:51  sm
-# functionality done
-#
-# Revision 1.2  2003/08/13 19:39:37  sm
-# rewrite for Gtk
-#
-# Revision 1.8  2003/07/04 22:58:58  sm
-# first round of the translation is done
-#
-# Revision 1.7  2003/07/03 20:59:03  sm
-# a lot of gettext() inserted
-#
-# Revision 1.6  2003/06/26 23:28:35  sm
-# added zip functions
-#
-# Revision 1.5  2003/06/23 20:11:30  sm
-# some new texts from ludwig.nussel@suse.de
-#
-# Revision 1.4  2002/10/04 09:21:04  sm
-# skip empty lines when decoding failed
-#
-# Revision 1.3  2002/10/04 08:46:45  sm
-# fixed bug exporting keys in PEM format
-#
-# Revision 1.2  2002/09/27 19:47:06  sm
-# Changed call to convkey() from open(...) to system(...)
-#
-#
