@@ -1,6 +1,6 @@
 # Copyright (c) Stephan Martin <sm@sm-zone.net>
 #
-# $Id: TCONFIG.pm,v 1.2 2005/04/01 09:08:58 sm Exp $
+# $Id: TCONFIG.pm,v 1.4 2005/10/22 13:53:08 sm Exp $
 # 
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -29,8 +29,17 @@ sub show_configbox {
    my ($main, $name) = @_;
 
    my ($box, $vbox, $label, $table, $rows, @options, @options_ca, $entry,
-         $key, $separator, $t, $combo, @combostrings, $button_cancel,
-         $button_help, $buttonbox);
+         $key, $separator, $t, @combostrings, $button_cancel,
+         $button_help, $buttonbox,
+         $combonsCertType, $combosubjectAltName, $combokeyUsage,
+         $comboextendedKeyUsage, $combonsSslServer, $combonsRevocationUrl,
+         $combonsRenewalUrl,
+         $combocnsCertType, $combocsubjectAltName, $combockeyUsage,
+         $combocextendedKeyUsage, $combocnsSslServer, $combocnsRevocationUrl,
+         $combocnsRenewalUrl,
+         $combocansCertType, $combocasubjectAltName, $combocakeyUsage,
+         $combocaextendedKeyUsage, $combocansSslServer, $combocansRevocationUrl,
+         $combocansRenewalUrl);
 
    if(not defined($name)) {
       $name = $main->{'CA'}->{'actca'};
@@ -247,14 +256,14 @@ sub show_configbox {
       $main->{'radio3'}->set_active(1)
    }
 
-   $combo = Gtk2::Combo->new();
+   $combosubjectAltName = Gtk2::Combo->new();
    @combostrings = (
          $main->{'words'}{'none'}, 
          $main->{'words'}{'user'}, 
          $main->{'words'}{'emailcopy'});
-   $combo->set_popdown_strings(@combostrings);
-   $combo->set_use_arrows(1);
-   $combo->set_value_in_list(1, 0);
+   $combosubjectAltName->set_popdown_strings(@combostrings);
+   $combosubjectAltName->set_use_arrows(1);
+   $combosubjectAltName->set_value_in_list(1, 0);
 
    if(defined($main->{'TCONFIG'}->{'server_cert'}->{'subjectAltName'})) {
      if($main->{'TCONFIG'}->{'server_cert'}->{'subjectAltName'} 
@@ -263,37 +272,37 @@ sub show_configbox {
         $main->{'radio2'}->set_sensitive(1);
         $main->{'radio3'}->set_sensitive(1);
 
-        $combo->entry->set_text($main->{'words'}{'user'});
+        $combosubjectAltName->entry->set_text($main->{'words'}{'user'});
      }elsif($main->{'TCONFIG'}->{'server_cert'}->{'subjectAltName'} 
         eq 'emailcopy') { 
-        $combo->entry->set_text($main->{'words'}{'emailcopy'});
+        $combosubjectAltName->entry->set_text($main->{'words'}{'emailcopy'});
         $main->{'radio1'}->set_sensitive(0);
         $main->{'radio2'}->set_sensitive(0);
         $main->{'radio3'}->set_sensitive(0);
      }elsif($main->{'TCONFIG'}->{'server_cert'}->{'subjectAltName'} 
         eq 'none') { 
-        $combo->entry->set_text($main->{'words'}{'none'});
+        $combosubjectAltName->entry->set_text($main->{'words'}{'none'});
         $main->{'radio1'}->set_sensitive(0);
         $main->{'radio2'}->set_sensitive(0);
         $main->{'radio3'}->set_sensitive(0);
      }
    } else { 
-      $combo->entry->set_text($main->{'words'}{'none'});
+      $combosubjectAltName->entry->set_text($main->{'words'}{'none'});
       $main->{'radio1'}->set_sensitive(0);
       $main->{'radio2'}->set_sensitive(0);
       $main->{'radio3'}->set_sensitive(0);
    }
-   $combo->entry->signal_connect('changed' => 
+   $combosubjectAltName->entry->signal_connect('changed' => 
          sub { GUI::CALLBACK::entry_to_var_san(
-         $combo,
-         $combo->entry, 
+         $combosubjectAltName,
+         $combosubjectAltName->entry, 
          \$main->{'TCONFIG'}->{'server_cert'}->{'subjectAltName'}, 
          $box, 
          $main->{words}, 
          $main->{'radio1'},  
          $main->{'radio2'},
          $main->{'radio3'})});
-   $table->attach_defaults($combo, 1, 2, $rows-1, $rows);
+   $table->attach_defaults($combosubjectAltName, 1, 2, $rows-1, $rows);
    $rows++;
 
    $table->attach_defaults($main->{'radiobox'}, 1, 2, $rows-1, $rows);
@@ -330,15 +339,15 @@ sub show_configbox {
 
    $main->{'radiobox'}->add($main->{'radio2'});
 
-   $combo = Gtk2::Combo->new();
+   $combokeyUsage = Gtk2::Combo->new();
    @combostrings = (
          $main->{'words'}{'none'}, 
          $main->{'words'}{'sig'}, 
          $main->{'words'}{'key'}, 
          $main->{'words'}{'keysig'});
-   $combo->set_popdown_strings(@combostrings);
-   $combo->set_use_arrows(1);
-   $combo->set_value_in_list(1, 0);
+   $combokeyUsage->set_popdown_strings(@combostrings);
+   $combokeyUsage->set_use_arrows(1);
+   $combokeyUsage->set_value_in_list(1, 0);
 
    if(defined($main->{'TCONFIG'}->{'server_cert'}->{'keyUsage'})) {
      if($main->{'TCONFIG'}->{'server_cert'}->{'keyUsage'} 
@@ -347,32 +356,32 @@ sub show_configbox {
         $main->{'radio2'}->set_sensitive(1);
 
         if($main->{'TCONFIG'}->{'server_cert'}->{'keyUsage'} eq 'sig') {
-           $combo->entry->set_text($main->{'words'}{'sig'});
+           $combokeyUsage->entry->set_text($main->{'words'}{'sig'});
         }elsif($main->{'TCONFIG'}->{'server_cert'}->{'keyUsage'} eq 'key') {
-           $combo->entry->set_text($main->{'words'}{'key'});
+           $combokeyUsage->entry->set_text($main->{'words'}{'key'});
         }elsif($main->{'TCONFIG'}->{'server_cert'}->{'keyUsage'} eq 'keysig') {
-           $combo->entry->set_text($main->{'words'}{'keysig'});
+           $combokeyUsage->entry->set_text($main->{'words'}{'keysig'});
         }else {
-           $combo->entry->set_text($main->{'words'}{'none'});
+           $combokeyUsage->entry->set_text($main->{'words'}{'none'});
            $main->{'radio1'}->set_sensitive(0);
            $main->{'radio2'}->set_sensitive(0);
         }
      }else {
-        $combo->entry->set_text($main->{'words'}{'none'});
+        $combokeyUsage->entry->set_text($main->{'words'}{'none'});
         $main->{'radio1'}->set_sensitive(0);
         $main->{'radio2'}->set_sensitive(0);
      }
    } else { 
-      $combo->entry->set_text($main->{'words'}{'none'});
+      $combokeyUsage->entry->set_text($main->{'words'}{'none'});
       $main->{'radio1'}->set_sensitive(0);
       $main->{'radio2'}->set_sensitive(0);
    }
-   $combo->entry->signal_connect('changed' =>
-         sub { GUI::CALLBACK::entry_to_var_key($combo, $combo->entry,
+   $combokeyUsage->entry->signal_connect('changed' =>
+         sub { GUI::CALLBACK::entry_to_var_key($combokeyUsage, $combokeyUsage->entry,
             \$main->{'TCONFIG'}->{'server_cert'}->{'keyUsage'}, $box,
             $main->{words}, $main->{'radio1'},  $main->{'radio2'})});
 
-   $table->attach_defaults($combo, 1, 2, $rows-1, $rows);
+   $table->attach_defaults($combokeyUsage, 1, 2, $rows-1, $rows);
    $rows++;
 
    $table->attach_defaults($main->{'radiobox'}, 1, 2, $rows-1, $rows);
@@ -406,7 +415,7 @@ sub show_configbox {
             'noncritical', $box)});
    $main->{'radiobox'}->add($main->{'radio2'});
 
-   $combo = Gtk2::Combo->new();
+   $comboextendedKeyUsage = Gtk2::Combo->new();
    @combostrings = (
          $main->{'words'}{'none'}, 
          $main->{'words'}{'user'});
@@ -418,9 +427,9 @@ sub show_configbox {
             $main->{'TCONFIG'}->{'server_cert'}->{'extendedKeyUsage'});
    }
    
-   $combo->set_popdown_strings(@combostrings);
-   $combo->set_use_arrows(1);
-   $combo->set_value_in_list(0, 0);
+   $comboextendedKeyUsage->set_popdown_strings(@combostrings);
+   $comboextendedKeyUsage->set_use_arrows(1);
+   $comboextendedKeyUsage->set_value_in_list(0, 0);
 
    if(defined($main->{'TCONFIG'}->{'server_cert'}->{'extendedKeyUsage'})) {
      if($main->{'TCONFIG'}->{'server_cert'}->{'extendedKeyUsage'} 
@@ -429,26 +438,26 @@ sub show_configbox {
         $main->{'radio2'}->set_sensitive(1);
 
         if($main->{'TCONFIG'}->{'server_cert'}->{'extendedKeyUsage'} eq 'user'){
-           $combo->entry->set_text($main->{'words'}{'user'});
+           $comboextendedKeyUsage->entry->set_text($main->{'words'}{'user'});
         } else {
-           $combo->entry->set_text($main->{'TCONFIG'}->{'server_cert'}->{'extendedKeyUsage'});
+           $comboextendedKeyUsage->entry->set_text($main->{'TCONFIG'}->{'server_cert'}->{'extendedKeyUsage'});
         }
      } else {
-        $combo->entry->set_text($main->{'words'}{'none'});
+        $comboextendedKeyUsage->entry->set_text($main->{'words'}{'none'});
         $main->{'radio1'}->set_sensitive(0);
         $main->{'radio2'}->set_sensitive(0);
      }
    } else { 
-      $combo->entry->set_text($main->{'words'}{'none'});
+      $comboextendedKeyUsage->entry->set_text($main->{'words'}{'none'});
       $main->{'radio1'}->set_sensitive(0);
       $main->{'radio2'}->set_sensitive(0);
    }
-   $combo->entry->signal_connect('changed' => 
-         sub { GUI::CALLBACK::entry_to_var_key($combo, $combo->entry,
+   $comboextendedKeyUsage->entry->signal_connect('changed' => 
+         sub { GUI::CALLBACK::entry_to_var_key($comboextendedKeyUsage, $comboextendedKeyUsage->entry,
             \$main->{'TCONFIG'}->{'server_cert'}->{'extendedKeyUsage'}, $box,
             $main->{words}, $main->{'radio1'},  $main->{'radio2'}) });
 
-   $table->attach_defaults($combo, 1, 2, $rows-1, $rows);
+   $table->attach_defaults($comboextendedKeyUsage, 1, 2, $rows-1, $rows);
    $rows++;
 
    $table->attach_defaults($main->{'radiobox'}, 1, 2, $rows-1, $rows);
@@ -459,27 +468,28 @@ sub show_configbox {
          gettext("Netscape Certificate Type (nsCertType):"), 'left', 0, 0);
    $table->attach_defaults($label, 0, 1, $rows-1, $rows);
 
-   $combo = Gtk2::Combo->new();
+   $combonsCertType = Gtk2::Combo->new();
    @combostrings = (
          $main->{'words'}{'none'}, 
          $main->{'words'}{'server'},
          $main->{'words'}{'server, client'});
 
-   $combo->set_popdown_strings(@combostrings);
-   $combo->set_use_arrows(1);
-   $combo->set_value_in_list(1, 0);
+   $combonsCertType->set_popdown_strings(@combostrings);
+   $combonsCertType->set_use_arrows(1);
+   $combonsCertType->set_value_in_list(1, 0);
+
    if(defined($main->{'TCONFIG'}->{'server_cert'}->{'nsCertType'})) {
-      $combo->entry->set_text(
+      $combonsCertType->entry->set_text(
             $main->{'words'}{$main->{'TCONFIG'}->{'server_cert'}->{'nsCertType'}});
    } else {
-      $combo->entry->set_text($main->{'words'}{'none'});
+      $combonsCertType->entry->set_text($main->{'words'}{'none'});
    }
-   $combo->entry->signal_connect('changed' => 
-         sub { GUI::CALLBACK::entry_to_var($combo, $combo->entry,
+   $combonsCertType->entry->signal_connect('changed' => 
+         sub { GUI::CALLBACK::entry_to_var($combonsCertType, $combonsCertType->entry,
             \$main->{'TCONFIG'}->{'server_cert'}->{'nsCertType'}, $box,
             $main->{words}) });
 
-   $table->attach_defaults($combo, 1, 2, $rows-1, $rows);
+   $table->attach_defaults($combonsCertType, 1, 2, $rows-1, $rows);
    $rows++;
 
    # special option nsSslServer
@@ -487,24 +497,24 @@ sub show_configbox {
          gettext("Netscape SSL Server Name (nsSslServerName):"), 'left', 0, 0);
    $table->attach_defaults($label, 0, 1, $rows-1, $rows);
 
-   $combo = Gtk2::Combo->new();
+   $combonsSslServer = Gtk2::Combo->new();
    @combostrings = ($main->{'words'}{'none'}, $main->{'words'}{'user'});
-   $combo->set_popdown_strings(@combostrings);
-   $combo->set_use_arrows(1);
-   $combo->set_value_in_list(1, 0);
+   $combonsSslServer->set_popdown_strings(@combostrings);
+   $combonsSslServer->set_use_arrows(1);
+   $combonsSslServer->set_value_in_list(1, 0);
    if(defined($main->{'TCONFIG'}->{'server_cert'}->{'nsSslServerName'}) && 
          $main->{'TCONFIG'}->{'server_cert'}->{'nsSslServerName'} 
          eq 'user') { 
-      $combo->entry->set_text($main->{'words'}{'user'});
+      $combonsSslServer->entry->set_text($main->{'words'}{'user'});
    } else {
-      $combo->entry->set_text($main->{'words'}{'none'});
+      $combonsSslServer->entry->set_text($main->{'words'}{'none'});
    }
-   $combo->entry->signal_connect('changed' =>
-        sub { GUI::CALLBACK::entry_to_var($combo, $combo->entry,
+   $combonsSslServer->entry->signal_connect('changed' =>
+        sub { GUI::CALLBACK::entry_to_var($combonsSslServer, $combonsSslServer->entry,
            \$main->{'TCONFIG'}->{'server_cert'}->{'nsSslServerName'}, $box,
            $main->{words}) });
 
-   $table->attach_defaults($combo, 1, 2, $rows-1, $rows);
+   $table->attach_defaults($combonsSslServer, 1, 2, $rows-1, $rows);
    $rows++;
 
    # special option nsRevocationUrl
@@ -512,24 +522,24 @@ sub show_configbox {
          gettext("Netscape Revocation URL (nsRevocationUrl):"), 'left', 0, 0);
    $table->attach_defaults($label, 0, 1, $rows-1, $rows);
 
-   $combo = Gtk2::Combo->new();
+   $combonsRevocationUrl = Gtk2::Combo->new();
    @combostrings = ($main->{'words'}{'none'}, $main->{'words'}{'user'});
-   $combo->set_popdown_strings(@combostrings);
-   $combo->set_use_arrows(1);
-   $combo->set_value_in_list(1, 0);
+   $combonsRevocationUrl->set_popdown_strings(@combostrings);
+   $combonsRevocationUrl->set_use_arrows(1);
+   $combonsRevocationUrl->set_value_in_list(1, 0);
    if(defined($main->{'TCONFIG'}->{'server_cert'}->{'nsRevocationUrl'}) && 
          $main->{'TCONFIG'}->{'server_cert'}->{'nsRevocationUrl'} 
          eq 'user') { 
-      $combo->entry->set_text($main->{'words'}{'user'});
+      $combonsRevocationUrl->entry->set_text($main->{'words'}{'user'});
    } else {
-      $combo->entry->set_text($main->{'words'}{'none'});
+      $combonsRevocationUrl->entry->set_text($main->{'words'}{'none'});
    }
-   $combo->entry->signal_connect('changed' =>
-        sub { GUI::CALLBACK::entry_to_var($combo, $combo->entry,
+   $combonsRevocationUrl->entry->signal_connect('changed' =>
+        sub { GUI::CALLBACK::entry_to_var($combonsRevocationUrl, $combonsRevocationUrl->entry,
            \$main->{'TCONFIG'}->{'server_cert'}->{'nsRevocationUrl'}, $box,
            $main->{words}) });
 
-   $table->attach_defaults($combo, 1, 2, $rows-1, $rows);
+   $table->attach_defaults($combonsRevocationUrl, 1, 2, $rows-1, $rows);
    $rows++;
 
    # special option nsRenewalUrl
@@ -537,24 +547,24 @@ sub show_configbox {
          gettext("Netscape Renewal URL (nsRenewalUrl):"), 'left', 0, 0);
    $table->attach_defaults($label, 0, 1, $rows-1, $rows);
 
-   $combo = Gtk2::Combo->new();
+   $combonsRenewalUrl = Gtk2::Combo->new();
    @combostrings = ($main->{'words'}{'none'}, $main->{'words'}{'user'});
-   $combo->set_popdown_strings(@combostrings);
-   $combo->set_use_arrows(1);
-   $combo->set_value_in_list(1, 0);
+   $combonsRenewalUrl->set_popdown_strings(@combostrings);
+   $combonsRenewalUrl->set_use_arrows(1);
+   $combonsRenewalUrl->set_value_in_list(1, 0);
    if(defined($main->{'TCONFIG'}->{'server_cert'}->{'nsRenewalUrl'}) && 
          $main->{'TCONFIG'}->{'server_cert'}->{'nsRenewalUrl'} 
          eq 'user') { 
-      $combo->entry->set_text($main->{'words'}{'user'});
+      $combonsRenewalUrl->entry->set_text($main->{'words'}{'user'});
    } else {
-      $combo->entry->set_text($main->{'words'}{'none'});
+      $combonsRenewalUrl->entry->set_text($main->{'words'}{'none'});
    }
-   $combo->entry->signal_connect('changed' =>
-        sub { GUI::CALLBACK::entry_to_var($combo, $combo->entry,
+   $combonsRenewalUrl->entry->signal_connect('changed' =>
+        sub { GUI::CALLBACK::entry_to_var($combonsRenewalUrl, $combonsRenewalUrl->entry,
            \$main->{'TCONFIG'}->{'server_cert'}->{'nsRenewalUrl'}, $box,
            $main->{words}) });
 
-   $table->attach_defaults($combo, 1, 2, $rows-1, $rows);
+   $table->attach_defaults($combonsRenewalUrl, 1, 2, $rows-1, $rows);
    $rows++;
 
    # standard options
@@ -676,14 +686,14 @@ sub show_configbox {
       $main->{'radio4'}->set_active(1)
    }
 
-   $combo = Gtk2::Combo->new();
+   $combocsubjectAltName = Gtk2::Combo->new();
    @combostrings = (
          $main->{'words'}{'none'}, 
          $main->{'words'}{'user'}, 
          $main->{'words'}{'emailcopy'});
-   $combo->set_popdown_strings(@combostrings);
-   $combo->set_use_arrows(1);
-   $combo->set_value_in_list(1, 0);
+   $combocsubjectAltName->set_popdown_strings(@combostrings);
+   $combocsubjectAltName->set_use_arrows(1);
+   $combocsubjectAltName->set_value_in_list(1, 0);
 
    if(defined($main->{'TCONFIG'}->{'client_cert'}->{'subjectAltName'})) {
      if($main->{'TCONFIG'}->{'client_cert'}->{'subjectAltName'} 
@@ -693,7 +703,7 @@ sub show_configbox {
         $main->{'radio3'}->set_sensitive(1);
         $main->{'radio4'}->set_sensitive(1);
 
-        $combo->entry->set_text($main->{'words'}{'user'});
+        $combocsubjectAltName->entry->set_text($main->{'words'}{'user'});
      }elsif($main->{'TCONFIG'}->{'client_cert'}->{'subjectAltName'} 
         eq 'emailcopy') { 
         $main->{'radio1'}->set_sensitive(0);
@@ -701,7 +711,7 @@ sub show_configbox {
         $main->{'radio3'}->set_sensitive(0);
         $main->{'radio4'}->set_sensitive(1);
 
-        $combo->entry->set_text($main->{'words'}{'emailcopy'});
+        $combocsubjectAltName->entry->set_text($main->{'words'}{'emailcopy'});
      }elsif($main->{'TCONFIG'}->{'client_cert'}->{'subjectAltName'} 
         eq 'none') { 
         $main->{'radio1'}->set_sensitive(0);
@@ -709,7 +719,7 @@ sub show_configbox {
         $main->{'radio3'}->set_sensitive(0);
         $main->{'radio4'}->set_sensitive(1);
 
-        $combo->entry->set_text($main->{'words'}{'none'});
+        $combocsubjectAltName->entry->set_text($main->{'words'}{'none'});
      }
    } else { 
       $main->{'radio1'}->set_sensitive(0);
@@ -717,14 +727,14 @@ sub show_configbox {
       $main->{'radio3'}->set_sensitive(0);
       $main->{'radio4'}->set_sensitive(1);
 
-      $combo->entry->set_text($main->{'words'}{'none'});
+      $combocsubjectAltName->entry->set_text($main->{'words'}{'none'});
    }
-   $combo->entry->signal_connect('changed' =>
-        sub { GUI::CALLBACK::entry_to_var_san($combo, $combo->entry,
+   $combocsubjectAltName->entry->signal_connect('changed' =>
+        sub { GUI::CALLBACK::entry_to_var_san($combocsubjectAltName, $combocsubjectAltName->entry,
            \$main->{'TCONFIG'}->{'client_cert'}->{'subjectAltName'}, $box,
            $main->{words}, $main->{'radio1'}, $main->{'radio2'},
            $main->{'radio3'}, $main->{'radio4'}) });
-   $table->attach_defaults($combo, 1, 2, $rows-1, $rows);
+   $table->attach_defaults($combocsubjectAltName, 1, 2, $rows-1, $rows);
    $rows++;
 
    $table->attach_defaults($main->{'radiobox'}, 1, 2, $rows-1, $rows);
@@ -758,12 +768,15 @@ sub show_configbox {
             'noncritical', $box) });
    $main->{'radiobox'}->add($main->{'radio2'});
 
-   $combo = Gtk2::Combo->new();
-   @combostrings = ($main->{'words'}{'none'}, $main->{'words'}{'sig'}, 
-         $main->{'words'}{'key'}, $main->{'words'}{'keysig'});
-   $combo->set_popdown_strings(@combostrings);
-   $combo->set_use_arrows(1);
-   $combo->set_value_in_list(1, 0);
+   $combockeyUsage = Gtk2::Combo->new();
+   @combostrings = (
+         $main->{'words'}{'none'}, 
+         $main->{'words'}{'sig'}, 
+         $main->{'words'}{'key'}, 
+         $main->{'words'}{'keysig'});
+   $combockeyUsage->set_popdown_strings(@combostrings);
+   $combockeyUsage->set_use_arrows(1);
+   $combockeyUsage->set_value_in_list(1, 0);
 
    if(defined($main->{'TCONFIG'}->{'client_cert'}->{'keyUsage'})) {
      if($main->{'TCONFIG'}->{'client_cert'}->{'keyUsage'} 
@@ -772,31 +785,31 @@ sub show_configbox {
         $main->{'radio2'}->set_sensitive(1);
 
         if($main->{'TCONFIG'}->{'client_cert'}->{'keyUsage'} eq 'sig') {
-           $combo->entry->set_text($main->{'words'}{'sig'});
+           $combockeyUsage->entry->set_text($main->{'words'}{'sig'});
         }elsif($main->{'TCONFIG'}->{'client_cert'}->{'keyUsage'} eq 'key') {
-           $combo->entry->set_text($main->{'words'}{'key'});
+           $combockeyUsage->entry->set_text($main->{'words'}{'key'});
         }elsif($main->{'TCONFIG'}->{'client_cert'}->{'keyUsage'} eq 'keysig') {
-           $combo->entry->set_text($main->{'words'}{'keysig'});
+           $combockeyUsage->entry->set_text($main->{'words'}{'keysig'});
         }else {
-           $combo->entry->set_text($main->{'words'}{'none'});
+           $combockeyUsage->entry->set_text($main->{'words'}{'none'});
            $main->{'radio1'}->set_sensitive(0);
            $main->{'radio2'}->set_sensitive(0);
         }
      }else {
-        $combo->entry->set_text($main->{'words'}{'none'});
+        $combockeyUsage->entry->set_text($main->{'words'}{'none'});
         $main->{'radio1'}->set_sensitive(0);
         $main->{'radio2'}->set_sensitive(0);
      }
    } else { 
-      $combo->entry->set_text($main->{'words'}{'none'});
+      $combockeyUsage->entry->set_text($main->{'words'}{'none'});
       $main->{'radio1'}->set_sensitive(0);
       $main->{'radio2'}->set_sensitive(0);
    }
-   $combo->entry->signal_connect('changed' =>
-         sub { GUI::CALLBACK::entry_to_var_key($combo, $combo->entry,
+   $combockeyUsage->entry->signal_connect('changed' =>
+         sub { GUI::CALLBACK::entry_to_var_key($combockeyUsage, $combockeyUsage->entry,
             \$main->{'TCONFIG'}->{'client_cert'}->{'keyUsage'}, $box,
             $main->{words}, $main->{'radio1'},  $main->{'radio2'}) });
-   $table->attach_defaults($combo, 1, 2, $rows-1, $rows);
+   $table->attach_defaults($combockeyUsage, 1, 2, $rows-1, $rows);
    $rows++;
 
    $table->attach_defaults($main->{'radiobox'}, 1, 2, $rows-1, $rows);
@@ -830,7 +843,7 @@ sub show_configbox {
             'noncritical', $box) });
    $main->{'radiobox'}->add($main->{'radio2'});
 
-   $combo = Gtk2::Combo->new();
+   $combocextendedKeyUsage = Gtk2::Combo->new();
    @combostrings = (
          $main->{'words'}{'none'}, 
          $main->{'words'}{'user'});
@@ -842,9 +855,9 @@ sub show_configbox {
             $main->{'TCONFIG'}->{'client_cert'}->{'extendedKeyUsage'});
    }
    
-   $combo->set_popdown_strings(@combostrings);
-   $combo->set_use_arrows(1);
-   $combo->set_value_in_list(0, 0);
+   $combocextendedKeyUsage->set_popdown_strings(@combostrings);
+   $combocextendedKeyUsage->set_use_arrows(1);
+   $combocextendedKeyUsage->set_value_in_list(0, 0);
 
    if(defined($main->{'TCONFIG'}->{'client_cert'}->{'extendedKeyUsage'})) {
      if($main->{'TCONFIG'}->{'client_cert'}->{'extendedKeyUsage'} 
@@ -853,25 +866,25 @@ sub show_configbox {
         $main->{'radio2'}->set_sensitive(1);
 
         if($main->{'TCONFIG'}->{'client_cert'}->{'extendedKeyUsage'} eq 'user'){
-           $combo->entry->set_text($main->{'words'}{'user'});
+           $combocextendedKeyUsage->entry->set_text($main->{'words'}{'user'});
         } else {
-           $combo->entry->set_text($main->{'TCONFIG'}->{'client_cert'}->{'extendedKeyUsage'});
+           $combocextendedKeyUsage->entry->set_text($main->{'TCONFIG'}->{'client_cert'}->{'extendedKeyUsage'});
         }
      } else {
-        $combo->entry->set_text($main->{'words'}{'none'});
+        $combocextendedKeyUsage->entry->set_text($main->{'words'}{'none'});
         $main->{'radio1'}->set_sensitive(0);
         $main->{'radio2'}->set_sensitive(0);
      }
    } else { 
-      $combo->entry->set_text($main->{'words'}{'none'});
+      $combocextendedKeyUsage->entry->set_text($main->{'words'}{'none'});
       $main->{'radio1'}->set_sensitive(0);
       $main->{'radio2'}->set_sensitive(0);
    }
-   $combo->entry->signal_connect('changed' => 
-         sub { GUI::CALLBACK::entry_to_var_key($combo, $combo->entry,
+   $combocextendedKeyUsage->entry->signal_connect('changed' => 
+         sub { GUI::CALLBACK::entry_to_var_key($combocextendedKeyUsage, $combocextendedKeyUsage->entry,
             \$main->{'TCONFIG'}->{'client_cert'}->{'extendedKeyUsage'}, $box,
             $main->{words}, $main->{'radio1'},  $main->{'radio2'}) });
-   $table->attach_defaults($combo, 1, 2, $rows-1, $rows);
+   $table->attach_defaults($combocextendedKeyUsage, 1, 2, $rows-1, $rows);
    $rows++;
 
    $table->attach_defaults($main->{'radiobox'}, 1, 2, $rows-1, $rows);
@@ -882,7 +895,7 @@ sub show_configbox {
          gettext("Netscape Certificate Type (nsCertType):"), 'left', 0, 0);
    $table->attach_defaults($label, 0, 1, $rows-1, $rows);
 
-   $combo = Gtk2::Combo->new();
+   $combocnsCertType = Gtk2::Combo->new();
    @combostrings = (
          $main->{'words'}{'none'}, 
          $main->{'words'}{'objsign'}, 
@@ -891,20 +904,20 @@ sub show_configbox {
          $main->{'words'}{'client, email'}, 
          $main->{'words'}{'client, objsign'},
          $main->{'words'}{'client, email, objsign'});
-   $combo->set_popdown_strings(@combostrings);
-   $combo->set_use_arrows(1);
-   $combo->set_value_in_list(1, 0);
+   $combocnsCertType->set_popdown_strings(@combostrings);
+   $combocnsCertType->set_use_arrows(1);
+   $combocnsCertType->set_value_in_list(1, 0);
    if(defined($main->{'TCONFIG'}->{'client_cert'}->{'nsCertType'})) {
-      $combo->entry->set_text( 
+      $combocnsCertType->entry->set_text( 
             $main->{'words'}{$main->{'TCONFIG'}->{'client_cert'}->{'nsCertType'}});
    } else {
-      $combo->entry->set_text($main->{'words'}{'none'});
+      $combocnsCertType->entry->set_text($main->{'words'}{'none'});
    }
-   $combo->entry->signal_connect('changed' =>
-        sub { GUI::CALLBACK::entry_to_var($combo, $combo->entry,
+   $combocnsCertType->entry->signal_connect('changed' =>
+        sub { GUI::CALLBACK::entry_to_var($combocnsCertType, $combocnsCertType->entry,
            \$main->{'TCONFIG'}->{'client_cert'}->{'nsCertType'}, $box,
            $main->{words}) });
-   $table->attach_defaults($combo, 1, 2, $rows-1, $rows);
+   $table->attach_defaults($combocnsCertType, 1, 2, $rows-1, $rows);
    $rows++;
 
    # special option nsRevocationUrl
@@ -912,23 +925,23 @@ sub show_configbox {
          gettext("Netscape Revocation URL (nsRevocationUrl):"), 'left', 0, 0);
    $table->attach_defaults($label, 0, 1, $rows-1, $rows);
 
-   $combo = Gtk2::Combo->new();
+   $combocnsRevocationUrl = Gtk2::Combo->new();
    @combostrings = ($main->{'words'}{'none'}, $main->{'words'}{'user'});
-   $combo->set_popdown_strings(@combostrings);
-   $combo->set_use_arrows(1);
-   $combo->set_value_in_list(1, 0);
+   $combocnsRevocationUrl->set_popdown_strings(@combostrings);
+   $combocnsRevocationUrl->set_use_arrows(1);
+   $combocnsRevocationUrl->set_value_in_list(1, 0);
    if(defined($main->{'TCONFIG'}->{'client_cert'}->{'nsRevocationUrl'}) && 
          $main->{'TCONFIG'}->{'client_cert'}->{'nsRevocationUrl'} 
          eq 'user') { 
-      $combo->entry->set_text($main->{'words'}{'user'});
+      $combocnsRevocationUrl->entry->set_text($main->{'words'}{'user'});
    } else {
-      $combo->entry->set_text($main->{'words'}{'none'});
+      $combocnsRevocationUrl->entry->set_text($main->{'words'}{'none'});
    }
-   $combo->entry->signal_connect('changed' =>
-        sub { GUI::CALLBACK::entry_to_var($combo, $combo->entry,
+   $combocnsRevocationUrl->entry->signal_connect('changed' =>
+        sub { GUI::CALLBACK::entry_to_var($combocnsRevocationUrl, $combocnsRevocationUrl->entry,
            \$main->{'TCONFIG'}->{'client_cert'}->{'nsRevocationUrl'}, $box,
            $main->{words}) });
-   $table->attach_defaults($combo, 1, 2, $rows-1, $rows);
+   $table->attach_defaults($combocnsRevocationUrl, 1, 2, $rows-1, $rows);
    $rows++;
 
    # special option nsRenewalUrl
@@ -936,23 +949,23 @@ sub show_configbox {
          gettext("Netscape Renewal URL (nsRenewalUrl):"), 'left', 0, 0);
    $table->attach_defaults($label, 0, 1, $rows-1, $rows);
 
-   $combo = Gtk2::Combo->new();
+   $combocnsRenewalUrl = Gtk2::Combo->new();
    @combostrings = ($main->{'words'}{'none'}, $main->{'words'}{'user'});
-   $combo->set_popdown_strings(@combostrings);
-   $combo->set_use_arrows(1);
-   $combo->set_value_in_list(1, 0);
+   $combocnsRenewalUrl->set_popdown_strings(@combostrings);
+   $combocnsRenewalUrl->set_use_arrows(1);
+   $combocnsRenewalUrl->set_value_in_list(1, 0);
    if(defined($main->{'TCONFIG'}->{'client_cert'}->{'nsRenewalUrl'}) && 
          $main->{'TCONFIG'}->{'client_cert'}->{'nsRenewalUrl'} 
          eq 'user') { 
-      $combo->entry->set_text($main->{'words'}{'user'});
+      $combocnsRenewalUrl->entry->set_text($main->{'words'}{'user'});
    } else {
-      $combo->entry->set_text($main->{'words'}{'none'});
+      $combocnsRenewalUrl->entry->set_text($main->{'words'}{'none'});
    }
-   $combo->entry->signal_connect('changed' =>
-        sub { GUI::CALLBACK::entry_to_var($combo, $combo->entry,
+   $combocnsRenewalUrl->entry->signal_connect('changed' =>
+        sub { GUI::CALLBACK::entry_to_var($combocnsRenewalUrl, $combocnsRenewalUrl->entry,
            \$main->{'TCONFIG'}->{'client_cert'}->{'nsRenewalUrl'}, $box,
            $main->{words}) });
-   $table->attach_defaults($combo, 1, 2, $rows-1, $rows);
+   $table->attach_defaults($combocnsRenewalUrl, 1, 2, $rows-1, $rows);
    $rows++;
 
    # standard options
@@ -1035,28 +1048,28 @@ sub show_configbox {
          gettext("Subject alternative name (subjectAltName):"), 'left', 0, 0);
    $table->attach_defaults($label, 0, 1, $rows-1, $rows);
 
-   $combo = Gtk2::Combo->new();
+   $combocasubjectAltName = Gtk2::Combo->new();
    @combostrings = ($main->{'words'}{'none'}, $main->{'words'}{'emailcopy'});
-   $combo->set_popdown_strings(@combostrings);
-   $combo->set_use_arrows(1);
-   $combo->set_value_in_list(1, 0);
+   $combocasubjectAltName->set_popdown_strings(@combostrings);
+   $combocasubjectAltName->set_use_arrows(1);
+   $combocasubjectAltName->set_value_in_list(1, 0);
 
    if(defined($main->{'TCONFIG'}->{'v3_ca'}->{'subjectAltName'})) {
      if($main->{'TCONFIG'}->{'v3_ca'}->{'subjectAltName'} 
         eq 'emailcopy') { 
-        $combo->entry->set_text($main->{'words'}{'emailcopy'});
+        $combocasubjectAltName->entry->set_text($main->{'words'}{'emailcopy'});
      }elsif($main->{'TCONFIG'}->{'v3_ca'}->{'subjectAltName'} 
         eq 'none') { 
-        $combo->entry->set_text($main->{'words'}{'none'});
+        $combocasubjectAltName->entry->set_text($main->{'words'}{'none'});
      }
    } else { 
-      $combo->entry->set_text($main->{'words'}{'none'});
+      $combocasubjectAltName->entry->set_text($main->{'words'}{'none'});
    }
-   $combo->entry->signal_connect('changed' =>
-        sub { GUI::CALLBACK::entry_to_var_san($combo,
-         $combo->entry, \$main->{'TCONFIG'}->{'v3_ca'}->{'subjectAltName'}, 
+   $combocasubjectAltName->entry->signal_connect('changed' =>
+        sub { GUI::CALLBACK::entry_to_var_san($combocasubjectAltName,
+         $combocasubjectAltName->entry, \$main->{'TCONFIG'}->{'v3_ca'}->{'subjectAltName'}, 
          $box, $main->{words}) });
-   $table->attach_defaults($combo, 1, 2, $rows-1, $rows);
+   $table->attach_defaults($combocasubjectAltName, 1, 2, $rows-1, $rows);
    $rows++;
 
    # special option nsCerttype
@@ -1064,7 +1077,7 @@ sub show_configbox {
          gettext("Netscape Certificate Type (nsCertType):"), 'left', 0, 0);
    $table->attach_defaults($label, 0, 1, $rows-1, $rows);
 
-   $combo = Gtk2::Combo->new();
+   $combocansCertType = Gtk2::Combo->new();
    @combostrings = ($main->{'words'}{'none'}, 
                     $main->{'words'}{'emailCA'},
                     $main->{'words'}{'sslCA'},
@@ -1074,20 +1087,20 @@ sub show_configbox {
                     $main->{'words'}{'emailCA, objCA'},
                     $main->{'words'}{'sslCA, emailCA, objCA'} 
                     );
-   $combo->set_popdown_strings(@combostrings);
-   $combo->set_use_arrows(1);
-   $combo->set_value_in_list(1, 0);
+   $combocansCertType->set_popdown_strings(@combostrings);
+   $combocansCertType->set_use_arrows(1);
+   $combocansCertType->set_value_in_list(1, 0);
    if(defined($main->{'TCONFIG'}->{'v3_ca'}->{'nsCertType'})) {
-      $combo->entry->set_text(
+      $combocansCertType->entry->set_text(
             $main->{'words'}{$main->{'TCONFIG'}->{'v3_ca'}->{'nsCertType'}});
    } else {
-      $combo->entry->set_text($main->{'words'}{'none'});
+      $combocansCertType->entry->set_text($main->{'words'}{'none'});
    }
-   $combo->entry->signal_connect('changed' =>
-        sub { GUI::CALLBACK::entry_to_var($combo, $combo->entry,
+   $combocansCertType->entry->signal_connect('changed' =>
+        sub { GUI::CALLBACK::entry_to_var($combocansCertType, $combocansCertType->entry,
            \$main->{'TCONFIG'}->{'v3_ca'}->{'nsCertType'}, $box,
            $main->{words}) });
-   $table->attach_defaults($combo, 1, 2, $rows-1, $rows);
+   $table->attach_defaults($combocansCertType, 1, 2, $rows-1, $rows);
    $rows++;
 
    # special option keyUsage
@@ -1118,14 +1131,14 @@ sub show_configbox {
             $box) });
    $main->{'radiobox'}->add($main->{'radio2'});
 
-   $combo = Gtk2::Combo->new();
+   $combocakeyUsage = Gtk2::Combo->new();
    @combostrings = ($main->{'words'}{'none'}, 
                     $main->{'words'}{'keyCertSign'}, 
                     $main->{'words'}{'cRLSign'}, 
                     $main->{'words'}{'keyCertSign, cRLSign'});
-   $combo->set_popdown_strings(@combostrings);
-   $combo->set_use_arrows(1);
-   $combo->set_value_in_list(1, 0);
+   $combocakeyUsage->set_popdown_strings(@combostrings);
+   $combocakeyUsage->set_use_arrows(1);
+   $combocakeyUsage->set_value_in_list(1, 0);
 
    if(defined($main->{'TCONFIG'}->{'v3_ca'}->{'keyUsage'})) {
      if($main->{'TCONFIG'}->{'v3_ca'}->{'keyUsage'} 
@@ -1134,32 +1147,32 @@ sub show_configbox {
         $main->{'radio2'}->set_sensitive(1);
 
         if($main->{'TCONFIG'}->{'v3_ca'}->{'keyUsage'} eq 'keyCertSign') {
-           $combo->entry->set_text($main->{'words'}{'keyCertSign'});
+           $combocakeyUsage->entry->set_text($main->{'words'}{'keyCertSign'});
         }elsif($main->{'TCONFIG'}->{'v3_ca'}->{'keyUsage'} eq 'cRLSign') {
-           $combo->entry->set_text($main->{'words'}{'cRLSign'});
+           $combocakeyUsage->entry->set_text($main->{'words'}{'cRLSign'});
         }elsif($main->{'TCONFIG'}->{'v3_ca'}->{'keyUsage'} eq 
                                                  'keyCertSign, cRLSign') {
-           $combo->entry->set_text($main->{'words'}{'keyCertSign, cRLSign'});
+           $combocakeyUsage->entry->set_text($main->{'words'}{'keyCertSign, cRLSign'});
         }else {
-           $combo->entry->set_text($main->{'words'}{'none'});
+           $combocakeyUsage->entry->set_text($main->{'words'}{'none'});
            $main->{'radio1'}->set_sensitive(0);
            $main->{'radio2'}->set_sensitive(0);
         }
      }else {
-        $combo->entry->set_text($main->{'words'}{'none'});
+        $combocakeyUsage->entry->set_text($main->{'words'}{'none'});
         $main->{'radio1'}->set_sensitive(0);
         $main->{'radio2'}->set_sensitive(0);
      }
    } else { 
-      $combo->entry->set_text($main->{'words'}{'none'});
+      $combocakeyUsage->entry->set_text($main->{'words'}{'none'});
       $main->{'radio1'}->set_sensitive(0);
       $main->{'radio2'}->set_sensitive(0);
    }
-   $combo->entry->signal_connect('changed' =>
-        sub { GUI::CALLBACK::entry_to_var_key($combo, $combo->entry,
+   $combocakeyUsage->entry->signal_connect('changed' =>
+        sub { GUI::CALLBACK::entry_to_var_key($combocakeyUsage, $combocakeyUsage->entry,
            \$main->{'TCONFIG'}->{'v3_ca'}->{'keyUsage'}, $box, $main->{words},
            $main->{'radio1'},  $main->{'radio2'}) });
-   $table->attach_defaults($combo, 1, 2, $rows-1, $rows);
+   $table->attach_defaults($combocakeyUsage, 1, 2, $rows-1, $rows);
    $rows++;
 
    $table->attach_defaults($main->{'radiobox'}, 1, 2, $rows-1, $rows);
@@ -1170,23 +1183,23 @@ sub show_configbox {
          gettext("Netscape Revocation URL (nsRevocationUrl):"), 'left', 0, 0);
    $table->attach_defaults($label, 0, 1, $rows-1, $rows);
 
-   $combo = Gtk2::Combo->new();
+   $combocansRevocationUrl = Gtk2::Combo->new();
    @combostrings = ($main->{'words'}{'none'}, $main->{'words'}{'user'});
-   $combo->set_popdown_strings(@combostrings);
-   $combo->set_use_arrows(1);
-   $combo->set_value_in_list(1, 0);
+   $combocansRevocationUrl->set_popdown_strings(@combostrings);
+   $combocansRevocationUrl->set_use_arrows(1);
+   $combocansRevocationUrl->set_value_in_list(1, 0);
    if(defined($main->{'TCONFIG'}->{'v3_ca'}->{'nsRevocationUrl'}) && 
          $main->{'TCONFIG'}->{'v3_ca'}->{'nsRevocationUrl'} 
          eq 'user') { 
-      $combo->entry->set_text($main->{'words'}{'user'});
+      $combocansRevocationUrl->entry->set_text($main->{'words'}{'user'});
    } else {
-      $combo->entry->set_text($main->{'words'}{'none'});
+      $combocansRevocationUrl->entry->set_text($main->{'words'}{'none'});
    }
-   $combo->entry->signal_connect('changed' =>
-        sub { GUI::CALLBACK::entry_to_var($combo, $combo->entry,
+   $combocansRevocationUrl->entry->signal_connect('changed' =>
+        sub { GUI::CALLBACK::entry_to_var($combocansRevocationUrl, $combocansRevocationUrl->entry,
            \$main->{'TCONFIG'}->{'v3_ca'}->{'nsRevocationUrl'}, $box,
            $main->{words}) });
-   $table->attach_defaults($combo, 1, 2, $rows-1, $rows);
+   $table->attach_defaults($combocansRevocationUrl, 1, 2, $rows-1, $rows);
    $rows++;
 
    # standard options

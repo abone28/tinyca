@@ -1,0 +1,253 @@
+--- lib/CA.pm
++++ lib/CA.pm
+@@ -21,7 +21,11 @@
+ package CA;
+ 
+ use POSIX;
+-use Locale::gettext;
++use GETTEXT;
++my $domain = GETTEXT::getdomain();
++sub gettext {
++   return $domain->get(shift);
++}
+ 
+ sub new {
+    my $that = shift;
+--- lib/CERT.pm
++++ lib/CERT.pm
+@@ -21,7 +21,11 @@
+ package CERT;
+ 
+ use POSIX;
+-use Locale::gettext;
++use GETTEXT;
++my $domain = GETTEXT::getdomain();
++sub gettext {
++   return $domain->get(shift);
++}
+ 
+ sub new {
+    my $that = shift;
+--- lib/GETTEXT.pm
++++ lib/GETTEXT.pm
+@@ -0,0 +1,15 @@
++use strict;
++package GETTEXT;
++
++use POSIX;
++use Locale::gettext;
++
++setlocale(LC_MESSAGES, "");
++my $domain = Locale::gettext->domain("tinyca2");
++$domain->dir("./locale");
++
++sub getdomain {
++   return $domain;
++}
++
++1;
+--- lib/GUI.pm
++++ lib/GUI.pm
+@@ -20,7 +20,11 @@
+ package GUI;
+ 
+ use POSIX;
+-use Locale::gettext;
++use GETTEXT;
++my $domain = GETTEXT::getdomain();
++sub gettext {
++   return $domain->get(shift);
++}
+ 
+ use Gtk2::SimpleMenu;
+ 
+--- lib/GUI/CALLBACK.pm
++++ lib/GUI/CALLBACK.pm
+@@ -20,7 +20,11 @@
+ package GUI::CALLBACK;
+ 
+ use POSIX;
+-use Locale::gettext;
++use GETTEXT;
++my $domain = GETTEXT::getdomain();
++sub gettext {
++   return $domain->get(shift);
++}
+ 
+ #
+ # fill given var-reference with text from entry
+--- lib/GUI/HELPERS.pm
++++ lib/GUI/HELPERS.pm
+@@ -20,7 +20,11 @@
+ package GUI::HELPERS;
+ 
+ use POSIX;
+-use Locale::gettext;
++use GETTEXT;
++my $domain = GETTEXT::getdomain();
++sub gettext {
++   return $domain->get(shift);
++}
+ 
+ #
+ #  Error message box, kills application
+--- lib/GUI/TCONFIG.pm
++++ lib/GUI/TCONFIG.pm
+@@ -20,7 +20,11 @@
+ package GUI::TCONFIG;
+ 
+ use POSIX;
+-use Locale::gettext;
++use GETTEXT;
++my $domain = GETTEXT::getdomain();
++sub gettext {
++   return $domain->get(shift);
++}
+ 
+ #
+ # main screen for configuration
+--- lib/GUI/WORDS.pm
++++ lib/GUI/WORDS.pm
+@@ -19,7 +19,11 @@
+ use strict;
+ package GUI::WORDS;
+ 
+-use Locale::gettext;
++use GETTEXT;
++my $domain = GETTEXT::getdomain();
++sub gettext {
++   return $domain->get(shift);
++}
+ 
+ sub new {
+    my $that = shift;
+--- lib/GUI/X509_browser.pm
++++ lib/GUI/X509_browser.pm
+@@ -26,7 +26,11 @@
+ use GUI::X509_infobox;
+ 
+ use POSIX;
+-use Locale::gettext;
++use GETTEXT;
++my $domain = GETTEXT::getdomain();
++sub gettext {
++   return $domain->get(shift);
++}
+ 
+ my $tmpdefault="/tmp";
+ 
+--- lib/GUI/X509_infobox.pm
++++ lib/GUI/X509_infobox.pm
+@@ -25,7 +25,11 @@
+ use GUI::WORDS;
+ 
+ use POSIX;
+-use Locale::gettext;
++use GETTEXT;
++my $domain = GETTEXT::getdomain();
++sub gettext {
++   return $domain->get(shift);
++}
+ 
+ my $version = "0.1";
+ my $true = 1;
+--- lib/HELPERS.pm
++++ lib/HELPERS.pm
+@@ -21,7 +21,11 @@
+ package HELPERS;
+ 
+ use POSIX;
+-use Locale::gettext;
++use GETTEXT;
++my $domain = GETTEXT::getdomain();
++sub gettext {
++   return $domain->get(shift);
++}
+ 
+ my $version = "0.1";
+ my $true = 1;
+--- lib/KEY.pm
++++ lib/KEY.pm
+@@ -21,7 +21,11 @@
+ package KEY;
+ 
+ use POSIX;
+-use Locale::gettext;
++use GETTEXT;
++my $domain = GETTEXT::getdomain();
++sub gettext {
++   return $domain->get(shift);
++}
+ 
+ sub new {
+    my $self = {};
+--- lib/OpenSSL.pm
++++ lib/OpenSSL.pm
+@@ -21,7 +21,11 @@
+ package OpenSSL;
+ 
+ use POSIX;
+-use Locale::gettext;
++use GETTEXT;
++my $domain = GETTEXT::getdomain();
++sub gettext {
++   return $domain->get(shift);
++}
+ use IPC::Open3;
+ use Time::Local;
+ 
+--- lib/REQ.pm
++++ lib/REQ.pm
+@@ -21,7 +21,11 @@
+ package REQ;
+ 
+ use POSIX;
+-use Locale::gettext;
++use GETTEXT;
++my $domain = GETTEXT::getdomain();
++sub gettext {
++   return $domain->get(shift);
++}
+ 
+ sub new {
+    my $that = shift;
+--- lib/TCONFIG.pm
++++ lib/TCONFIG.pm
+@@ -21,7 +21,11 @@
+ package TCONFIG;
+ 
+ use POSIX;
+-use Locale::gettext;
++use GETTEXT;
++my $domain = GETTEXT::getdomain();
++sub gettext {
++   return $domain->get(shift);
++}
+ 
+ sub new {
+    my $self  = {};
+--- tinyca2
++++ tinyca2
+@@ -28,7 +28,11 @@
+ use MIME::Base64;
+ 
+ use POSIX;
+-use Locale::gettext;
++use GETTEXT;
++my $domain = GETTEXT::getdomain();
++sub gettext {
++   return $domain->get(shift);
++}
+ 
+ use OpenSSL;
+ use CA;
+@@ -45,9 +49,6 @@
+ use KEY;
+ use TCONFIG;
+ 
+-setlocale(LC_MESSAGES, "");
+-bindtextdomain("tinyca2", "./locale/");
+-textdomain("tinyca2");
+ 
+ my $init = {};
+ 

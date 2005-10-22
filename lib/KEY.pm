@@ -1,6 +1,6 @@
 # Copyright (c) Stephan Martin <sm@sm-zone.net>
 #
-# $Id: KEY.pm,v 1.3 2005/04/08 13:48:11 sm Exp $
+# $Id: KEY.pm,v 1.4 2005/10/01 12:57:35 sm Exp $
 # 
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -173,13 +173,6 @@ sub get_export_key {
       return;
    }
 
-   if($opts->{'nopass'} && $opts->{'format'} eq 'P12') {
-      $main->show_export_dialog($opts, 'key');
-      GUI::HELPERS::print_warning(
-            gettext("Can't export PKCS#12 without passphrase"));
-      return;
-   }
-
    if(($opts->{'nopass'} || $opts->{'format'} eq 'DER') && 
       ((not defined($opts->{'passwd'})) || ($opts->{'passwd'} eq ''))) {
       $main->show_key_nopasswd_dialog($opts);
@@ -266,7 +259,8 @@ sub get_export_key {
          return;
       }
 
-      if(not defined($opts->{'p12passwd'})) {
+      if((not defined($opts->{'p12passwd'})) &&
+            (not $opts->{'nopass'})) {
          $opts->{'includeca'} = 1;
          $main->show_p12_export_dialog($opts, 'key');
          return;
@@ -281,7 +275,8 @@ sub get_export_key {
             outfile   => $opts->{'outfile'},
             passwd    => $opts->{'passwd'},
             p12passwd => $opts->{'p12passwd'},
-            includeca => $opts->{'includeca'}
+            includeca => $opts->{'includeca'},
+            nopass    => $opts->{'nopass'}
             );
 
       if($ret eq 1) {

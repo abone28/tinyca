@@ -1,6 +1,6 @@
 # Copyright (c) Stephan Martin <sm@sm-zone.net>
 #
-# $Id: OpenSSL.pm,v 1.3 2005/05/21 17:14:58 sm Exp $
+# $Id: OpenSSL.pm,v 1.6 2005/09/27 06:14:48 sm Exp $
 # 
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -139,6 +139,7 @@ sub signreq {
    $cmd .= " -in \"$opts->{'reqfile'}\"";
    $cmd .= " -days $opts->{'days'}";
    $cmd .= " -preserveDN";
+   $cmd .= " -md $opts->{'digest'}" if($opts->{'digest'});
 
    if(defined($opts->{'mode'}) && $opts->{'mode'} eq "sub") {
       $cmd .= " -keyfile \"$opts->{'keyfile'}\"";
@@ -923,11 +924,17 @@ sub genp12 {
    $cmd .= " -out \"$opts->{'outfile'}\"";
    $cmd .= " -in \"$opts->{'certfile'}\"";
    $cmd .= " -inkey \"$opts->{'keyfile'}\"";
-   $cmd .= " -passout env:P12PASS";
+   if(not $opts->{'nopass'}) {
+      $cmd .= " -passout env:P12PASS";
+   } else {
+      $cmd .= " -passout pass:";
+   }
    $cmd .= " -passin env:SSLPASS";
    $cmd .= " -certfile $opts->{'cafile'}" if($opts->{'includeca'});
+   $cmd .= " -nodes " if($opts->{'nopass'});
 
-   $ENV{'P12PASS'} = $opts->{'p12passwd'};
+
+   $ENV{'P12PASS'} = $opts->{'p12passwd'} if(not $opts->{'nopass'});
    $ENV{'SSLPASS'} = $opts->{'passwd'};
    my($rdfh, $wtfh);
    $ext = "$cmd\n\n";

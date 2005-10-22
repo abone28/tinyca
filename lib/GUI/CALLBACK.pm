@@ -1,6 +1,6 @@
 # Copyright (c) Stephan Martin <sm@sm-zone.net>
 #
-# $Id: CALLBACK.pm,v 1.1.1.1 2005/03/31 18:52:57 sm Exp $
+# $Id: CALLBACK.pm,v 1.4 2005/10/22 13:28:24 sm Exp $
 # 
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -55,13 +55,16 @@ sub entry_to_var_san {
       } else {
          $$var = $entry->get_text();
       }
+      #print STDERR "DEBUG: var: $$var\n";
       if($$var eq 'user') {
+         #print STDERR "set sensitive(1)\n";
          $radio1->set_sensitive(1) if(defined($radio1));
          $radio2->set_sensitive(1) if(defined($radio2));
          $radio3->set_sensitive(1) if(defined($radio3));
          $radio4->set_sensitive(1) if(defined($radio4));
       }else{
-         print STDERR "set sensitive(0)\n";
+         #print STDERR "DEBUG: set sensitive(0)\n";
+         #print STDERR "DEBUG: r1 $radio1 r2 $radio2 r3 $radio3 r4 $radio4\n";
          $radio1->set_sensitive(0) if(defined($radio1));
          $radio2->set_sensitive(0) if(defined($radio2));
          $radio3->set_sensitive(0) if(defined($radio3));

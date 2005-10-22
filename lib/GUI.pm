@@ -1,6 +1,6 @@
 # Copyright (c) Stephan Martin <sm@sm-zone.net>
 #
-# $Id: GUI.pm,v 1.12 2005/06/05 16:46:39 sm Exp $
+# $Id: GUI.pm,v 1.20 2005/10/22 13:56:47 sm Exp $
 # 
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -27,6 +27,26 @@ use Gtk2::SimpleMenu;
 my $false=undef;
 my $true=1;
 
+# This hash maps our internal MD names to the displayed digest names.
+# Maybe it should live in a crypto-related file instead of a UI-related file?
+my %md_algorithms = (
+		     'md5' => 'MD5',
+		     'sha1' => 'SHA1',
+		     'md2' => 'MD2',
+		     'mdc2' => 'MDC2',
+		     'md4' => 'MD4',
+		     'ripemd160' => 'RIPEMD-160',
+#		     'sha' => 'SHA',
+		     'sha1' => 'SHA-1',
+		     );
+
+my %bit_langths = (
+		     '1024' => '1024',
+		     '2048' => '2048',
+		     '4096' => '4096'
+		     );
+
+
 #
 # create the main object
 #
@@ -39,7 +59,7 @@ sub new {
 
    bless($self, $class);
 
-   $self->{'version'} = '0.7.0';
+   $self->{'version'} = '0.7.1';
 
    $self->{'words'} = GUI::WORDS->new();
 
@@ -327,6 +347,8 @@ sub create_mframe {
    $self->{'nb'}->show_all();
    $self->{'nb'}->signal_connect_after('switch-page' => 
          sub { _act_toolbar($self->{'nb'}, $self) });
+
+   $self->{'nb'}->set_current_page(1);
 
    return;
 }
@@ -674,7 +696,7 @@ sub create_menu {
                extra_data => 'gtk-help'
             },
             gettext("_About TinyCA") => {
-               callback    => sub { $self->about() },
+               callback    => sub { $self->about($self) },
                item_type   => '<StockItem>',
                extra_data => 'gtk-about'
             }
@@ -1293,27 +1315,10 @@ sub show_req_dialog {
    $reqtable->attach_defaults($label, 0, 1, 13, 14);
 
    $radiobox = Gtk2::HBox->new(0, 0);
-   $key1 = Gtk2::RadioButton->new(undef, '1024');
-   $key1->set_active(1) 
-      if(defined($opts->{'bits'}) && $opts->{'bits'} == '1024');
-   $key1->signal_connect('toggled' =>
-        sub{GUI::CALLBACK::toggle_to_var($key1, \$opts->{'bits'}, 1024)});
-   $radiobox->add($key1);
-
-   $key2 = Gtk2::RadioButton->new($key1, '2048');
-   $key2->set_active(1) 
-      if(defined($opts->{'bits'}) && $opts->{'bits'} == '2048');
-   $key2->signal_connect('toggled' => 
-         sub{GUI::CALLBACK::toggle_to_var($key2, \$opts->{'bits'}, 2048)});
-   $radiobox->add($key2);
-
-   $key3 = Gtk2::RadioButton->new($key1, '4096');
-   $key3->set_active(1) 
-      if(defined($opts->{'bits'}) && $opts->{'bits'} == '4096');
-   $key3->signal_connect('toggled' =>
-         sub{GUI::CALLBACK::toggle_to_var($key3, \$opts->{'bits'}, 4096)});
-   $radiobox->add($key3);
-
+   _fill_radiobox($radiobox, \$opts->{'algo'},
+         '4096' => 4096,
+         '2048' => 2048,
+         '1024' => 1024);
    $reqtable->attach_defaults($radiobox, 1, 2, 13, 14);
 
    $label = GUI::HELPERS::create_label(
@@ -1321,61 +1326,16 @@ sub show_req_dialog {
    $reqtable->attach_defaults($label, 0, 1, 15, 16);
 
    $radiobox = Gtk2::HBox->new(0, 0);
-   $key1 = Gtk2::RadioButton->new(undef, 'MD5');
-   $key1->set_active(1) 
-      if(defined($opts->{'digest'}) && $opts->{'digest'} eq 'md5');
-   $key1->signal_connect('toggled' =>
-        sub{GUI::CALLBACK::toggle_to_var($key1, \$opts->{'digest'}, 'md5')});
-   $radiobox->add($key1);
-
-   $key2 = Gtk2::RadioButton->new($key1, 'SHA1');
-   $key2->set_active(1) 
-      if(defined($opts->{'digest'}) && $opts->{'digest'} eq 'sha1');
-   $key2->signal_connect('toggled' =>
-        sub{GUI::CALLBACK::toggle_to_var($key2, \$opts->{'digest'}, 'sha1')});
-   $radiobox->add($key2);
-
-   $key3 = Gtk2::RadioButton->new($key1, 'MD2');
-   $key3->set_active(1) 
-      if(defined($opts->{'digest'}) && $opts->{'digest'} eq 'md2');
-   $key3->signal_connect('toggled' =>
-        sub{GUI::CALLBACK::toggle_to_var($key3, \$opts->{'digest'}, 'md2')});
-   $radiobox->add($key3);
-
-   $key4 = Gtk2::RadioButton->new($key1, 'MDC2');
-   $key4->set_active(1) 
-      if(defined($opts->{'digest'}) && $opts->{'digest'} eq 'mdc2');
-   $key4->signal_connect('toggled' =>
-        sub{GUI::CALLBACK::toggle_to_var($key4, \$opts->{'digest'}, 'mdc2')});
-   $radiobox->add($key4);
-
-   $key5 = Gtk2::RadioButton->new($key1, 'MD4');
-   $key5->set_active(1) 
-      if(defined($opts->{'digest'}) && $opts->{'digest'} eq 'md4');
-   $key5->signal_connect('toggled' =>
-        sub{GUI::CALLBACK::toggle_to_var($key5, \$opts->{'digest'}, 'md4')});
-   $radiobox->add($key5);
-
+   _fill_radiobox($radiobox, \$opts->{'digest'}, %md_algorithms);
    $reqtable->attach_defaults($radiobox, 1, 2, 15, 16);
 
    $label = GUI::HELPERS::create_label(gettext("Algorithm").":", 'left', 0, 0);
    $reqtable->attach_defaults($label, 0, 1, 16, 17);
 
    $radiobox = Gtk2::HBox->new(0, 0);
-   $key1 = Gtk2::RadioButton->new(undef, 'RSA');
-   $key1->set_active(1) 
-      if(defined($opts->{'algo'}) && $opts->{'algo'} eq 'rsa');
-   $key1->signal_connect('toggled' =>
-        sub{GUI::CALLBACK::toggle_to_var($key1, \$opts->{'algo'}, 'rsa')});
-   $radiobox->add($key1);
-
-   $key2 = Gtk2::RadioButton->new($key1, 'DSA');
-   $key2->set_active(1) 
-      if(defined($opts->{'algo'}) && $opts->{'algo'} eq 'dsa');
-   $key2->signal_connect('toggled' =>
-        sub{GUI::CALLBACK::toggle_to_var($key2, \$opts->{'algo'}, 'dsa')});
-   $radiobox->add($key2);
-
+   _fill_radiobox($radiobox, \$opts->{'algo'},
+		   'rsa' => 'RSA',
+		   'dsa' => 'DSA');
    $reqtable->attach_defaults($radiobox, 1, 2, 16, 17);
 
    $box->show_all();
@@ -1869,7 +1829,7 @@ sub show_export_dialog {
       $box->vbox->add($format5);
    } else { # no password for PEM key
       $label = GUI::HELPERS::create_label(
-            gettext("Without Passphrase (PEM)"), 'left', 0, 0);
+            gettext("Without Passphrase (PEM/PKCS#12)"), 'left', 0, 0);
       $box->vbox->add($label);
 
       $passbox = Gtk2::HBox->new(0, 0);
@@ -1887,41 +1847,30 @@ sub show_export_dialog {
    }
    
    # add key/certificate
+
    if($mode eq 'cert') {
       $label = GUI::HELPERS::create_label(
             gettext("Include Key (PEM)"), 'left', 0, 0);
       $box->vbox->add($label);
 
-      $incbox = Gtk2::HBox->new(0, 0);
-      $box->vbox->add($incbox);
-
-      $inc1 = Gtk2::RadioButton->new(undef, gettext("Yes"));
-      $inc1->set_active(1)
-         if(defined($opts->{'include'}) && $opts->{'include'} == 1);
-      $incbox->add($inc1);
-
-      $inc2 = Gtk2::RadioButton->new($inc1, gettext("No"));
-      $inc2->set_active(1)
-         if(defined($opts->{'include'}) && $opts->{'include'} == 0);
-      $incbox->add($inc2);
    } else {
       $label = GUI::HELPERS::create_label(
             gettext("Include Certificate (PEM)"), 'left', 0, 0);
       $box->vbox->add($label);
-
-      $incbox = Gtk2::HBox->new(0, 0);
-      $box->vbox->add($incbox);
-
-      $inc1 = Gtk2::RadioButton->new(undef, gettext("Yes"));
-      $inc1->set_active(1)
-         if(defined($opts->{'include'}) && $opts->{'include'} == 1);
-      $incbox->add($inc1);
-
-      $inc2 = Gtk2::RadioButton->new($inc1, gettext("No"));
-      $inc2->set_active(1)
-         if(defined($opts->{'include'}) && $opts->{'include'} == 0);
-      $incbox->add($inc2);
    }
+
+   $incbox = Gtk2::HBox->new(0, 0);
+   $box->vbox->add($incbox);
+
+   $inc1 = Gtk2::RadioButton->new(undef, gettext("Yes"));
+   $inc1->set_active(1)
+      if(defined($opts->{'include'}) && $opts->{'include'} == 1);
+   $incbox->add($inc1);
+
+   $inc2 = Gtk2::RadioButton->new($inc1, gettext("No"));
+   $inc2->set_active(1)
+      if(defined($opts->{'include'}) && $opts->{'include'} == 0);
+   $incbox->add($inc2);
    
    # add fingerprint
    if($mode eq 'cert') {
@@ -1965,9 +1914,9 @@ sub show_export_dialog {
             \$opts->{'format'}, 'TXT', \$opts->{'outfile'}, 
             \$opts->{'format'}, $fileentry)});
       $inc1->signal_connect('toggled' => 
-            sub { GUI::CALLBACK::toggle_to_var($incfp1, \$opts->{'incfp'}, 1)});
+            sub { GUI::CALLBACK::toggle_to_var($incfp1, \$opts->{'include'}, 1)});
       $inc2->signal_connect('toggled' => 
-            sub { GUI::CALLBACK::toggle_to_var($incfp2, \$opts->{'incfp'}, 0)});
+            sub { GUI::CALLBACK::toggle_to_var($incfp2, \$opts->{'include'}, 0)});
       $incfp1->signal_connect('toggled' => 
             sub { GUI::CALLBACK::toggle_to_var($incfp1, \$opts->{'incfp'}, 1)});
       $incfp2->signal_connect('toggled' => 
@@ -2011,7 +1960,7 @@ sub show_p12_export_dialog {
    my ($self, $opts, $mode) = @_;
 
    my ($box, $label, $table, $entry, $button_ok, $button_cancel, $radiobox,
-         $includeca1, $includeca2);
+         $includeca1, $includeca2, $passbox, $pass1, $pass2);
 
    $button_ok = Gtk2::Button->new_from_stock('gtk-ok');
    if($mode eq 'key') {
@@ -2039,7 +1988,32 @@ sub show_p12_export_dialog {
    $entry->grab_focus();
 
    $entry = GUI::HELPERS::entry_to_table(gettext("Export Password:"),
-         \$opts->{'p12passwd'}, $table, 1, 0);
+      \$opts->{'p12passwd'}, $table, 1, 0);
+
+   $label = GUI::HELPERS::create_label(
+         gettext("Without Passphrase"), 'left', 0, 0);
+   $box->vbox->add($label);
+
+   $passbox = Gtk2::HBox->new(0, 0);
+   $box->vbox->add($passbox);
+
+   $pass1 = Gtk2::RadioButton->new(undef, gettext("Yes"));
+   $pass1->signal_connect_after('toggled' => 
+         sub { GUI::CALLBACK::toggle_to_var(
+            $pass1, \$opts->{'nopass'}, 1) });
+   $passbox->add($pass1);
+
+   $pass2 = Gtk2::RadioButton->new($pass1, gettext("No"));
+   $pass2->signal_connect_after('toggled' => 
+         sub { GUI::CALLBACK::toggle_to_var(
+            $pass2, \$opts->{'nopass'}, 0) });
+   $passbox->add($pass2);
+
+   if((defined($opts->{'nopass'})) && ($opts->{'nopass'} == 1)) {
+      $pass1->set_active(1);
+   } else {
+      $pass2->set_active(1);
+   }
 
    $label = GUI::HELPERS::create_label(
          gettext("Add CA Certificate to PKCS#12 structure"), 'left', 0, 0);
@@ -2049,20 +2023,22 @@ sub show_p12_export_dialog {
    $box->vbox->add($radiobox);
 
    $includeca1 = Gtk2::RadioButton->new(undef, gettext("Yes"));
-   $includeca1->set_active(1) 
-      if(defined($opts->{'includeca'}) && $opts->{'includeca'} == 1);
    $includeca1->signal_connect('toggled' => 
          sub { GUI::CALLBACK::toggle_to_var(
             $includeca1, \$opts->{'includeca'}, 1) });
    $radiobox->add($includeca1);
 
    $includeca2 = Gtk2::RadioButton->new($includeca1, gettext("No"));
-   $includeca2->set_active(1) 
-      if(defined($opts->{'includeca'}) && $opts->{'includeca'} == 0);
    $includeca2->signal_connect('toggled' => 
          sub { GUI::CALLBACK::toggle_to_var(
            $includeca2, \$opts->{'includeca'}, 0) });
    $radiobox->add($includeca2);
+
+   if(defined($opts->{'includeca'}) && $opts->{'includeca'} == 1) {
+      $includeca1->set_active(1);
+   } else {
+      $includeca2->set_active(1);
+   }
 
    $box->show_all();
 
@@ -2314,7 +2290,7 @@ sub show_ca_dialog {
 
    $entry = GUI::HELPERS::entry_to_table(
       gettext("Organizational Unit Name (eg. section):"),
-      \$opts->{'OU'}, $catable, 7, 1);
+      \$opts->{'OU'}->[0], $catable, 7, 1);
 
    $entry = GUI::HELPERS::entry_to_table(
          gettext("eMail Address").":",
@@ -2359,41 +2335,7 @@ sub show_ca_dialog {
    $catable->attach_defaults($label, 0, 1, 15, 16);
 
    $radiobox = Gtk2::HBox->new(0, 0);
-   $key1 = Gtk2::RadioButton->new(undef, 'MD5');
-   $key1->set_active(1) 
-      if(defined($opts->{'digest'}) && $opts->{'digest'} eq 'md5');
-   $key1->signal_connect('toggled' =>
-        sub { GUI::CALLBACK::toggle_to_var($key1, \$opts->{'digest'}, 'md5')});
-   $radiobox->add($key1);
-
-   $key2 = Gtk2::RadioButton->new($key1, 'SHA1');
-   $key2->set_active(1) 
-      if(defined($opts->{'digest'}) && $opts->{'digest'} eq 'sha1');
-   $key2->signal_connect('toggled' => 
-         sub {GUI::CALLBACK::toggle_to_var($key2, \$opts->{'digest'}, 'sha1')});
-   $radiobox->add($key2);
-
-   $key3 = Gtk2::RadioButton->new($key1, 'MD2');
-   $key3->set_active(1) 
-      if(defined($opts->{'digest'}) && $opts->{'digest'} eq 'md2');
-   $key3->signal_connect('toggled' =>
-        sub {GUI::CALLBACK::toggle_to_var($key3, \$opts->{'digest'}, 'md2')});
-   $radiobox->add($key3);
-
-   $key4 = Gtk2::RadioButton->new($key1, 'MDC2');
-   $key4->set_active(1) 
-      if(defined($opts->{'digest'}) && $opts->{'digest'} eq 'mdc2');
-   $key4->signal_connect('toggled' =>
-        sub {GUI::CALLBACK::toggle_to_var($key4, \$opts->{'digest'}, 'mdc2')});
-   $radiobox->add($key4);
-
-   $key5 = Gtk2::RadioButton->new($key1, 'MD4');
-   $key5->set_active(1) 
-      if(defined($opts->{'digest'}) && $opts->{'digest'} eq 'md4');
-   $key5->signal_connect('toggled' =>
-        sub {GUI::CALLBACK::toggle_to_var($key5, \$opts->{'digest'}, 'md4')});
-   $radiobox->add($key5);
-
+   &_fill_radiobox($radiobox, \$opts->{'digest'}, %md_algorithms);
    $catable->attach_defaults($radiobox, 1, 2, 15, 16);
 
    $box->show_all();
@@ -2475,7 +2417,7 @@ sub show_ca_import_dialog {
    $button = Gtk2::Button->new(gettext("Browse..."));
    $button->signal_connect('clicked' =>
       sub{ GUI::HELPERS::browse_file(
-         gettext("Import CA Certificate"), $certentry, 'save') });
+         gettext("Import CA Certificate"), $certentry, 'open') });
    $filetable->attach_defaults($button, 2, 3, 0, 1);
 
    # CA private key
@@ -2494,7 +2436,7 @@ sub show_ca_import_dialog {
    $button = Gtk2::Button->new(gettext("Browse..."));
    $button->signal_connect('clicked' =>
       sub{ GUI::HELPERS::browse_file(
-         gettext("Import CA private Key"), $keyentry, 'save') });
+         gettext("Import CA private Key"), $keyentry, 'open') });
    $filetable->attach_defaults($button, 2, 3, 1, 2);
 
    # Index file
@@ -2513,7 +2455,7 @@ sub show_ca_import_dialog {
    $button = Gtk2::Button->new(gettext("Browse..."));
    $button->signal_connect('clicked' =>
       sub{ GUI::HELPERS::browse_file(
-         gettext("Import Index File"), $indexentry, 'save') });
+         gettext("Import Index File"), $indexentry, 'open') });
    $filetable->attach_defaults($button, 2, 3, 2, 3);
 
    # certificate directory
@@ -2532,7 +2474,7 @@ sub show_ca_import_dialog {
    $button = Gtk2::Button->new(gettext("Browse..."));
    $button->signal_connect('clicked' =>
       sub{ GUI::HELPERS::browse_file(
-         gettext("Import Certificates from directory"), $direntry, 'save') });
+         gettext("Import Certificates from directory"), $direntry, 'open') });
    $filetable->attach_defaults($button, 2, 3, 3, 4);
 
    $box->show_all();
@@ -2556,12 +2498,13 @@ sub show_help {
 #
 sub about {
    my $self = shift;
+   my $main = shift;
 
    my ($aboutdialog, $href, $label);
 
    $aboutdialog = Gtk2::AboutDialog->new();
    $aboutdialog->set_name("TinyCA2");
-   $aboutdialog->set_version("0.7.0");
+   $aboutdialog->set_version($main->{'version'});
    $aboutdialog->set_copyright("2002-2005 Stephan Martin");
    $aboutdialog->set_license("GNU Public License (GPL)");
    $aboutdialog->set_website("http://tinyca.sm-zone.net/");
@@ -3122,6 +3065,22 @@ sub _create_req_menu {
    $self->{'reqmenu'}->show_all();
 
    return;
+}
+
+sub _fill_radiobox {
+   my($radiobox, $var, %values) = @_;
+   my($previous_key, $value);
+
+   $previous_key = undef;
+   for $value (keys %values) {
+      my $display_name = $values{$value};
+      my $key = Gtk2::RadioButton->new($previous_key, $display_name);
+      $key->set_active(1) if(defined($$var) && $$var eq $value);
+      $key->signal_connect('toggled' =>
+			   sub{GUI::CALLBACK::toggle_to_var($key, $var, $value)});
+      $radiobox->add($key);
+      $previous_key = $key;
+   }
 }
 
 1

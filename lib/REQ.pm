@@ -1,6 +1,6 @@
 # Copyright (c) Stephan Martin <sm@sm-zone.net>
 #
-# $Id: REQ.pm,v 1.1.1.1 2005/03/31 18:52:57 sm Exp $
+# $Id: REQ.pm,v 1.4 2005/08/30 19:56:22 sm Exp $
 # 
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -338,8 +338,8 @@ sub read_reqlist {
    $self->{'lastread'} = time();
 
    if(defined($main)) {
-      $main->{'barbox'}->remove($main->{'progress'});
       $main->{'progress'}->set_fraction(0);
+      $main->{'barbox'}->remove($main->{'progress'});
       GUI::HELPERS::set_cursor($main, 0);
    }
 
@@ -356,7 +356,7 @@ sub get_sign_req {
 
    $box->destroy() if(defined($box));
    
-   $time = time();
+   $time  = time();
    $ca    = $main->{'reqbrowser'}->selection_caname();
    $cadir = $main->{'reqbrowser'}->selection_cadir();
 
@@ -375,7 +375,7 @@ sub get_sign_req {
    if(not -s $opts->{'reqfile'}) {
          GUI::HELPERS::print_warning(gettext("Request file not found"));
          return;
-      }
+   }
    
    if((-s $cadir."/certs/".$opts->{'reqname'}.".pem") &&
       (!(defined($opts->{'overwrite'})) || ($opts->{'overwrite'} ne 'true'))) {
@@ -383,23 +383,55 @@ sub get_sign_req {
       return;
    }
 
-   if(!defined($opts->{'passwd'})) {
-      $opts->{'days'} =
-         $main->{'TCONFIG'}->{$opts->{'type'}."_ca"}->{'default_days'};
-      $main->show_req_sign_dialog($opts); 
-      return; 
-   }
-
    $parsed = $main->{'CERT'}->parse_cert($main, 'CA');
 
    defined($parsed) || 
       GUI::HELPERS::print_error(gettext("Can't read CA certificate"));
+
+   if(!defined($opts->{'passwd'})) {
+      $opts->{'days'} =
+         $main->{'TCONFIG'}->{$opts->{'type'}."_ca"}->{'default_days'};
+
+      if($opts->{'days'} > (($parsed->{'EXPDATE'}/86400) - ($time/86400))) {
+         $opts->{'days'} = int(($parsed->{'EXPDATE'}/86400) - ($time/86400));
+      }
+
+      $main->show_req_sign_dialog($opts); 
+      return; 
+   }
 
    if((($time + ($opts->{'days'} * 86400)) > $parsed->{'EXPDATE'}) &&
       (!(defined($opts->{'ignoredate'})) || 
        $opts->{'ignoredate'} ne 'true')){
       $main->show_req_date_warning($opts);
       return;
+   }
+
+   # try to find message digest used for the request
+   $parsed = undef;
+   $parsed = $self->parse_req($main, $opts->{'reqname'}, 1);
+   defined($parsed) ||
+      GUI::HELPERS::print_error(gettext("Can't read Request file"));
+
+   if(defined($parsed->{'SIG_ALGORITHM'})) {
+      $opts->{'digest'} = $parsed->{'SIG_ALGORITHM'};
+
+      if($opts->{'digest'} =~ /^md2/) {
+         $opts->{'digest'} = "md2";
+      } elsif ($opts->{'digest'} =~ /^mdc2/) {
+         $opts->{'digest'} = "mdc2";
+      } elsif ($opts->{'digest'} =~ /^md4/) {
+         $opts->{'digest'} = "md4";
+      } elsif ($opts->{'digest'} =~ /^md5/) {
+         $opts->{'digest'} = "md5";
+      } elsif ($opts->{'digest'} =~ /^sha1/) {
+         $opts->{'digest'} = "sha1";
+      } elsif ($opts->{'digest'} =~ /^ripemd160/) {
+         $opts->{'digest'} = "ripemd160";
+      } else {
+      }
+   } else { 
+      $opts->{'digest'} = 0;
    }
 
    ($ret, $ext) = $self->sign_req($main, $opts);
@@ -471,7 +503,8 @@ sub sign_req {
             'subjaltnametype'      => $opts->{'subjectAltNameType'},
             'extendedkeyusage'     => $opts->{'extendedKeyUsage'},
             'extendedkeyusagetype' => $opts->{'extendedKeyUsageType'},
-            'noemaildn'            => $opts->{'noemaildn'}
+            'noemaildn'            => $opts->{'noemaildn'},
+            'digest'               => $opts->{'digest'}
             );
    } else {
       ($ret, $ext) = $self->{'OpenSSL'}->signreq(
@@ -487,9 +520,9 @@ sub sign_req {
             'subjaltnametype'      => $opts->{'subjectAltNameType'},
             'extendedkeyusage'     => $opts->{'extendedKeyUsage'},
             'extendedkeyusagetype' => $opts->{'extendedKeyUsageType'},
-            'noemaildn'            => $opts->{'noemaildn'}
+            'noemaildn'            => $opts->{'noemaildn'},
+            'digest'               => $opts->{'digest'}
             );
-
    }
 
    GUI::HELPERS::set_cursor($main, 0);

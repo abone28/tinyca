@@ -1,6 +1,6 @@
 # Copyright (c) Stephan Martin <sm@sm-zone.net>
 #
-# $Id: CERT.pm,v 1.3 2005/03/31 20:51:39 sm Exp $
+# $Id: CERT.pm,v 1.7 2005/09/25 16:01:19 sm Exp $
 # 
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -115,8 +115,8 @@ sub read_certlist {
    $self->{'lastread'} = time();
 
    if(defined($main)) {
-      $main->{'barbox'}->remove($main->{'progress'});
       $main->{'progress'}->set_fraction(0);
+      $main->{'barbox'}->remove($main->{'progress'});
       GUI::HELPERS::set_cursor($main, 0);
    }
 
@@ -390,11 +390,10 @@ sub get_export_cert {
       $opts->{'cert'}   = $main->{'certbrowser'}->selection_dn();
 
       $opts->{'certname'} = MIME::Base64::encode($opts->{'cert'}, '');
-      $opts->{'certfile'} = 
-         $cadir."/certs/".$opts->{'certname'}.".pem";
-      $opts->{'keyfile'}  = 
-         $cadir."/keys/".$opts->{'certname'}.".pem";
+      $opts->{'certfile'} = $cadir."/certs/".$opts->{'certname'}.".pem";
+      $opts->{'keyfile'}  = $cadir."/keys/".$opts->{'certname'}.".pem";
       $opts->{'cafile'}   = $cadir."/cacert.pem";
+
       if (-f $cadir."/cachain.pem") {
          $opts->{'cafile'} = $cadir."/cachain.pem";
       }
@@ -419,6 +418,7 @@ sub get_export_cert {
       $opts->{'format'}  = 'PEM';
       $opts->{'include'} = 0;
       $opts->{'incfp'}   = 0;
+      $opts->{'nopass'}  = 0;
 
       $main->show_export_dialog($opts, 'cert');
       return;
@@ -440,7 +440,8 @@ sub get_export_cert {
          return;
       }
 
-      if(not defined($opts->{'p12passwd'})) {
+      if((not defined($opts->{'p12passwd'})) &&
+            (not $opts->{'nopass'})) {
          $opts->{'includeca'} = 1;
          $main->show_p12_export_dialog($opts, 'cert');
          return;
@@ -477,10 +478,11 @@ sub export_cert {
       if($opts->{'incfp'}) {
          $out = '';
          $out .= "Fingerprint (MD5): $opts->{'parsed'}->{'FINGERPRINTMD5'}\n";
-         $out .= "Fingerprint (SHA1): $opts->{'parsed'}->{'FINGERPRINTSHA1'}\n";
+         $out .= "Fingerprint (SHA1): $opts->{'parsed'}->{'FINGERPRINTSHA1'}\n\n";
       } else {
          $out = '';
       }
+
       $out .= $opts->{'parsed'}->{'PEM'};
 
       if($opts->{'include'}) {
@@ -507,7 +509,8 @@ sub export_cert {
             outfile   => $opts->{'outfile'},
             passwd    => $opts->{'passwd'},
             p12passwd => $opts->{'p12passwd'},
-            includeca => $opts->{'includeca'}
+            includeca => $opts->{'includeca'},
+            nopass    => $opts->{'nopass'}
             );
 
       GUI::HELPERS::set_cursor($main, 0);

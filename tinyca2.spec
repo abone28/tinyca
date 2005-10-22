@@ -1,6 +1,6 @@
 # spec file for package tinyca
 #
-# $Id: tinyca2.spec,v 1.4 2005/06/05 17:14:53 sm Exp $
+# $Id: tinyca2.spec,v 1.6 2005/10/22 14:18:26 sm Exp $
 #
 # Copyright (c) 2002 Stephan Martin
 # This file and all modifications and additions to the pristine
@@ -18,7 +18,7 @@ Group:      Productivity/Networking/Security
 License:	   GPL
 Requires:	perl perl-Gtk2 perl-MIME-Base64
 Packager:	Stephan Martin <sm@sm-zone.net>
-Version:    0.7.0
+Version:    0.7.1
 Release:    0
 Source0:    %{name}-%{version}.tar.gz
 Source1:    %{name}.desktop
@@ -74,6 +74,8 @@ install -m 644 lib/*.pm $RPM_BUILD_ROOT%{libdir}
 install -m 644 lib/GUI/*.pm $RPM_BUILD_ROOT%{libdir}/GUI/
 install -m 644 templates/openssl.cnf $RPM_BUILD_ROOT%{templatesdir}
 install -m 755 tinyca2 $RPM_BUILD_ROOT%{bindir}
+mkdir -p $RPM_BUILD_ROOT/usr/share/applications/
+install -m 644 tinyca2.desktop $RPM_BUILD_ROOT/usr/share/applications/
 
 for LANG in $LANGUAGES; do
    mkdir -p $RPM_BUILD_ROOT%{localedir}/$LANG/LC_MESSAGES/
@@ -90,6 +92,7 @@ rm -rf %{buildroot}
 %{bindir}/tinyca2
 %{_datadir}/TinyCA2/*
 %if %suse_version > 820
+%{_datadir}/applications/*
 %endif
 
 %changelog

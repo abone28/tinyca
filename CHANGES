@@ -1,4 +1,17 @@
-$Id: CHANGES,v 1.3 2005/04/10 16:43:58 sm Exp $
+$Id: CHANGES,v 1.10 2005/10/22 14:36:54 sm Exp $
+version 0.7.1 - Sat Oct 22 2005
+   * Fixed possible crashbug, thanks to 
+   * Choose CA validity as maximal certificate lifetime
+   * correctly include/don't include keys in exported certificate files
+     thanks to "thus0 at free dot fr"
+   * added ripemd160 support, thanks to Wim Lewis
+   * added possibility to create pkcs#12 without password
+   * fixed broken OU in SubCA, thanks to Charles Lepple
+   * fixed bug which made saving options with comboboxes impossible
+     thanks to "thus0 at free dot fr"
+   * fixed bug inseting the right serial number during import
+     thanks to Daniel Kahn Gillmor
+
 version 0.7.0 - Sun Apr 10 2005
    * migrated to perl-Gtk2
    * added advanced export options (Debian #293931)

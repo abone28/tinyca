@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: cs\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2005-06-05 18:44+0200\n"
+"POT-Creation-Date: 2005-06-15 22:52+0200\n"
 "PO-Revision-Date: 2004-11-22 19:55+0200\n"
 "Last-Translator: Robert Wolf <gentoo@slave.umbr.cas.cz>\n"
 "Language-Team: czech\n"
@@ -392,12 +392,12 @@ msgid "CRL successfully exported to: %s"
 msgstr "CRL úspì¹nì exportován do: %s"
 
 #: ../lib/CERT.pm:144 ../lib/CERT.pm:200 ../lib/CERT.pm:323 ../lib/CERT.pm:382
-#: ../lib/GUI.pm:830
+#: ../lib/GUI.pm:832
 msgid "Please select a Certificate first"
 msgstr "Prosím, nejdøíve zvolte certifikát"
 
 #: ../lib/CERT.pm:152 ../lib/CERT.pm:210 ../lib/CERT.pm:334 ../lib/CERT.pm:402
-#: ../lib/GUI.pm:2745 ../lib/GUI.pm:2756 ../lib/OpenSSL.pm:695
+#: ../lib/GUI.pm:2747 ../lib/GUI.pm:2758 ../lib/OpenSSL.pm:695
 #: ../lib/GUI/X509_browser.pm:278
 msgid "VALID"
 msgstr "PLATNÝ"
@@ -534,13 +534,13 @@ msgstr "CA informace"
 msgid "Certificates"
 msgstr "Certifikáty"
 
-#: ../lib/GUI.pm:225 ../lib/GUI.pm:2728 ../lib/GUI/WORDS.pm:58
+#: ../lib/GUI.pm:225 ../lib/GUI.pm:2730 ../lib/GUI/WORDS.pm:58
 #: ../lib/GUI/X509_browser.pm:162 ../lib/GUI/X509_browser.pm:170
 #: ../lib/GUI/X509_browser.pm:179
 msgid "Common Name"
 msgstr "Obecné jméno (CN)"
 
-#: ../lib/GUI.pm:226 ../lib/GUI.pm:1252 ../lib/GUI.pm:2320
+#: ../lib/GUI.pm:226 ../lib/GUI.pm:1254 ../lib/GUI.pm:2322
 #: ../lib/GUI/WORDS.pm:59 ../lib/GUI/X509_browser.pm:163
 #: ../lib/GUI/X509_browser.pm:171 ../lib/GUI/X509_browser.pm:180
 msgid "eMail Address"
@@ -583,730 +583,730 @@ msgstr "Klíèe"
 msgid "Requests"
 msgstr "®ádosti"
 
-#: ../lib/GUI.pm:378
+#: ../lib/GUI.pm:380
 #, c-format
 msgid "  Actual CA: %s"
 msgstr "  Aktuální CA: %s"
 
-#: ../lib/GUI.pm:381
+#: ../lib/GUI.pm:383
 #, c-format
 msgid "  Actual CA: %s - Certificates"
 msgstr "  Aktuální CA: %s - Certifikáty"
 
-#: ../lib/GUI.pm:384
+#: ../lib/GUI.pm:386
 #, c-format
 msgid "  Actual CA: %s - Keys"
 msgstr "  Aktuální CA: %s - Klíèe"
 
-#: ../lib/GUI.pm:387
+#: ../lib/GUI.pm:389
 #, c-format
 msgid "  Actual CA: %s - Requests"
 msgstr "  Aktuální CA: %s - ®ádosti (Requests)"
 
-#: ../lib/GUI.pm:436 ../lib/GUI.pm:1120
+#: ../lib/GUI.pm:438 ../lib/GUI.pm:1122
 msgid "Open CA"
 msgstr "Otevøít CA"
 
-#: ../lib/GUI.pm:442
+#: ../lib/GUI.pm:444
 msgid "New CA"
 msgstr "Nová CA"
 
-#: ../lib/GUI.pm:448 ../lib/GUI.pm:2422
+#: ../lib/GUI.pm:450 ../lib/GUI.pm:2424
 msgid "Import CA"
 msgstr "Import CA"
 
-#: ../lib/GUI.pm:454 ../lib/GUI.pm:1122
+#: ../lib/GUI.pm:456 ../lib/GUI.pm:1124
 msgid "Delete CA"
 msgstr "Odstranit CA"
 
-#: ../lib/GUI.pm:464 ../lib/GUI.pm:503 ../lib/GUI.pm:571
+#: ../lib/GUI.pm:466 ../lib/GUI.pm:505 ../lib/GUI.pm:573
 msgid "Details"
 msgstr "Detaily"
 
-#: ../lib/GUI.pm:470
+#: ../lib/GUI.pm:472
 msgid "History"
 msgstr ""
 
-#: ../lib/GUI.pm:476
+#: ../lib/GUI.pm:478
 msgid "Sub CA"
 msgstr "Pod CA"
 
-#: ../lib/GUI.pm:482
+#: ../lib/GUI.pm:484
 msgid "Export CA"
 msgstr "Export CA"
 
-#: ../lib/GUI.pm:488 ../lib/GUI.pm:1462
+#: ../lib/GUI.pm:490 ../lib/GUI.pm:1464
 msgid "Export CRL"
 msgstr "Export CRL"
 
-#: ../lib/GUI.pm:495
+#: ../lib/GUI.pm:497
 msgid "Export Chain"
 msgstr "Export øetìzu"
 
-#: ../lib/GUI.pm:509 ../lib/GUI.pm:577
+#: ../lib/GUI.pm:511 ../lib/GUI.pm:579
 msgid "View"
 msgstr "Zobrazit"
 
-#: ../lib/GUI.pm:519 ../lib/GUI.pm:583
+#: ../lib/GUI.pm:521 ../lib/GUI.pm:585
 msgid "New"
 msgstr "Nový"
 
-#: ../lib/GUI.pm:526 ../lib/GUI.pm:557
+#: ../lib/GUI.pm:528 ../lib/GUI.pm:559
 msgid "Export"
 msgstr "Export"
 
-#: ../lib/GUI.pm:532
+#: ../lib/GUI.pm:534
 msgid "Revoke"
 msgstr "Odvolat"
 
-#: ../lib/GUI.pm:542
+#: ../lib/GUI.pm:544
 msgid "Renew"
 msgstr "Obnovit"
 
-#: ../lib/GUI.pm:549 ../lib/GUI.pm:563 ../lib/GUI.pm:606
+#: ../lib/GUI.pm:551 ../lib/GUI.pm:565 ../lib/GUI.pm:608
 msgid "Delete"
 msgstr "Odstranit"
 
-#: ../lib/GUI.pm:589
+#: ../lib/GUI.pm:591
 msgid "Import"
 msgstr "Import"
 
-#: ../lib/GUI.pm:599
+#: ../lib/GUI.pm:601
 msgid "Sign"
 msgstr "Podepsat"
 
-#: ../lib/GUI.pm:625
+#: ../lib/GUI.pm:627
 msgid "_CA"
 msgstr "_CA"
 
-#: ../lib/GUI.pm:628
+#: ../lib/GUI.pm:630
 msgid "_Open CA"
 msgstr "_Otevøít CA"
 
-#: ../lib/GUI.pm:633
+#: ../lib/GUI.pm:635
 msgid "_New CA"
 msgstr "_Nová CA"
 
-#: ../lib/GUI.pm:638
+#: ../lib/GUI.pm:640
 msgid "_Delete CA"
 msgstr "O_dstranit CA"
 
-#: ../lib/GUI.pm:646
+#: ../lib/GUI.pm:648
 msgid "_Exit"
 msgstr "Kon_ec"
 
-#: ../lib/GUI.pm:653
+#: ../lib/GUI.pm:655
 msgid "_Preferences"
 msgstr "_Nastavení"
 
-#: ../lib/GUI.pm:656
+#: ../lib/GUI.pm:658
 #, fuzzy
 msgid "Experts Only!!"
 msgstr "Pouze pro odborníky!!"
 
-#: ../lib/GUI.pm:661
+#: ../lib/GUI.pm:663
 msgid "OpenSSL _Configuration"
 msgstr "OpenSSL _konfigurace"
 
-#: ../lib/GUI.pm:668 ../lib/GUI.pm:671
+#: ../lib/GUI.pm:670 ../lib/GUI.pm:673
 msgid "_Help"
 msgstr "Ná_povìda"
 
-#: ../lib/GUI.pm:676
+#: ../lib/GUI.pm:678
 msgid "_About TinyCA"
 msgstr "O _aplikaci TinyCA"
 
-#: ../lib/GUI.pm:707
+#: ../lib/GUI.pm:709
 msgid "Invalid mode for show_text():"
 msgstr "Neplatný mód pro show_text():"
 
-#: ../lib/GUI.pm:712 ../lib/GUI.pm:827 ../lib/REQ.pm:236 ../lib/REQ.pm:367
+#: ../lib/GUI.pm:714 ../lib/GUI.pm:829 ../lib/REQ.pm:236 ../lib/REQ.pm:367
 msgid "Please select a Request first"
 msgstr "Prosím, nejdøíve vyberte ¾ádost (Request)"
 
-#: ../lib/GUI.pm:715
+#: ../lib/GUI.pm:717
 msgid "Please select a certificate first"
 msgstr "Prosím, nejdøíve vyberte certifikát"
 
-#: ../lib/GUI.pm:731 ../lib/GUI.pm:846 ../lib/GUI/X509_browser.pm:458
+#: ../lib/GUI.pm:733 ../lib/GUI.pm:848 ../lib/GUI/X509_browser.pm:458
 #: ../lib/GUI/X509_browser.pm:517
 msgid "Can't read file"
 msgstr "Nelze èíst soubor"
 
-#: ../lib/GUI.pm:733
+#: ../lib/GUI.pm:735
 msgid "Request"
 msgstr "®ádost"
 
-#: ../lib/GUI.pm:733
+#: ../lib/GUI.pm:735
 msgid "Certificate"
 msgstr "Certifikát"
 
-#: ../lib/GUI.pm:794
+#: ../lib/GUI.pm:796
 #, fuzzy, c-format
 msgid "Invalid mode for _show_popup_menu(): %s"
 msgstr "Neplatný mód pro show_text():"
 
-#: ../lib/GUI.pm:822
+#: ../lib/GUI.pm:824
 msgid "Invalid mode for show_details():"
 msgstr "Neplatný mód pro show_details():"
 
-#: ../lib/GUI.pm:848 ../lib/GUI.pm:948 ../lib/GUI.pm:3079
+#: ../lib/GUI.pm:850 ../lib/GUI.pm:950 ../lib/GUI.pm:3081
 msgid "Request Details"
 msgstr "Detaily ¾ádosti"
 
-#: ../lib/GUI.pm:848 ../lib/GUI.pm:948 ../lib/GUI.pm:2936
+#: ../lib/GUI.pm:850 ../lib/GUI.pm:950 ../lib/GUI.pm:2938
 msgid "Certificate Details"
 msgstr "Detaily certifikátu"
 
-#: ../lib/GUI.pm:890 ../lib/GUI.pm:1722 ../lib/GUI.pm:3100
+#: ../lib/GUI.pm:892 ../lib/GUI.pm:1724 ../lib/GUI.pm:3102
 msgid "Import Request"
 msgstr "Importovat ¾ádost"
 
-#: ../lib/GUI.pm:892 ../lib/GUI.pm:2478
+#: ../lib/GUI.pm:894 ../lib/GUI.pm:2480
 msgid "Import CA Certificate"
 msgstr "Importovat CA certifikát"
 
-#: ../lib/GUI.pm:900
+#: ../lib/GUI.pm:902
 msgid "Do you want to import the following Certificate Request?"
 msgstr "Chcete importovat následující ¾ádost o certifikát?"
 
-#: ../lib/GUI.pm:902
+#: ../lib/GUI.pm:904
 msgid "Do you want to import the following CA Certificate?"
 msgstr "Chcete importovat následující certifikát CA?"
 
-#: ../lib/GUI.pm:956
+#: ../lib/GUI.pm:958
 msgid "Subject DN"
 msgstr "DN subjektu"
 
-#: ../lib/GUI.pm:980
+#: ../lib/GUI.pm:982
 msgid "Issuer"
 msgstr "Vydavatel"
 
-#: ../lib/GUI.pm:1006
+#: ../lib/GUI.pm:1008
 msgid "Validity"
 msgstr "Platnost"
 
-#: ../lib/GUI.pm:1022
+#: ../lib/GUI.pm:1024
 msgid "Key/Request Details:"
 msgstr "Detaily klíèe/¾ádosti (Request):"
 
-#: ../lib/GUI.pm:1022
+#: ../lib/GUI.pm:1024
 msgid "Key/Certificate Details:"
 msgstr "Detaily klíèe/certifikátu:"
 
-#: ../lib/GUI.pm:1038
+#: ../lib/GUI.pm:1040
 msgid "Fingerprints"
 msgstr "Fingerprints"
 
-#: ../lib/GUI.pm:1054
+#: ../lib/GUI.pm:1056
 msgid "Requested X.509 Extensions"
 msgstr "Po¾adovaná X.509 roz¹íøení"
 
-#: ../lib/GUI.pm:1054
+#: ../lib/GUI.pm:1056
 msgid "X.509v3 Extensions"
 msgstr "X.509v3 roz¹íøení"
 
-#: ../lib/GUI.pm:1079
+#: ../lib/GUI.pm:1081
 msgid "Requested Netscape Extensions"
 msgstr "Po¾adovaná Netscape roz¹íøení"
 
-#: ../lib/GUI.pm:1079
+#: ../lib/GUI.pm:1081
 msgid "Netscape Extensions"
 msgstr "Netscape roz¹íøení"
 
-#: ../lib/GUI.pm:1124
+#: ../lib/GUI.pm:1126
 msgid "Invalid action given: "
 msgstr "Zadána neplatná akce: "
 
-#: ../lib/GUI.pm:1146 ../lib/GUI.pm:1192
+#: ../lib/GUI.pm:1148 ../lib/GUI.pm:1194
 msgid "Invalid action for show_select_ca_dialog(): "
 msgstr "Neplatná akce pro show_select_ca_dialog(): "
 
-#: ../lib/GUI.pm:1168
+#: ../lib/GUI.pm:1170
 msgid "Available CAs"
 msgstr ""
 
-#: ../lib/GUI.pm:1224
+#: ../lib/GUI.pm:1226
 msgid "Create Request"
 msgstr "Vytvoøit ¾ádost"
 
-#: ../lib/GUI.pm:1225
+#: ../lib/GUI.pm:1227
 msgid "Create a new Certificate Request"
 msgstr "Vytvoøit novou ¾ádost o certifikát"
 
-#: ../lib/GUI.pm:1239
+#: ../lib/GUI.pm:1241
 msgid "Common Name (eg, your Name,"
 msgstr "Obecné jméno (napø. Va¹e jméno,"
 
-#: ../lib/GUI.pm:1244
+#: ../lib/GUI.pm:1246
 msgid "your eMail Address"
 msgstr "Va¹e emailová adresa"
 
-#: ../lib/GUI.pm:1248
+#: ../lib/GUI.pm:1250
 msgid "or the Servers Name)"
 msgstr "nebo jméno serveru"
 
-#: ../lib/GUI.pm:1256
+#: ../lib/GUI.pm:1258
 msgid "Password (protect your private Key):"
 msgstr "Heslo (chrání Vá¹ soukromý klíè):"
 
-#: ../lib/GUI.pm:1260 ../lib/GUI.pm:2300
+#: ../lib/GUI.pm:1262 ../lib/GUI.pm:2302
 msgid "Password (confirmation):"
 msgstr "Heslo (potvrzení):"
 
-#: ../lib/GUI.pm:1264 ../lib/GUI.pm:2292
+#: ../lib/GUI.pm:1266 ../lib/GUI.pm:2294
 msgid "Country Name (2 letter code):"
 msgstr "Jméno státu (kód 2 písmena):"
 
-#: ../lib/GUI.pm:1268 ../lib/GUI.pm:2304
+#: ../lib/GUI.pm:1270 ../lib/GUI.pm:2306
 msgid "State or Province Name:"
 msgstr "Jméno zemì nebo kraje"
 
-#: ../lib/GUI.pm:1272 ../lib/GUI.pm:2308
+#: ../lib/GUI.pm:1274 ../lib/GUI.pm:2310
 msgid "Locality Name (eg. city):"
 msgstr "Jméno místa (napø. mìsto):"
 
-#: ../lib/GUI.pm:1276 ../lib/GUI.pm:2312
+#: ../lib/GUI.pm:1278 ../lib/GUI.pm:2314
 msgid "Organization Name (eg. company):"
 msgstr "Jméno organizace (napø. firma):"
 
-#: ../lib/GUI.pm:1282 ../lib/GUI.pm:1287 ../lib/GUI.pm:2316
+#: ../lib/GUI.pm:1284 ../lib/GUI.pm:1289 ../lib/GUI.pm:2318
 msgid "Organizational Unit Name (eg. section):"
 msgstr "Jméno organizaèní jednotky (napø. sekce):"
 
-#: ../lib/GUI.pm:1292 ../lib/GUI.pm:2328 ../lib/GUI/WORDS.pm:67
+#: ../lib/GUI.pm:1294 ../lib/GUI.pm:2330 ../lib/GUI/WORDS.pm:67
 msgid "Keylength"
 msgstr "Délka klíèe"
 
-#: ../lib/GUI.pm:1320 ../lib/GUI.pm:2358
+#: ../lib/GUI.pm:1322 ../lib/GUI.pm:2360
 msgid "Digest"
 msgstr "Výtah-digest"
 
-#: ../lib/GUI.pm:1361
+#: ../lib/GUI.pm:1363
 msgid "Algorithm"
 msgstr "Algoritmus"
 
-#: ../lib/GUI.pm:1403 ../lib/GUI.pm:2957
+#: ../lib/GUI.pm:1405 ../lib/GUI.pm:2959
 msgid "Revoke Certificate"
 msgstr "Odvolat certifikát"
 
-#: ../lib/GUI.pm:1412 ../lib/GUI.pm:1487 ../lib/GUI.pm:2099
+#: ../lib/GUI.pm:1414 ../lib/GUI.pm:1489 ../lib/GUI.pm:2101
 msgid "CA Password:"
 msgstr "Heslo CA:"
 
-#: ../lib/GUI.pm:1417
+#: ../lib/GUI.pm:1419
 msgid "Revocation Reason:"
 msgstr "Dùvod odvolání:"
 
-#: ../lib/GUI.pm:1462
+#: ../lib/GUI.pm:1464
 msgid "Export Revocation List to File"
 msgstr "Exportovat seznam odvolaných certifikátù (CRL) do souboru"
 
-#: ../lib/GUI.pm:1470 ../lib/GUI.pm:1558 ../lib/GUI.pm:1606 ../lib/GUI.pm:1730
-#: ../lib/GUI.pm:1798
+#: ../lib/GUI.pm:1472 ../lib/GUI.pm:1560 ../lib/GUI.pm:1608 ../lib/GUI.pm:1732
+#: ../lib/GUI.pm:1800
 msgid "File:"
 msgstr "Soubor:"
 
-#: ../lib/GUI.pm:1481 ../lib/GUI.pm:1569 ../lib/GUI.pm:1617 ../lib/GUI.pm:1740
-#: ../lib/GUI.pm:1815 ../lib/GUI.pm:2475 ../lib/GUI.pm:2494 ../lib/GUI.pm:2513
-#: ../lib/GUI.pm:2532
+#: ../lib/GUI.pm:1483 ../lib/GUI.pm:1571 ../lib/GUI.pm:1619 ../lib/GUI.pm:1742
+#: ../lib/GUI.pm:1817 ../lib/GUI.pm:2477 ../lib/GUI.pm:2496 ../lib/GUI.pm:2515
+#: ../lib/GUI.pm:2534
 msgid "Browse..."
 msgstr ""
 
-#: ../lib/GUI.pm:1484 ../lib/GUI.pm:1597 ../lib/GUI.pm:1620
+#: ../lib/GUI.pm:1486 ../lib/GUI.pm:1599 ../lib/GUI.pm:1622
 msgid "Export CA Certificate"
 msgstr "Exportovat certifikát CA"
 
-#: ../lib/GUI.pm:1491 ../lib/GUI.pm:2105 ../lib/GUI.pm:2324
+#: ../lib/GUI.pm:1493 ../lib/GUI.pm:2107 ../lib/GUI.pm:2326
 msgid "Valid for (Days):"
 msgstr "Platný (dnù):"
 
-#: ../lib/GUI.pm:1495 ../lib/GUI.pm:1624 ../lib/GUI.pm:1822
+#: ../lib/GUI.pm:1497 ../lib/GUI.pm:1626 ../lib/GUI.pm:1824
 msgid "Export Format:"
 msgstr "Formát exportu:"
 
-#: ../lib/GUI.pm:1501 ../lib/GUI.pm:1630
+#: ../lib/GUI.pm:1503 ../lib/GUI.pm:1632
 msgid "PEM"
 msgstr "PEM"
 
-#: ../lib/GUI.pm:1510 ../lib/GUI.pm:1639
+#: ../lib/GUI.pm:1512 ../lib/GUI.pm:1641
 msgid "DER"
 msgstr "DER"
 
-#: ../lib/GUI.pm:1519 ../lib/GUI.pm:1648
+#: ../lib/GUI.pm:1521 ../lib/GUI.pm:1650
 msgid "TXT"
 msgstr "TXT"
 
-#: ../lib/GUI.pm:1550 ../lib/GUI.pm:1572
+#: ../lib/GUI.pm:1552 ../lib/GUI.pm:1574
 msgid "Export CA Certificate Chain"
 msgstr "Exportovat øetìz certifikátù CA (CA certificate chain)"
 
-#: ../lib/GUI.pm:1551
+#: ../lib/GUI.pm:1553
 msgid "Export CA Certificate Chain to File"
 msgstr "Exportovat øetìz certifikátù CA (CA Certificate Chain) do souboru"
 
-#: ../lib/GUI.pm:1598
+#: ../lib/GUI.pm:1600
 msgid "Export CA Certificate to File"
 msgstr "Exportovat certifikát CA do souboru"
 
-#: ../lib/GUI.pm:1678 ../lib/GUI.pm:1679
+#: ../lib/GUI.pm:1680 ../lib/GUI.pm:1681
 msgid "Export Key without Passphrase"
 msgstr "Exportovat klíè bez fráze"
 
-#: ../lib/GUI.pm:1683
+#: ../lib/GUI.pm:1685
 msgid "I hope you know what you're doing?"
 msgstr "Doufám, ¾e víte, co dìláte!"
 
-#: ../lib/GUI.pm:1687
+#: ../lib/GUI.pm:1689
 msgid "The Key Passphrase is needed for decryption of the Key"
 msgstr "Fráze klíèe je nutná pro dekódování klíèe"
 
-#: ../lib/GUI.pm:1696
+#: ../lib/GUI.pm:1698
 msgid "Password:"
 msgstr "Heslo:"
 
-#: ../lib/GUI.pm:1722 ../lib/GUI.pm:1743
+#: ../lib/GUI.pm:1724 ../lib/GUI.pm:1745
 msgid "Import Request from File"
 msgstr "Importovat ¾ádost ze souboru"
 
-#: ../lib/GUI.pm:1764 ../lib/GUI.pm:1802 ../lib/GUI.pm:2950
+#: ../lib/GUI.pm:1766 ../lib/GUI.pm:1804 ../lib/GUI.pm:2952
 msgid "Export Certificate"
 msgstr "Exportovat certifikát"
 
-#: ../lib/GUI.pm:1766 ../lib/GUI.pm:1804 ../lib/GUI.pm:2907
+#: ../lib/GUI.pm:1768 ../lib/GUI.pm:1806 ../lib/GUI.pm:2909
 msgid "Export Key"
 msgstr "Exportovat klíè"
 
-#: ../lib/GUI.pm:1769
+#: ../lib/GUI.pm:1771
 msgid "Invalid mode for show_export_dialog(): "
 msgstr "Neplatný mód pro show_export_dialog(): "
 
-#: ../lib/GUI.pm:1786
+#: ../lib/GUI.pm:1788
 msgid "Export Certificate to File"
 msgstr "Exportovat certifikát do souboru"
 
-#: ../lib/GUI.pm:1788
+#: ../lib/GUI.pm:1790
 msgid "Export Key to File"
 msgstr "Exportovat klíè do souboru"
 
-#: ../lib/GUI.pm:1826
+#: ../lib/GUI.pm:1828
 msgid "PEM (Certificate)"
 msgstr "PEM (certifikát)"
 
-#: ../lib/GUI.pm:1828
+#: ../lib/GUI.pm:1830
 msgid "PEM (Key)"
 msgstr "PEM (klíè)"
 
-#: ../lib/GUI.pm:1837
+#: ../lib/GUI.pm:1839
 msgid "DER (Certificate)"
 msgstr "DER (certifikát)"
 
-#: ../lib/GUI.pm:1839
+#: ../lib/GUI.pm:1841
 msgid "DER (Key without Passphrase)"
 msgstr "DER (klíè bez fráze)"
 
-#: ../lib/GUI.pm:1847
+#: ../lib/GUI.pm:1849
 msgid "PKCS#12 (Certificate & Key)"
 msgstr "PKCS#12 (certifikát a klíè)"
 
-#: ../lib/GUI.pm:1854
+#: ../lib/GUI.pm:1856
 msgid "Zip (Certificate & Key)"
 msgstr "Zip (certifikát a klíè)"
 
-#: ../lib/GUI.pm:1866
+#: ../lib/GUI.pm:1868
 msgid "TXT (Certificate)"
 msgstr "TXT (certifikát)"
 
-#: ../lib/GUI.pm:1872
+#: ../lib/GUI.pm:1874
 msgid "Without Passphrase (PEM)"
 msgstr "Bez fráze (PEM)"
 
-#: ../lib/GUI.pm:1878 ../lib/GUI.pm:1898 ../lib/GUI.pm:1915 ../lib/GUI.pm:1935
-#: ../lib/GUI.pm:2051 ../lib/GUI.pm:2202
+#: ../lib/GUI.pm:1880 ../lib/GUI.pm:1900 ../lib/GUI.pm:1917 ../lib/GUI.pm:1937
+#: ../lib/GUI.pm:2053 ../lib/GUI.pm:2204
 msgid "Yes"
 msgstr "Ano"
 
-#: ../lib/GUI.pm:1883 ../lib/GUI.pm:1903 ../lib/GUI.pm:1920 ../lib/GUI.pm:1940
-#: ../lib/GUI.pm:2059 ../lib/GUI.pm:2208
+#: ../lib/GUI.pm:1885 ../lib/GUI.pm:1905 ../lib/GUI.pm:1922 ../lib/GUI.pm:1942
+#: ../lib/GUI.pm:2061 ../lib/GUI.pm:2210
 msgid "No"
 msgstr "Ne"
 
-#: ../lib/GUI.pm:1892
+#: ../lib/GUI.pm:1894
 msgid "Include Key (PEM)"
 msgstr ""
 
-#: ../lib/GUI.pm:1909
+#: ../lib/GUI.pm:1911
 #, fuzzy
 msgid "Include Certificate (PEM)"
 msgstr "Certifikát CA (PEM/DER):"
 
-#: ../lib/GUI.pm:1929
+#: ../lib/GUI.pm:1931
 #, fuzzy
 msgid "Include Fingerprint (PEM)"
 msgstr "Fingerprint (MD5)"
 
-#: ../lib/GUI.pm:2029 ../lib/GUI.pm:2030
+#: ../lib/GUI.pm:2031 ../lib/GUI.pm:2032
 msgid "Export to PKCS#12"
 msgstr "Exportovat do PKCS#12"
 
-#: ../lib/GUI.pm:2037
+#: ../lib/GUI.pm:2039
 msgid "Key Password:"
 msgstr "Heslo klíèe:"
 
-#: ../lib/GUI.pm:2041
+#: ../lib/GUI.pm:2043
 msgid "Export Password:"
 msgstr "Heslo pro export:"
 
-#: ../lib/GUI.pm:2045
+#: ../lib/GUI.pm:2047
 msgid "Add CA Certificate to PKCS#12 structure"
 msgstr "Pøidat certifikát CA do PKCS#12 struktury"
 
-#: ../lib/GUI.pm:2091 ../lib/GUI.pm:3107
+#: ../lib/GUI.pm:2093 ../lib/GUI.pm:3109
 msgid "Sign Request"
 msgstr "Podepsat ¾ádost"
 
-#: ../lib/GUI.pm:2091
+#: ../lib/GUI.pm:2093
 msgid "Sign Request/Create Certificate"
 msgstr "Podepsat ¾ádost/Vytvoøit certifikát"
 
-#: ../lib/GUI.pm:2116 ../lib/GUI.pm:2161
+#: ../lib/GUI.pm:2118 ../lib/GUI.pm:2163
 msgid "Subject alternative name (IP Address):"
 msgstr "Alternativní jméno subjektu (IP adresa):"
 
-#: ../lib/GUI.pm:2119 ../lib/GUI.pm:2164
+#: ../lib/GUI.pm:2121 ../lib/GUI.pm:2166
 msgid "Subject alternative name (DNS Name):"
 msgstr "Alternativní jméno subjektu (DNS jméno):"
 
-#: ../lib/GUI.pm:2122 ../lib/GUI.pm:2170
+#: ../lib/GUI.pm:2124 ../lib/GUI.pm:2172
 #, fuzzy
 msgid "Subject alternative name (raw):"
 msgstr "Alternativní jméno subjektu (raw):"
 
-#: ../lib/GUI.pm:2130 ../lib/GUI.pm:2178
+#: ../lib/GUI.pm:2132 ../lib/GUI.pm:2180
 msgid "Extended Key Usage:"
 msgstr "Roz¹íøené pou¾ití klíèe:"
 
-#: ../lib/GUI.pm:2137
+#: ../lib/GUI.pm:2139
 msgid "Netscape SSL Server Name:"
 msgstr "Netscape jméno serveru SSL:"
 
-#: ../lib/GUI.pm:2144 ../lib/GUI.pm:2185
+#: ../lib/GUI.pm:2146 ../lib/GUI.pm:2187
 msgid "Netscape Revocation URL:"
 msgstr "Netscape URL odvolaných:"
 
-#: ../lib/GUI.pm:2151 ../lib/GUI.pm:2192
+#: ../lib/GUI.pm:2153 ../lib/GUI.pm:2194
 msgid "Netscape Renewal URL:"
 msgstr "Netscape URL obnovených:"
 
-#: ../lib/GUI.pm:2167
+#: ../lib/GUI.pm:2169
 msgid "Subject alternative name (eMail Address):"
 msgstr "Alternativní jméno subjektu (eMailová adresa):"
 
-#: ../lib/GUI.pm:2214
+#: ../lib/GUI.pm:2216
 msgid "Add eMail Address to Subject DN:"
 msgstr "Pøidat eMailovou adresu k DN subjektu:"
 
-#: ../lib/GUI.pm:2244 ../lib/GUI.pm:2248
+#: ../lib/GUI.pm:2246 ../lib/GUI.pm:2250
 msgid "Create CA"
 msgstr "Vytvoøit CA"
 
-#: ../lib/GUI.pm:2244
+#: ../lib/GUI.pm:2246
 msgid "Create a new Sub CA"
 msgstr "Vytvoøit novou podøízenou CA"
 
-#: ../lib/GUI.pm:2248
+#: ../lib/GUI.pm:2250
 msgid "Create a new CA"
 msgstr "Vytvoøit novou CA"
 
-#: ../lib/GUI.pm:2261
+#: ../lib/GUI.pm:2263
 msgid "CA Password (for creating the new CA):"
 msgstr "Heslo CA (pro vytvoøení nové CA):"
 
-#: ../lib/GUI.pm:2272 ../lib/GUI.pm:2443
+#: ../lib/GUI.pm:2274 ../lib/GUI.pm:2445
 msgid "Name (for local storage):"
 msgstr "Jméno (pro lokální ulo¾ení):"
 
-#: ../lib/GUI.pm:2279
+#: ../lib/GUI.pm:2281
 msgid "Data for CA Certificate"
 msgstr "Data pro certifikát CA"
 
-#: ../lib/GUI.pm:2288
+#: ../lib/GUI.pm:2290
 msgid "Common Name (for the CA):"
 msgstr "Obecné jméno (pro CA):"
 
-#: ../lib/GUI.pm:2296
+#: ../lib/GUI.pm:2298
 msgid "Password (needed for signing):"
 msgstr "Heslo (potøebné pro podepisování):"
 
-#: ../lib/GUI.pm:2422
+#: ../lib/GUI.pm:2424
 msgid "Import an existing CA into TinyCA"
 msgstr "Import existující CA do TinyCA"
 
-#: ../lib/GUI.pm:2433
+#: ../lib/GUI.pm:2435
 msgid "Password of the private CA key (Needed for import):"
 msgstr "Heslo soukromého klíèe CA (potøebné pro import):"
 
-#: ../lib/GUI.pm:2447
+#: ../lib/GUI.pm:2449
 msgid "New password for the CA:"
 msgstr "Nové heslo pro CA:"
 
-#: ../lib/GUI.pm:2451
+#: ../lib/GUI.pm:2453
 msgid "Confirm password:"
 msgstr "Potvrzení hesla:"
 
-#: ../lib/GUI.pm:2456
+#: ../lib/GUI.pm:2458
 msgid "Files/Directories to import"
 msgstr "Soubory/Adresáøe pro import"
 
-#: ../lib/GUI.pm:2464
+#: ../lib/GUI.pm:2466
 msgid "CA Certificate (PEM/DER):"
 msgstr "Certifikát CA (PEM/DER):"
 
-#: ../lib/GUI.pm:2483
+#: ../lib/GUI.pm:2485
 msgid "CA private key (PEM/DER):"
 msgstr "Soukromý klíè CA (PEM/DER):"
 
-#: ../lib/GUI.pm:2497
+#: ../lib/GUI.pm:2499
 #, fuzzy
 msgid "Import CA private Key"
 msgstr "Importovat soukromý klíè CA"
 
-#: ../lib/GUI.pm:2502
+#: ../lib/GUI.pm:2504
 #, fuzzy
 msgid "OpenSSL Index File (index.txt):"
 msgstr "Indexový soubor (index.txt):"
 
-#: ../lib/GUI.pm:2516
+#: ../lib/GUI.pm:2518
 msgid "Import Index File"
 msgstr "Importovat indexový soubor"
 
-#: ../lib/GUI.pm:2521
+#: ../lib/GUI.pm:2523
 msgid "Directory containing certificates (PEM/DER):"
 msgstr "Adresáø obsahující certifikáty (PEM/DER):"
 
-#: ../lib/GUI.pm:2535
+#: ../lib/GUI.pm:2537
 #, fuzzy
 msgid "Import Certificates from directory"
 msgstr "Importovat certifikáty z adresáøe"
 
-#: ../lib/GUI.pm:2549
+#: ../lib/GUI.pm:2551
 msgid "You are kidding, are you??"
 msgstr "®ertuje¹, co?"
 
-#: ../lib/GUI.pm:2570
+#: ../lib/GUI.pm:2572
 #, fuzzy
 msgid "Spanish: Ramon Pons Vivanco <rpons\\@rinu.org>"
 msgstr "©panìlský: Ramon Pons Vivanco <rpons@rinu.org>"
 
-#: ../lib/GUI.pm:2571
+#: ../lib/GUI.pm:2573
 #, fuzzy
 msgid "Czech: Robert Wolf <gentoo\\@slave.umbr.cas.cz>"
 msgstr "Èeský: Robert Wolf <gentoo@slave.umbr.cas.cz>"
 
-#: ../lib/GUI.pm:2572
+#: ../lib/GUI.pm:2574
 msgid "French: Thibault Le Meur <Thibault.Lemeur\\@supelec.fr>"
 msgstr ""
 
-#: ../lib/GUI.pm:2588
+#: ../lib/GUI.pm:2590
 msgid "Do you really want to delete the selected Request?"
 msgstr "Opravdu chcete odstranit vybranou ¾ádost?"
 
-#: ../lib/GUI.pm:2590
+#: ../lib/GUI.pm:2592
 msgid "Do you really want to delete the selected Key?"
 msgstr "Opravdu chcete odstranit vybraný klíè?"
 
-#: ../lib/GUI.pm:2592
+#: ../lib/GUI.pm:2594
 msgid "Do you really want to delete the selected Certificate?"
 msgstr "Opravdu chcete odstranit vybraný certifikát?"
 
-#: ../lib/GUI.pm:2642
+#: ../lib/GUI.pm:2644
 #, fuzzy
 msgid "Overwrite Request/Key"
 msgstr "Odstranit ¾ádost"
 
-#: ../lib/GUI.pm:2648
+#: ../lib/GUI.pm:2650
 msgid "The Key or the Request is already existing!"
 msgstr "Klíè nebo ¾ádost ji¾ existuje!"
 
-#: ../lib/GUI.pm:2653
+#: ../lib/GUI.pm:2655
 #, fuzzy
 msgid "You won't be able to sign this Request"
 msgstr "nebudete moci podepsat tuto ¾ádost!"
 
-#: ../lib/GUI.pm:2658
+#: ../lib/GUI.pm:2660
 #, fuzzy
 msgid "if the corresponding certificate is still valid"
 msgstr "Pokud odpovídající certifikát nezaniknul nebo nebyl odvolán "
 
-#: ../lib/GUI.pm:2675
+#: ../lib/GUI.pm:2677
 msgid "The Certificate will be longer valid than your CA!"
 msgstr "Certifikát bude platný déle ne¾ Va¹e CA!"
 
-#: ../lib/GUI.pm:2677
+#: ../lib/GUI.pm:2679
 msgid "This may cause problems with some software!!"
 msgstr "Toto mù¾e zpùsobit problémy s nìkterými programy!!"
 
-#: ../lib/GUI.pm:2692
+#: ../lib/GUI.pm:2694
 msgid "Expirationdate Warning"
 msgstr "Varování data platnosti"
 
-#: ../lib/GUI.pm:2727 ../lib/GUI/WORDS.pm:71
+#: ../lib/GUI.pm:2729 ../lib/GUI/WORDS.pm:71
 msgid "Serial"
 msgstr "Seriové èíslo"
 
-#: ../lib/GUI.pm:2729 ../lib/GUI/WORDS.pm:72 ../lib/GUI/X509_browser.pm:177
+#: ../lib/GUI.pm:2731 ../lib/GUI/WORDS.pm:72 ../lib/GUI/X509_browser.pm:177
 msgid "Status"
 msgstr "Stav"
 
-#: ../lib/GUI.pm:2730 ../lib/GUI/WORDS.pm:66
+#: ../lib/GUI.pm:2732 ../lib/GUI/WORDS.pm:66
 msgid "Expiration Date"
 msgstr "Datum zániku"
 
-#: ../lib/GUI.pm:2731
+#: ../lib/GUI.pm:2733
 #, fuzzy
 msgid "Revocation Date"
 msgstr "Datum vytvoøení"
 
-#: ../lib/GUI.pm:2732
+#: ../lib/GUI.pm:2734
 #, fuzzy
 msgid "Revocation Reason"
 msgstr "Dùvod odvolání:"
 
-#: ../lib/GUI.pm:2758 ../lib/OpenSSL.pm:698
+#: ../lib/GUI.pm:2760 ../lib/OpenSSL.pm:698
 msgid "EXPIRED"
 msgstr "ZANIKLÝ"
 
-#: ../lib/GUI.pm:2760 ../lib/OpenSSL.pm:711
+#: ../lib/GUI.pm:2762 ../lib/OpenSSL.pm:711
 msgid "REVOKED"
 msgstr "ODVOLANÝ"
 
-#: ../lib/GUI.pm:2780
+#: ../lib/GUI.pm:2782
 msgid "CA History"
 msgstr ""
 
-#: ../lib/GUI.pm:2814
+#: ../lib/GUI.pm:2816
 msgid "Overwrite Certificate"
 msgstr "Pøepsat certifikát"
 
-#: ../lib/GUI.pm:2820
+#: ../lib/GUI.pm:2822
 #, fuzzy
 msgid "There seems to be a certificate with the same Subject already."
 msgstr "Zdá se, ¾e certifikát ji¾ existuje."
 
-#: ../lib/GUI.pm:2825
+#: ../lib/GUI.pm:2827
 msgid ""
 "Creating a new one (overwrite) will fail if it's not revoked or expired!"
 msgstr "Vytvoøení nového (pøepsání) sel¾e, pokud není odvolán nebo nezaniknul!"
 
-#: ../lib/GUI.pm:2831
+#: ../lib/GUI.pm:2833
 msgid "Really try to overwrite the Certificate?"
 msgstr "Opravdu chcete zkusit pøepsat certifikát?"
 
-#: ../lib/GUI.pm:2864
+#: ../lib/GUI.pm:2866
 msgid "Convert CA"
 msgstr "Konvertovat CA"
 
-#: ../lib/GUI.pm:2872
+#: ../lib/GUI.pm:2874
 msgid ""
 "This CA seems to be created with openssl 0.9.6x. And it seems like you have "
 "switched to openssl 0.9.7x."
@@ -1314,7 +1314,7 @@ msgstr ""
 "Zdá se, ¾e tato CA byla vytvoøena pomocí openssl 0.9.6x. A zdá se, ¾e jste "
 "zmìnil openssl na verzi 0.9.7x."
 
-#: ../lib/GUI.pm:2880
+#: ../lib/GUI.pm:2882
 msgid ""
 "You won't be able to revoke the existing certificates without converting the "
 "index file of this CA to the new format."
@@ -1322,64 +1322,64 @@ msgstr ""
 "Nebude mo¾né odvolat existující certifikáty bez zkonvertování indexového "
 "souboru této CA na nový formát."
 
-#: ../lib/GUI.pm:2888
+#: ../lib/GUI.pm:2890
 msgid ""
 "Attention: it will not be easy to switch back, this has to be done manually"
 msgstr ""
 "Pozor: nebude snadné vrátit se zpìt, bude to muset být provedeno manuálnì"
 
-#: ../lib/GUI.pm:2914
+#: ../lib/GUI.pm:2916
 msgid "Delete Key"
 msgstr "Odstranit klíè"
 
-#: ../lib/GUI.pm:2943
+#: ../lib/GUI.pm:2945
 msgid "View Certificate"
 msgstr "Zobrazit certifikát"
 
-#: ../lib/GUI.pm:2964
+#: ../lib/GUI.pm:2966
 #, fuzzy
 msgid "Renew Certificate"
 msgstr "Odvolat certifikát"
 
-#: ../lib/GUI.pm:2972
+#: ../lib/GUI.pm:2974
 msgid "Delete Certificate"
 msgstr "Odstranit certifikát"
 
-#: ../lib/GUI.pm:2995
+#: ../lib/GUI.pm:2997
 msgid "Create Key and Certificate (Server)"
 msgstr "Vytvoøit klíè a certifikát (Server)"
 
-#: ../lib/GUI.pm:3001
+#: ../lib/GUI.pm:3003
 msgid "Create Key and Certificate (Client)"
 msgstr "Vytvoøit klíè a certifikát (Klient)"
 
-#: ../lib/GUI.pm:3022
+#: ../lib/GUI.pm:3024
 #, fuzzy
 msgid "Renew Certificate (Server)"
 msgstr "Obnovit certifikát"
 
-#: ../lib/GUI.pm:3029
+#: ../lib/GUI.pm:3031
 #, fuzzy
 msgid "Renew Certificate (Client)"
 msgstr "Obnovit certifikát"
 
-#: ../lib/GUI.pm:3051
+#: ../lib/GUI.pm:3053
 msgid "Sign Request (Server)"
 msgstr "Podepsat ¾ádost (Server)"
 
-#: ../lib/GUI.pm:3058
+#: ../lib/GUI.pm:3060
 msgid "Sign Request (Client)"
 msgstr "Podepsat ¾ádost (Klient)"
 
-#: ../lib/GUI.pm:3086
+#: ../lib/GUI.pm:3088
 msgid "View Request"
 msgstr "Zobrazit ¾ádost"
 
-#: ../lib/GUI.pm:3093
+#: ../lib/GUI.pm:3095
 msgid "New Request"
 msgstr "Nová ¾ádost"
 
-#: ../lib/GUI.pm:3115
+#: ../lib/GUI.pm:3117
 msgid "Delete Request"
 msgstr "Odstranit ¾ádost"
 

@@ -1,6 +1,6 @@
 # Copyright (c) Stephan Martin <sm@sm-zone.net>
 #
-# $Id: CA.pm,v 1.2 2005/04/03 17:14:27 sm Exp $
+# $Id: CA.pm,v 1.6 2005/10/22 14:35:56 sm Exp $
 # 
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -432,7 +432,7 @@ sub get_ca_create {
       return;
    }
 
-   warn "call create_ca_env with bits: $opts->{'bits'}\n";
+   # warn "call create_ca_env with bits: $opts->{'bits'}\n";
 
    $self->create_ca_env($main, $opts, $mode);
 
@@ -642,7 +642,9 @@ sub import_ca {
    my $data   = {};
    my $ca     = $opts->{'name'};
 
-   $opts->{'serial'} = "01";
+   if (hex($opts->{'serial'}) < 1) {
+      $opts->{'serial'} = "01";
+   }
 
    if(defined($box)) {
       $box->destroy();
@@ -745,7 +747,7 @@ sub import_ca {
 
          # get information for serial file
          if(hex($data->{'parsed'}->{'SERIAL'}) >= hex($opts->{'serial'})) {
-           $opts->{'serial'} = sprintf("%x", hex($opts->{'serial'}));
+            $opts->{'serial'} = sprintf("%x", hex($data->{'parsed'}->{'SERIAL'}));
          }
          $opts->{'serial'} = hex($opts->{'serial'}) + 1;
          $opts->{'serial'} = sprintf("%x", $opts->{'serial'});
@@ -760,7 +762,7 @@ sub import_ca {
       $opts->{'indexdata'} .= $indexline;
    }
    
-   # create some more files
+   # create index file
    $index = $self->{$ca}->{'dir'}."/index.txt";
    open(OUT, ">$index") || do {
       GUI::HELPERS::print_error(gettext("Can't open Index file: ").$!);
@@ -769,6 +771,30 @@ sub import_ca {
    print OUT $opts->{'indexdata'};
    close OUT;
 
+   $cacertfile = $self->{$ca}->{'dir'}."/cacert.pem";
+   $cakeyfile  = $self->{$ca}->{'dir'}."/cacert.key";
+
+   # write cacertfile
+   open(OUT, ">$cacertfile") || do {
+      GUI::HELPERS::set_cursor($main, 0);
+      $t = sprintf(gettext("Can't write CA Certificate file: %s"),
+            $cacertfile); 
+      return; 
+   };
+   print OUT $opts->{'cacertdata'};
+   close(OUT);
+
+   # check serial number of CA file
+   $data->{'parsed'} = $main->{'OpenSSL'}->parsecert( 
+         undef, undef, $cacertfile, 1
+         );
+   if(hex($data->{'parsed'}->{'SERIAL'}) >= hex($opts->{'serial'})) {
+      $opts->{'serial'} = sprintf("%x", hex($opts->{'serial'}));
+   }
+   $opts->{'serial'} = hex($opts->{'serial'}) + 1;
+   $opts->{'serial'} = sprintf("%x", $opts->{'serial'});
+
+   # create serial file
    $serial = $self->{$ca}->{'dir'}."/serial";
    open(OUT, ">$serial") || do {
       GUI::HELPERS::print_error(gettext("Can't write Serial file: ").$!);
@@ -782,18 +808,7 @@ sub import_ca {
    }
    close OUT;
 
-   $cacertfile = $self->{$ca}->{'dir'}."/cacert.pem";
-   $cakeyfile  = $self->{$ca}->{'dir'}."/cacert.key";
-
-   open(OUT, ">$cacertfile") || do {
-      GUI::HELPERS::set_cursor($main, 0);
-      $t = sprintf(gettext("Can't write CA Certificate file: %s"),
-            $cacertfile); 
-      return; 
-   };
-   print OUT $opts->{'cacertdata'};
-   close(OUT);
-
+   # write keyfile
    open(OUT, ">$cakeyfile") || do {
       GUI::HELPERS::set_cursor($main, 0);
       $t = sprintf(gettext("Can't write CA Key file: %s"),
@@ -977,7 +992,7 @@ sub create_ca {
          $opts->{'ST'}, 
          $opts->{'L'}, 
          $opts->{'O'}, 
-         $opts->{'OU'},
+         $opts->{'OU'}->[0],
          $opts->{'CN'}, 
          $opts->{'EMAIL'}, 
          '', 
