@@ -1,4 +1,9 @@
-$Id: CHANGES,v 1.10 2005/10/22 14:36:54 sm Exp $
+$Id: CHANGES,v 1.12 2006/02/18 21:56:07 sm Exp $
+version 0.7.2 - Sat Feb 18 2006
+   * Fixed bug, which made keysize always 4096
+   * Implemented correct usage of openssl crl depending on openssl version
+   * Added tar file support for export
+
 version 0.7.1 - Sat Oct 22 2005
    * Fixed possible crashbug, thanks to 
    * Choose CA validity as maximal certificate lifetime

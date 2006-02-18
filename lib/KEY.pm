@@ -1,6 +1,6 @@
 # Copyright (c) Stephan Martin <sm@sm-zone.net>
 #
-# $Id: KEY.pm,v 1.4 2005/10/01 12:57:35 sm Exp $
+# $Id: KEY.pm,v 1.5 2006/02/18 21:56:07 sm Exp $
 # 
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -296,11 +296,13 @@ sub get_export_key {
       GUI::HELPERS::print_info($t, $ext);
       return;
 
-   } elsif ($opts->{'format'} eq "ZIP") {
+   } elsif (($opts->{'format'} eq "ZIP") || ($opts->{'format'} eq "TAR")) {
       $opts->{'certfile'} = 
          $main->{'cadir'}."/certs/".$opts->{'keyname'}.".pem";
       if(not -s $opts->{'certfile'}) {
-         $t = gettext("Certificate is necessary for export as Zip file");
+         $t = sprintf(
+               gettext("Certificate is necessary for export as %s file"), 
+               $opts->{'format'});
          $t .= "\n";
          $t .= gettext("Export is not possible!");
          GUI::HELPERS::print_warning($t);
@@ -357,12 +359,20 @@ sub get_export_key {
       }
 
       unlink($opts->{'outfile'});
-      system($main->{'init'}->{'zipbin'}, '-j', $opts->{'outfile'},
-            $tmpcacert, $tmpkey, $tmpcert); 
-      my $ret = $? >> 8;
+      if($opts->{'format'} eq 'ZIP') { 
+         system($main->{'init'}->{'zipbin'}, '-j', $opts->{'outfile'},
+               $tmpcacert, $tmpkey, $tmpcert); 
+         my $ret = $? >> 8;
+      } elsif ($opts->{'format'} eq 'TAR') {
+         system($main->{'init'}->{'tarbin'}, 'cfv', $opts->{'outfile'},
+               $tmpcacert, $tmpkey, $tmpcert); 
+         my $ret = $? >> 8;
+      }
 
       if(not -s $opts->{'outfile'} || $ret) {
-         GUI::HELPERS::print_warning(gettext("Generating Zip file failed"));
+         GUI::HELPERS::print_warning(
+               sprintf(gettext("Generating %s file failed"), 
+                  $opts->{'format'}));
       } else {
          $main->{'exportdir'} = HELPERS::write_export_dir($main, 
                $opts->{'outfile'});

@@ -1,6 +1,6 @@
 # spec file for package tinyca
 #
-# $Id: tinyca2.spec,v 1.6 2005/10/22 14:18:26 sm Exp $
+# $Id: tinyca2.spec,v 1.7 2006/02/18 10:17:27 sm Exp $
 #
 # Copyright (c) 2002 Stephan Martin
 # This file and all modifications and additions to the pristine
@@ -18,7 +18,7 @@ Group:      Productivity/Networking/Security
 License:	   GPL
 Requires:	perl perl-Gtk2 perl-MIME-Base64
 Packager:	Stephan Martin <sm@sm-zone.net>
-Version:    0.7.1
+Version:    @version@
 Release:    0
 Source0:    %{name}-%{version}.tar.gz
 Source1:    %{name}.desktop

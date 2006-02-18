@@ -1,6 +1,6 @@
 # Copyright (c) Stephan Martin <sm@sm-zone.net>
 #
-# $Id: CALLBACK.pm,v 1.4 2005/10/22 13:28:24 sm Exp $
+# $Id: CALLBACK.pm,v 1.5 2006/02/18 21:56:07 sm Exp $
 # 
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -126,7 +126,7 @@ sub toggle_to_var {
    $$var = $value;
 
    if(defined($outfileref) && defined($formatref)) {
-      if($$outfileref =~ s/\.(pem|der|txt|p12|zip)$//i) {
+      if($$outfileref =~ s/\.(pem|der|txt|p12|zip|tar)$//i) {
          $$outfileref .= "." . lc $$formatref;
          # something seem broken, need tmp var
          my $tmp = $$outfileref;
@@ -144,6 +144,9 @@ sub toggle_to_var {
          $pass1->set_sensitive(0);
          $pass2->set_sensitive(0);
       } elsif ($$formatref eq "ZIP") {
+         $pass1->set_sensitive(0);
+         $pass2->set_sensitive(0);
+      } elsif ($$formatref eq "TAR") {
          $pass1->set_sensitive(0);
          $pass2->set_sensitive(0);
       }

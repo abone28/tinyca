@@ -1,6 +1,6 @@
 # Copyright (c) Stephan Martin <sm@sm-zone.net>
 #
-# $Id: GUI.pm,v 1.20 2005/10/22 13:56:47 sm Exp $
+# $Id: GUI.pm,v 1.25 2006/02/18 21:56:07 sm Exp $
 # 
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -40,7 +40,7 @@ my %md_algorithms = (
 		     'sha1' => 'SHA-1',
 		     );
 
-my %bit_langths = (
+my %bit_lengths = (
 		     '1024' => '1024',
 		     '2048' => '2048',
 		     '4096' => '4096'
@@ -59,7 +59,7 @@ sub new {
 
    bless($self, $class);
 
-   $self->{'version'} = '0.7.1';
+   $self->{'version'} = '0.7.2';
 
    $self->{'words'} = GUI::WORDS->new();
 
@@ -1315,10 +1315,7 @@ sub show_req_dialog {
    $reqtable->attach_defaults($label, 0, 1, 13, 14);
 
    $radiobox = Gtk2::HBox->new(0, 0);
-   _fill_radiobox($radiobox, \$opts->{'algo'},
-         '4096' => 4096,
-         '2048' => 2048,
-         '1024' => 1024);
+   _fill_radiobox($radiobox, \$opts->{'bits'}, %bit_lengths);
    $reqtable->attach_defaults($radiobox, 1, 2, 13, 14);
 
    $label = GUI::HELPERS::create_label(
@@ -1372,7 +1369,7 @@ sub show_cert_revoke_dialog {
          gettext("CA Password:"), \$opts->{'passwd'}, $table, 0, 0);
    $entry->grab_focus();
 
-   if($self->{'OpenSSL'}->{'version'} eq "0.9.7") {
+   if($self->{'OpenSSL'}->{'version'} =~ /0.9.7/) {
       $label = GUI::HELPERS::create_label(
             gettext("Revocation Reason:"), 'left', 0, 0);
    
@@ -1717,8 +1714,8 @@ sub show_export_dialog {
 
    my ($box, $button_ok, $button_cancel, $button, $label, $table, $entry,
          $fileentry, $format1, $format2, $format3, $format4, $format5,
-         $passbox, $pass1, $pass2, $title, $text, $t, $incbox, $inc1, $inc2,
-         $fpbox, $incfp1, $incfp2);
+         $format6, $passbox, $pass1, $pass2, $title, $text, $t, $incbox,
+         $inc1, $inc2, $fpbox, $incfp1, $incfp2);
 
    if($mode eq 'cert') {
       $title = gettext("Export Certificate");
@@ -1821,12 +1818,22 @@ sub show_export_dialog {
       $format4->set_sensitive(0);
    }
 
+   $t = gettext("Tar (Certificate & Key)");
+
+   $format5 = Gtk2::RadioButton->new($format1, $t);
+   $format5->set_active(1)
+      if(defined($opts->{'format'}) && $opts->{'format'} eq 'TAR');
+   $box->vbox->add($format5);
+   if(not -x $self->{'init'}->{'tarbin'}) {
+      $format5->set_sensitive(0);
+   }
+
    if($mode eq 'cert') {
-      $format5 = Gtk2::RadioButton->new(
+      $format6 = Gtk2::RadioButton->new(
             $format1, gettext("TXT (Certificate)"));
-      $format5->set_active(1)
+      $format6->set_active(1)
          if(defined($opts->{'format'}) && $opts->{'format'} eq 'TXT');
-      $box->vbox->add($format5);
+      $box->vbox->add($format6);
    } else { # no password for PEM key
       $label = GUI::HELPERS::create_label(
             gettext("Without Passphrase (PEM/PKCS#12)"), 'left', 0, 0);
@@ -1911,6 +1918,10 @@ sub show_export_dialog {
             \$opts->{'format'}, $fileentry)});
       $format5->signal_connect('toggled' =>
            sub{ GUI::CALLBACK::toggle_to_var($format5,
+            \$opts->{'format'}, 'TAR', \$opts->{'outfile'}, 
+            \$opts->{'format'}, $fileentry)});
+      $format6->signal_connect('toggled' =>
+           sub{ GUI::CALLBACK::toggle_to_var($format6,
             \$opts->{'format'}, 'TXT', \$opts->{'outfile'}, 
             \$opts->{'format'}, $fileentry)});
       $inc1->signal_connect('toggled' => 
@@ -1937,6 +1948,10 @@ sub show_export_dialog {
       $format4->signal_connect('toggled' =>
            sub{ GUI::CALLBACK::toggle_to_var($format4,
             \$opts->{'format'}, 'ZIP', \$opts->{'outfile'}, 
+            \$opts->{'format'}, $fileentry, $pass1, $pass2)});
+      $format5->signal_connect('toggled' =>
+           sub{ GUI::CALLBACK::toggle_to_var($format5,
+            \$opts->{'format'}, 'TAR', \$opts->{'outfile'}, 
             \$opts->{'format'}, $fileentry, $pass1, $pass2)});
       $pass1->signal_connect('toggled' => 
             sub { GUI::CALLBACK::toggle_to_var($pass1, \$opts->{'nopass'}, 1)});
@@ -2172,8 +2187,8 @@ sub show_req_sign_dialog {
       }
    }
 
-   if(($self->{'OpenSSL'}->{'version'} eq "0.9.7") ||
-      ($self->{'OpenSSL'}->{'version'} eq "0.9.8")) {
+   if(($self->{'OpenSSL'}->{'version'} =~ /0.9.7/) ||
+      ($self->{'OpenSSL'}->{'version'} =~ /0.9.8/)) {
       $radiobox = Gtk2::HBox->new(0, 0);
       $key1 = Gtk2::RadioButton->new(undef, gettext("Yes"));
       $key1->set_active(1);
@@ -2505,7 +2520,7 @@ sub about {
    $aboutdialog = Gtk2::AboutDialog->new();
    $aboutdialog->set_name("TinyCA2");
    $aboutdialog->set_version($main->{'version'});
-   $aboutdialog->set_copyright("2002-2005 Stephan Martin");
+   $aboutdialog->set_copyright("2002-2006 Stephan Martin");
    $aboutdialog->set_license("GNU Public License (GPL)");
    $aboutdialog->set_website("http://tinyca.sm-zone.net/");
    $aboutdialog->set_authors("Stephan Martin <sm\@sm-zone.net>");

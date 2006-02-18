@@ -1,6 +1,6 @@
 # Copyright (c) Stephan Martin <sm@sm-zone.net>
 #
-# $Id: OpenSSL.pm,v 1.6 2005/09/27 06:14:48 sm Exp $
+# $Id: OpenSSL.pm,v 1.7 2006/02/16 21:18:43 sm Exp $
 # 
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -47,6 +47,12 @@ sub new {
       $self->{'version'} = "0.9.7";
    } elsif ($v =~ /0.9.8/) {
       $self->{'version'} = "0.9.8";
+   }
+
+   if($v =~ /0.9.7f/ || $v =~ /0.9.7g/ || $v =~ /0.9.7h/)  {
+      $self->{'broken'} = 0;
+   } else {
+      $self->{'broken'} = 1;
    }
 
    bless($self, $class);
@@ -835,13 +841,22 @@ sub convdata {
    waitpid($pid, 0);
    $ret = $?>>8;
 
-   if(($ret != 0 && $opts->{'cmd'} ne 'crl') ||
-      ($ret != 0 && $opts->{'outform'} ne 'TEXT' && $opts->{'cmd'} eq 'crl') ||
-      ($ret != 1 && $opts->{'outform'} eq 'TEXT' && $opts->{'cmd'} eq 'crl')) { 
-      unlink($file);
-      return($ret, undef, $ext);
-   } else {
-      $ret = 0;
+   if($self->{'broken'}) {
+       if(($ret != 0 && $opts->{'cmd'} ne 'crl') ||
+          ($ret != 0 && $opts->{'outform'} ne 'TEXT' && $opts->{'cmd'} eq 'crl') ||
+          ($ret != 1 && $opts->{'outform'} eq 'TEXT' && $opts->{'cmd'} eq 'crl')) { 
+          unlink($file);
+          return($ret, undef, $ext);
+       } else {
+          $ret = 0;
+       }
+   } else { # wow, they fixed it :-)
+      if($ret != 0) { 
+         unlink($file); 
+         return($ret, undef, $ext); 
+      } else { 
+         $ret = 0; 
+      }
    }
 
    open(IN, $file) || do {

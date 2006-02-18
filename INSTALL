@@ -7,6 +7,7 @@
 $init->{'opensslbin'}   (location of your openssl binary)
 $init->{'templatedir'}  (location of the directory templates)
 $init->{'zipbin'}       (location of your zip binary)
+$init->{'tarbin'}       (location of your tar binary)
 
 3. If you want to have german/spanish/czech texts:
    Generate the file tinyca.mo from po/de.po:
@@ -23,4 +24,4 @@ $init->{'zipbin'}       (location of your zip binary)
    export LC_ALL=cs_CZ
    before you call tinyca.
 
-4. Call tinyca, use it and report bugs :-))
+4. Call tinyca2, use it and report bugs :-))

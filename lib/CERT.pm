@@ -1,6 +1,6 @@
 # Copyright (c) Stephan Martin <sm@sm-zone.net>
 #
-# $Id: CERT.pm,v 1.7 2005/09/25 16:01:19 sm Exp $
+# $Id: CERT.pm,v 1.8 2006/02/18 21:56:07 sm Exp $
 # 
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -446,9 +446,10 @@ sub get_export_cert {
          $main->show_p12_export_dialog($opts, 'cert');
          return;
       }
-   } elsif($opts->{'format'} eq 'ZIP') {
+   } elsif(($opts->{'format'} eq 'ZIP') || ($opts->{'format'} eq 'TAR')) {
       if(not -s $opts->{'keyfile'}) {
-         $t = gettext("Key is necessary for export as Zip");
+         $t = sprintf(
+               gettext("Key is necessary for export as %s"), $opts->{'format'});
          $t .= "\n";
          $t .= gettext("Export is not possible!");
          GUI::HELPERS::print_warning($t);
@@ -533,7 +534,7 @@ sub export_cert {
       GUI::HELPERS::print_info($t, $ext);
       return;
 
-   } elsif ($opts->{'format'} eq "ZIP") {
+   } elsif (($opts->{'format'} eq "ZIP") || ($opts->{'format'} eq "TAR")) {
 
       my $tmpcert   = "$main->{'tmpdir'}/cert.pem";
       my $tmpkey    = "$main->{'tmpdir'}/key.pem";
@@ -591,14 +592,21 @@ sub export_cert {
       }
 
       unlink($opts->{'outfile'});
-      system($main->{'init'}->{'zipbin'}, '-j', $opts->{'outfile'}, $tmpcacert, 
-             $tmpkey, $tmpcert);
-      my $ret = $? >> 8;
+      if($opts->{'format'} eq "ZIP") {
+         system($main->{'init'}->{'zipbin'}, '-j', $opts->{'outfile'},
+               $tmpcacert, $tmpkey, $tmpcert); 
+         my $ret = $? >> 8;
+      } elsif ($opts->{'format'} eq "TAR") {
+         system($main->{'init'}->{'tarbin'}, 'cfv', $opts->{'outfile'},
+               $tmpcacert, $tmpkey, $tmpcert); 
+      }
 
       GUI::HELPERS::set_cursor($main, 0);
 
       if(not -s $opts->{'outfile'} || $ret) {
-         GUI::HELPERS::print_warning(gettext("Generating Zip file failed"));
+         GUI::HELPERS::print_warning(
+               sprintf(gettext("Generating %s file failed"), $opts->{'format'})
+               );
       } else {
          $main->{'exportdir'} = HELPERS::write_export_dir($main, 
                $opts->{'outfile'});

@@ -1,6 +1,6 @@
 # Copyright (c) Stephan Martin <sm@sm-zone.net>
 #
-# $Id: REQ.pm,v 1.4 2005/08/30 19:56:22 sm Exp $
+# $Id: REQ.pm,v 1.5 2006/02/11 22:03:11 sm Exp $
 # 
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -117,7 +117,8 @@ sub get_req_create {
       ($opts->{'C'} ne "") &&
       (length($opts->{'C'}) != 2)) {
       $main->show_req_dialog($opts); 
-      GUI::HELPERS::print_warning(gettext("Country must be exact 2 letter code"));
+      GUI::HELPERS::print_warning(
+            gettext("Country must be exact 2 letter code"));
       return;
    }
 
