@@ -1,6 +1,6 @@
 # Copyright (c) Stephan Martin <sm@sm-zone.net>
 #
-# $Id: OpenSSL.pm,v 1.7 2006/02/16 21:18:43 sm Exp $
+# $Id: OpenSSL.pm,v 1.11 2006/05/23 16:55:43 sm Exp $
 # 
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -41,18 +41,16 @@ sub new {
    my $v = <TEST>;
    close(TEST);
 
-   if($v =~ /0.9.6/) {
-      $self->{'version'} = "0.9.6";
-   } elsif ($v =~ /0.9.7/) {
-      $self->{'version'} = "0.9.7";
-   } elsif ($v =~ /0.9.8/) {
-      $self->{'version'} = "0.9.8";
+   # set version (format: e.g. 0.9.7 or 0.9.7a)
+   if($v =~ /\b(0\.9\.[678][a-z]?)\b/) {
+      $self->{'version'} = $1;
    }
 
-   if($v =~ /0.9.7f/ || $v =~ /0.9.7g/ || $v =~ /0.9.7h/)  {
-      $self->{'broken'} = 0;
-   } else {
-      $self->{'broken'} = 1;
+   # CRL output was broken before openssl 0.9.7f   
+   if($v =~ /\b0\.9\.[0-6][a-z]?\b/ || $v =~ /\b0\.9\.7[a-e]?\b/)  { 
+      $self->{'broken'} = 1; 
+   } else { 
+      $self->{'broken'} = 0; 
    }
 
    bless($self, $class);
@@ -638,7 +636,7 @@ sub parsecert {
    $tmp->{'EXT'} = HELPERS::parse_extensions(\@lines, "cert");
 
    # get fingerprint 
-   $cmd = "$self->{'bin'} x509 -noout -fingerprint -in $file";
+   $cmd = "$self->{'bin'} x509 -noout -fingerprint -md5 -in $file";
    my($rdfh, $wtfh);
    $ext = "$cmd\n\n";
    $pid = open3($wtfh, $rdfh, $rdfh, $cmd);
@@ -947,6 +945,7 @@ sub genp12 {
    $cmd .= " -passin env:SSLPASS";
    $cmd .= " -certfile $opts->{'cafile'}" if($opts->{'includeca'});
    $cmd .= " -nodes " if($opts->{'nopass'});
+   $cmd .= " -name \"$opts->{'friendly'}\"" if($opts->{'friendly'} ne "");
 
 
    $ENV{'P12PASS'} = $opts->{'p12passwd'} if(not $opts->{'nopass'});

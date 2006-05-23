@@ -1,6 +1,6 @@
 # Copyright (c) Stephan Martin <sm@sm-zone.net>
 #
-# $Id: KEY.pm,v 1.5 2006/02/18 21:56:07 sm Exp $
+# $Id: KEY.pm,v 1.6 2006/05/23 16:55:43 sm Exp $
 # 
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -151,9 +151,10 @@ sub get_export_key {
       $opts->{'certfile'} = $cadir."/certs/".$opts->{'keyname'}.".pem";
       
       # set some defaults
-      $opts->{'nopass'}  = 0;
-      $opts->{'include'} = 0;
-      $opts->{'format'}  = 'PEM';
+      $opts->{'nopass'}        = 0;
+      $opts->{'include'}       = 0;
+      $opts->{'format'}        = 'PEM';
+      $opts->{'friendlyname'}  = '';
 
       if((defined($email)) && $email ne '' && $email ne ' ') {
          $opts->{'outfile'} = "$main->{'exportdir'}/$email-key.pem";
@@ -276,7 +277,8 @@ sub get_export_key {
             passwd    => $opts->{'passwd'},
             p12passwd => $opts->{'p12passwd'},
             includeca => $opts->{'includeca'},
-            nopass    => $opts->{'nopass'}
+            nopass    => $opts->{'nopass'},
+            friendly  => $opts->{'friendlyname'}
             );
 
       if($ret eq 1) {

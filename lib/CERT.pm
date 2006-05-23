@@ -1,6 +1,6 @@
 # Copyright (c) Stephan Martin <sm@sm-zone.net>
 #
-# $Id: CERT.pm,v 1.8 2006/02/18 21:56:07 sm Exp $
+# $Id: CERT.pm,v 1.9 2006/05/23 16:55:43 sm Exp $
 # 
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -415,10 +415,11 @@ sub get_export_cert {
       }else{
          $opts->{'outfile'} = "$main->{'exportdir'}/cert.pem";
       }
-      $opts->{'format'}  = 'PEM';
-      $opts->{'include'} = 0;
-      $opts->{'incfp'}   = 0;
-      $opts->{'nopass'}  = 0;
+      $opts->{'format'}       = 'PEM';
+      $opts->{'include'}      = 0;
+      $opts->{'incfp'}        = 0;
+      $opts->{'nopass'}       = 0;
+      $opts->{'friendlyname'} = '';
 
       $main->show_export_dialog($opts, 'cert');
       return;
@@ -511,7 +512,8 @@ sub export_cert {
             passwd    => $opts->{'passwd'},
             p12passwd => $opts->{'p12passwd'},
             includeca => $opts->{'includeca'},
-            nopass    => $opts->{'nopass'}
+            nopass    => $opts->{'nopass'},
+            friendly  => $opts->{'friendlyname'}
             );
 
       GUI::HELPERS::set_cursor($main, 0);

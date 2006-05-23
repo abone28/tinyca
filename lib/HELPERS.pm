@@ -1,7 +1,7 @@
 # Copyright (c) Olaf Gellert <og@pre-secure.de> and
 #               Stephan Martin <sm@sm-zone.net>
 #
-# $Id: HELPERS.pm,v 1.3 2005/04/08 10:54:52 sm Exp $
+# $Id: HELPERS.pm,v 1.4 2006/04/18 06:19:46 sm Exp $
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -91,7 +91,8 @@ sub exit_clean {
 
    $rootwin->set_cursor($cursor);
    
-   Gtk2->main_quit($ret);
+   Gtk2->main_quit();
+   exit($ret);
 }
 
 #

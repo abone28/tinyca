@@ -1,6 +1,6 @@
 # Copyright (c) Stephan Martin <sm@sm-zone.net>
 #
-# $Id: CA.pm,v 1.6 2005/10/22 14:35:56 sm Exp $
+# $Id: CA.pm,v 1.7 2006/04/13 14:14:40 sm Exp $
 # 
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -177,7 +177,8 @@ sub open_ca {
    }
    close(INDEX);
 
-   if($oldca && ($main->{'OpenSSL'}->{'version'} eq "0.9.7") && 
+   # offer CA conversion for old CAs and openssl >= 0.9.7
+   if($oldca && ($main->{'OpenSSL'}->{'version'} eq "0.9.7") &&
          !$opts->{'noconv'} && !$opts->{'doconv'}) {
       GUI::HELPERS::set_status($main, gettext("  Convert CA"));
       while(Gtk2->events_pending) {

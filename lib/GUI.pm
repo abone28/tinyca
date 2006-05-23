@@ -1,6 +1,6 @@
 # Copyright (c) Stephan Martin <sm@sm-zone.net>
 #
-# $Id: GUI.pm,v 1.25 2006/02/18 21:56:07 sm Exp $
+# $Id: GUI.pm,v 1.29 2006/05/23 19:46:25 sm Exp $
 # 
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -59,7 +59,7 @@ sub new {
 
    bless($self, $class);
 
-   $self->{'version'} = '0.7.2';
+   $self->{'version'} = '0.7.3';
 
    $self->{'words'} = GUI::WORDS->new();
 
@@ -112,7 +112,7 @@ sub new {
    $self->{'mw'}->set_resizable(1);
    $self->{'mw'}->set_default_size(850, 600);
    $self->{'mw'}->signal_connect( 'delete_event', 
-         sub { HELPERS::exit_clean() });
+         sub { HELPERS::exit_clean(0) });
 
    $self->{'busycursor'} = Gtk2::Gdk::Cursor->new('watch');
    $self->{'cursor'}     = Gtk2::Gdk::Cursor->new('left-ptr');
@@ -1369,7 +1369,8 @@ sub show_cert_revoke_dialog {
          gettext("CA Password:"), \$opts->{'passwd'}, $table, 0, 0);
    $entry->grab_focus();
 
-   if($self->{'OpenSSL'}->{'version'} =~ /0.9.7/) {
+   if($self->{'OpenSSL'}->{'version'} !~ /^0\.9\.[0-6][a-z]?$/) {
+      # OpenSSL < 0.9.7 was not able to handle revocation reasons
       $label = GUI::HELPERS::create_label(
             gettext("Revocation Reason:"), 'left', 0, 0);
    
@@ -2005,6 +2006,9 @@ sub show_p12_export_dialog {
    $entry = GUI::HELPERS::entry_to_table(gettext("Export Password:"),
       \$opts->{'p12passwd'}, $table, 1, 0);
 
+   $entry = GUI::HELPERS::entry_to_table(gettext("Friendly Name:"),
+      \$opts->{'friendlyname'}, $table, 2, 1);
+
    $label = GUI::HELPERS::create_label(
          gettext("Without Passphrase"), 'left', 0, 0);
    $box->vbox->add($label);
@@ -2187,8 +2191,8 @@ sub show_req_sign_dialog {
       }
    }
 
-   if(($self->{'OpenSSL'}->{'version'} =~ /0.9.7/) ||
-      ($self->{'OpenSSL'}->{'version'} =~ /0.9.8/)) {
+   # OpenSSL < 0.9.7 was not able to dynamically handle mailadresses in DNs
+   if($self->{'OpenSSL'}->{'version'} !~ /^0\.9\.[0-6][a-z]?$/) {
       $radiobox = Gtk2::HBox->new(0, 0);
       $key1 = Gtk2::RadioButton->new(undef, gettext("Yes"));
       $key1->set_active(1);
