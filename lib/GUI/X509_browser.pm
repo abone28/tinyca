@@ -1,7 +1,7 @@
 # Copyright (c) Olaf Gellert <og@pre-secure.de> and
 #               Stephan Martin <sm@sm-zone.net>
 #
-# $Id: X509_browser.pm,v 1.4 2005/04/08 22:36:20 sm Exp $
+# $Id: X509_browser.pm,v 1.6 2006/06/28 21:50:42 sm Exp $
 # 
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -22,11 +22,9 @@ package GUI::X509_browser;
 
 use HELPERS;
 use GUI::HELPERS;
-use MIME::Base64;
 use GUI::X509_infobox;
 
 use POSIX;
-use Locale::gettext;
 
 my $tmpdefault="/tmp";
 
@@ -97,10 +95,10 @@ sub new {
 #      }
 # 
 #    if (not defined($ok_text)) {
-#      $ok_text = gettext("OK");
+#      $ok_text = _("OK");
 #      }
 #    if (not defined($cancel_text)) {
-#      $cancel_text = gettext("Cancel");
+#      $cancel_text = _("Cancel");
 #      }
 # 
 #    # initialize main window
@@ -159,31 +157,31 @@ sub add_list {
 
    # printf STDERR "AddList: Self: $self, Dir $directory, CRL $crlfile, Index: $indexfile\n";
 
-   @reqtitles = (gettext("Common Name"),
-                 gettext("eMail Address"),
-                 gettext("Organizational Unit"),
-                 gettext("Organization"),
-                 gettext("Location"),
-                 gettext("State"),
-                 gettext("Country"));
+   @reqtitles = (_("Common Name"),
+                 _("eMail Address"),
+                 _("Organizational Unit"),
+                 _("Organization"),
+                 _("Location"),
+                 _("State"),
+                 _("Country"));
 
-   @certtitles = (gettext("Common Name"),
-                  gettext("eMail Address"),
-                  gettext("Organizational Unit"),
-                  gettext("Organization"),
-                  gettext("Location"),
-                  gettext("State"),
-                  gettext("Country"),
-                  gettext("Status"));
+   @certtitles = (_("Common Name"),
+                  _("eMail Address"),
+                  _("Organizational Unit"),
+                  _("Organization"),
+                  _("Location"),
+                  _("State"),
+                  _("Country"),
+                  _("Status"));
 
-   @keytitles = (gettext("Common Name"),
-                 gettext("eMail Address"),
-                 gettext("Organizational Unit"),
-                 gettext("Organization"),
-                 gettext("Location"),
-                 gettext("State"),
-                 gettext("Country"),
-                 gettext("Type"));
+   @keytitles = (_("Common Name"),
+                 _("eMail Address"),
+                 _("Organizational Unit"),
+                 _("Organization"),
+                 _("Location"),
+                 _("State"),
+                 _("Country"),
+                 _("Type"));
 
    $self->{'actca'}    = $actca;
    $self->{'actdir'}   = $directory;
@@ -275,7 +273,7 @@ sub add_list {
          $column->set_cell_data_func ($renderer, sub {
                my ($column, $cell, $model, $iter) = @_;
                $text = $model->get($iter, 7);
-               $color = $text eq gettext("VALID")?'green':'red';
+               $color = $text eq _("VALID")?'green':'red';
                $cell->set (text => $text, foreground => $color);
                });
       }
@@ -384,7 +382,7 @@ sub update_cert {
 
        
 #       $self->{'x509clist'}->set_text($row, 7, $state);
-#       if($state eq gettext("VALID")) {
+#       if($state eq _("VALID")) {
 #          $self->{'x509clist'}->set_cell_style($row, 7, $self->{'stylegreen'});
 #       } else {
 #          $self->{'x509clist'}->set_cell_style($row, 7, $self->{'stylered'});
@@ -424,7 +422,7 @@ sub update_key {
 
        
 #       $self->{'x509clist'}->set_text($row, 7, $state);
-#       if($state eq gettext("VALID")) {
+#       if($state eq _("VALID")) {
 #          $self->{'x509clist'}->set_cell_style($row, 7, $self->{'stylegreen'});
 #       } else {
 #          $self->{'x509clist'}->set_cell_style($row, 7, $self->{'stylered'});
@@ -442,20 +440,20 @@ sub update_info {
     $dn = selection_dn($self);
 
     if (defined $dn) {
-       $dn = MIME::Base64::encode($dn, '');
+       $dn = HELPERS::enc_base64($dn);
 
        if ($self->{'mode'} eq 'cert') { 
           $parsed = $self->{'main'}->{'CERT'}->parse_cert($self->{'main'},
                 $dn, $false);
-          $title  = gettext("Certificate Information");
+          $title  = _("Certificate Information");
        } else { 
           $parsed = $self->{'main'}->{'REQ'}->parse_req($self->{'main'}, $dn,
                 $false);
-          $title = gettext("Request Information");
+          $title = _("Request Information");
        }
 
        defined($parsed) || 
-          GUI::HELPERS::print_error(gettext("Can't read file"));
+          GUI::HELPERS::print_error(_("Can't read file"));
 
        if(not defined($self->{'infobox'})) { 
           $self->{'infobox'} = Gtk2::VBox->new();
@@ -502,7 +500,7 @@ sub add_info {
 
   if (defined $index) {
     ($dn, $status) = split(/\%/, $list->[$index]);
-    $dn = MIME::Base64::encode($dn, '');
+    $dn = HELPERS::enc_base64($dn);
 
     if ($self->{'mode'} eq 'cert') { 
        $parsed = $self->{'main'}->{'CERT'}->parse_cert($self->{'main'}, $dn,
@@ -514,7 +512,7 @@ sub add_info {
       $title="Request Information";
     }
 
-    defined($parsed) || GUI::HELPERS::print_error(gettext("Can't read file"));
+    defined($parsed) || GUI::HELPERS::print_error(_("Can't read file"));
 
     # printf STDERR "Infowin: $self->{'infowin'}\n";
     $self->{'infobox'} = Gtk2::VBox->new();
@@ -570,14 +568,14 @@ sub selection_fname {
      $list  = $self->{'main'}->{'KEY'}->{'certlist'};
   } else {
      GUI::HELPERS::print_error( 
-           gettext("Invalid browser mode for selection_fname():"." "
+           _("Invalid browser mode for selection_fname():"." "
               .$self->{'mode'}));
   }
 
 
   if (defined $index) {
      ($dn, $status) = split(/\%/, $list->[$index]);
-     $filename= MIME::Base64::encode($dn, '');
+     $filename= HELPERS::enc_base64($dn);
      $filename=$self->{'actdir'}."/$filename".".pem";
   } else {
      $filename = undef;
@@ -606,7 +604,7 @@ sub selection_dn {
      $list  = $self->{'main'}->{'KEY'}->{'keylist'};
   } else {
      GUI::HELPERS::print_error( 
-           gettext("Invalid browser mode for selection_dn():"." "
+           _("Invalid browser mode for selection_dn():"." "
               .$self->{'mode'}));
   }
 
@@ -655,7 +653,7 @@ sub selection_cn {
      $cn = ($self->{'x509store'}->get($row))[0];
   } else {
      GUI::HELPERS::print_error( 
-           gettext("Invalid browser mode for selection_cn():"." "
+           _("Invalid browser mode for selection_cn():"." "
               .$self->{'mode'}));
   }
 
@@ -676,7 +674,7 @@ sub selection_email {
      $email = ($self->{'x509store'}->get($row))[1];
   } else {
      GUI::HELPERS::print_error(
-           gettext("Invalid browser mode for selection_cn():"." "
+           _("Invalid browser mode for selection_cn():"." "
               .$self->{'mode'}));
   }
 
@@ -697,7 +695,7 @@ sub selection_status {
      $list  = $self->{'main'}->{'CERT'}->{'certlist'};
   } else {
      GUI::HELPERS::print_error( 
-           gettext("Invalid browser mode for selection_status():"." "
+           _("Invalid browser mode for selection_status():"." "
               .$self->{'mode'}));
   }
 
@@ -724,7 +722,7 @@ sub selection_type {
      $list  = $self->{'main'}->{'KEY'}->{'keylist'};
   } else {
      GUI::HELPERS::print_error( 
-           gettext("Invalid browser mode for selection_type():"." "
+           _("Invalid browser mode for selection_type():"." "
               .$self->{'mode'}));
   }
 
@@ -806,9 +804,6 @@ sub _show_cert_menu {
 }
 
 $true;
-
-
-
 
 __END__
 

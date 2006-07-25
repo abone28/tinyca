@@ -1,6 +1,6 @@
 # Copyright (c) Stephan Martin <sm@sm-zone.net>
 #
-# $Id: HELPERS.pm,v 1.5 2005/04/08 13:48:12 sm Exp $
+# $Id: HELPERS.pm,v 1.6 2006/06/28 21:50:42 sm Exp $
 # 
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -20,7 +20,6 @@ use strict;
 package GUI::HELPERS;
 
 use POSIX;
-use Locale::gettext;
 
 #
 #  Error message box, kills application
@@ -52,7 +51,7 @@ sub print_error {
       $scrolled->set_shadow_type('etched-in');
       $scrolled->add($text);
 
-      $expander = Gtk2::Expander->new(gettext("Command Details"));
+      $expander = Gtk2::Expander->new(_("Command Details"));
       $expander->add($scrolled);
       $box->vbox->add($expander);
    }
@@ -92,7 +91,7 @@ sub print_warning {
       $scrolled->set_shadow_type('etched-in');
       $scrolled->add($text);
 
-      $expander = Gtk2::Expander->new(gettext("Command Details"));
+      $expander = Gtk2::Expander->new(_("Command Details"));
       $expander->add($scrolled);
       $box->vbox->add($expander);
    }
@@ -133,7 +132,7 @@ sub print_info {
       $scrolled->set_shadow_type('etched-in');
       $scrolled->add($text);
 
-      $expander = Gtk2::Expander->new(gettext("Command Details"));
+      $expander = Gtk2::Expander->new(_("Command Details"));
       $expander->add($scrolled);
       $box->vbox->add($expander);
    }
@@ -303,14 +302,14 @@ sub browse_file {
 
    if($mode eq 'open') {
       $filter = Gtk2::FileFilter->new();
-      $filter->set_name(gettext("Request Files (*.pem, *.der, *.req)"));
+      $filter->set_name(_("Request Files (*.pem, *.der, *.req)"));
       $filter->add_pattern("*.pem");
       $filter->add_pattern("*.der");
       $filter->add_pattern("*.req");
       $file_chooser->add_filter($filter);
 
       $filter = Gtk2::FileFilter->new();
-      $filter->set_name(gettext("All Files (*.*)"));
+      $filter->set_name(_("All Files (*.*)"));
       $filter->add_pattern("*");
       $file_chooser->add_filter($filter);
    }

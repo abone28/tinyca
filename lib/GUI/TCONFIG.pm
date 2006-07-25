@@ -1,6 +1,6 @@
 # Copyright (c) Stephan Martin <sm@sm-zone.net>
 #
-# $Id: TCONFIG.pm,v 1.4 2005/10/22 13:53:08 sm Exp $
+# $Id: TCONFIG.pm,v 1.6 2006/06/28 21:50:42 sm Exp $
 # 
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -20,7 +20,6 @@ use strict;
 package GUI::TCONFIG;
 
 use POSIX;
-use Locale::gettext;
 
 #
 # main screen for configuration
@@ -45,7 +44,7 @@ sub show_configbox {
       $name = $main->{'CA'}->{'actca'};
    }
    if(not defined($name)) {
-      GUI::HELPERS::print_warning(gettext("Can't get CA name"));
+      GUI::HELPERS::print_warning(_("Can't get CA name"));
       return;
    }
 
@@ -72,7 +71,7 @@ sub show_configbox {
    $button_cancel = Gtk2::Button->new_from_stock('gtk-cancel');
    $button_cancel->signal_connect( 'clicked' => sub { $box->destroy() });
 
-   $t = gettext("All Settings are written unchanged to openssl.conf.\nSo please study the documentation of OpenSSL if you don't know exactly what to do.\nIf you are still unsure - keep the defaults and everything is expected to work fine.");
+   $t = _("All Settings are written unchanged to openssl.conf.\nSo please study the documentation of OpenSSL if you don't know exactly what to do.\nIf you are still unsure - keep the defaults and everything is expected to work fine.");
    $button_help = Gtk2::Button->new_from_stock('gtk-help');
    $button_help->signal_connect('clicked' => 
       sub { GUI::HELPERS::print_info($t) });
@@ -106,7 +105,7 @@ sub show_configbox {
    $vbox = Gtk2::VBox->new(0, 0);
 
    $label = GUI::HELPERS::create_label(
-         gettext("OpenSSL Configuration"), 'center', 0,0);
+         _("OpenSSL Configuration"), 'center', 0,0);
 
    $box->{'nb'}->append_page($vbox, $label);
    
@@ -114,7 +113,7 @@ sub show_configbox {
    $vbox->pack_start($label, 0, 0, 0);
    
    $label = GUI::HELPERS::create_label(
-         gettext("OpenSSL Configuration"), 'center', 0, 1);
+         _("OpenSSL Configuration"), 'center', 0, 1);
    $vbox->pack_start($label, 0, 0, 0);
    
    $label = GUI::HELPERS::create_label(' ', 'center', 0, 0);
@@ -127,7 +126,7 @@ sub show_configbox {
    $vbox->pack_start($label, 0, 0, 0);
 
    $label = GUI::HELPERS::create_label(
-         gettext("Only change these options, if you really know, what you are doing!!"),
+         _("Only change these options, if you really know, what you are doing!!"),
          'center', 1, 0);
    $vbox->pack_start($label, 0, 0, 0);
    
@@ -135,7 +134,7 @@ sub show_configbox {
    $vbox->pack_start($label, 0, 0, 0);
 
    $label = GUI::HELPERS::create_label(
-         gettext("You should be aware, that some options may break some crappy software!!"),
+         _("You should be aware, that some options may break some crappy software!!"),
          'center', 1, 0);
    $vbox->pack_start($label, 0, 0, 0);
    
@@ -144,7 +143,7 @@ sub show_configbox {
 
 
    $label = GUI::HELPERS::create_label(
-         gettext("If you are unsure: leave the defaults untouched"),
+         _("If you are unsure: leave the defaults untouched"),
          'center', 1, 0);
    $vbox->pack_start($label, 0, 0, 0);
    
@@ -180,12 +179,12 @@ sub show_configbox {
    $vbox->pack_start($label, 0, 0, 0);
    
    $label = GUI::HELPERS::create_label(
-         gettext("These Settings are passed to OpenSSL for creating Server Certificates"),
+         _("These Settings are passed to OpenSSL for creating Server Certificates"),
          'center', 0, 1);
    $vbox->pack_start($label, 0, 0, 0);
    
    $label = GUI::HELPERS::create_label(
-         gettext("Multiple Values can be separated by \",\""),
+         _("Multiple Values can be separated by \",\""),
          'center', 1, 0);
    $vbox->pack_start($label, 0, 0, 0);
    
@@ -205,20 +204,20 @@ sub show_configbox {
    $label = GUI::HELPERS::create_label(' ', 'center', 0, 0);
    $vbox->pack_start($label, 0, 0, 0);
 
-   $label = GUI::HELPERS::create_label(gettext("Server Certificate Settings"), 
+   $label = GUI::HELPERS::create_label(_("Server Certificate Settings"), 
          'center', 0, 0);
-   $label = Gtk2::Label->new(gettext("Server Certificate Settings"));
+   $label = Gtk2::Label->new(_("Server Certificate Settings"));
 
    $box->{'nb'}->append_page($vbox, $label);
 
    # special option subjectAltName
    $label = GUI::HELPERS::create_label(
-         gettext("Subject alternative name (subjectAltName):"), 'left', 0, 0);
+         _("Subject alternative name (subjectAltName):"), 'left', 0, 0);
    $table->attach_defaults($label, 0, 1, $rows-1, $rows);
 
    $main->{'radiobox'} = Gtk2::HBox->new(0, 0);
    $main->{'radio1'} = Gtk2::RadioButton->new(
-         undef, gettext($main->{'words'}{'ip'}));
+         undef, _($main->{'words'}{'ip'}));
    $main->{'radio1'}->signal_connect('toggled' =>
         sub {GUI::CALLBACK::toggle_to_var_pref($main->{'radio1'},
            \$main->{'TCONFIG'}->{'server_cert'}->{'subjectAltNameType'}, 'ip',
@@ -227,7 +226,7 @@ sub show_configbox {
    $main->{'radiobox'}->add($main->{'radio1'});
 
    $main->{'radio2'} = Gtk2::RadioButton->new(
-         $main->{'radio1'}, gettext($main->{'words'}{'dns'}));
+         $main->{'radio1'}, _($main->{'words'}{'dns'}));
    $main->{'radio2'}->signal_connect('toggled' =>
         sub {GUI::CALLBACK::toggle_to_var_pref($main->{'radio2'},
            \$main->{'TCONFIG'}->{'server_cert'}->{'subjectAltNameType'},
@@ -236,7 +235,7 @@ sub show_configbox {
    $main->{'radiobox'}->add($main->{'radio2'});
 
    $main->{'radio3'} = Gtk2::RadioButton->new($main->{'radio1'},
-         gettext($main->{'words'}{'raw'}));
+         _($main->{'words'}{'raw'}));
 
    $main->{'radio3'}->signal_connect('toggled' =>
         sub {GUI::CALLBACK::toggle_to_var_pref($main->{'radio3'},
@@ -310,13 +309,13 @@ sub show_configbox {
 
    # special option keyUsage
    $label = GUI::HELPERS::create_label(
-         gettext("Key Usage (keyUsage):"), 'left', 0, 0);
+         _("Key Usage (keyUsage):"), 'left', 0, 0);
    $table->attach_defaults($label, 0, 1, $rows-1, $rows);
 
    $main->{'radiobox'} = Gtk2::HBox->new(0, 0);
 
    $main->{'radio1'} = Gtk2::RadioButton->new(undef,
-         gettext($main->{'words'}{'critical'}));
+         _($main->{'words'}{'critical'}));
    if($main->{'TCONFIG'}->{'server_cert'}->{'keyUsageType'} eq 'critical') {
       $main->{'radio1'}->set_active(1)
    }
@@ -328,7 +327,7 @@ sub show_configbox {
    $main->{'radiobox'}->add($main->{'radio1'});
 
    $main->{'radio2'} = Gtk2::RadioButton->new($main->{'radio1'},
-         gettext($main->{'words'}{'noncritical'}));
+         _($main->{'words'}{'noncritical'}));
    if($main->{'TCONFIG'}->{'server_cert'}->{'keyUsageType'} eq 'noncritical') {
       $main->{'radio2'}->set_active(1)
    }
@@ -389,12 +388,12 @@ sub show_configbox {
 
    # special option extendedKeyUsage
    $label = GUI::HELPERS::create_label(
-         gettext("Extended Key Usage (extendedKeyUsage):"), 'left', 0, 0);
+         _("Extended Key Usage (extendedKeyUsage):"), 'left', 0, 0);
    $table->attach_defaults($label, 0, 1, $rows-1, $rows);
 
    $main->{'radiobox'} = Gtk2::HBox->new(0, 0);
    $main->{'radio1'} = Gtk2::RadioButton->new(undef, 
-         gettext($main->{'words'}{'critical'}));
+         _($main->{'words'}{'critical'}));
    if($main->{'TCONFIG'}->{'server_cert'}->{'extendedKeyUsageType'} eq 'critical') {
       $main->{'radio1'}->set_active(1)
    }
@@ -405,7 +404,7 @@ sub show_configbox {
    $main->{'radiobox'}->add($main->{'radio1'});
 
    $main->{'radio2'} = Gtk2::RadioButton->new($main->{'radio1'}, 
-         gettext($main->{'words'}{'noncritical'}));
+         _($main->{'words'}{'noncritical'}));
    if($main->{'TCONFIG'}->{'server_cert'}->{'extendedKeyUsageType'} eq 'noncritical') {
       $main->{'radio2'}->set_active(1)
    }
@@ -465,7 +464,7 @@ sub show_configbox {
 
    # special option nsCerttype
    $label = GUI::HELPERS::create_label(
-         gettext("Netscape Certificate Type (nsCertType):"), 'left', 0, 0);
+         _("Netscape Certificate Type (nsCertType):"), 'left', 0, 0);
    $table->attach_defaults($label, 0, 1, $rows-1, $rows);
 
    $combonsCertType = Gtk2::Combo->new();
@@ -494,7 +493,7 @@ sub show_configbox {
 
    # special option nsSslServer
    $label = GUI::HELPERS::create_label(
-         gettext("Netscape SSL Server Name (nsSslServerName):"), 'left', 0, 0);
+         _("Netscape SSL Server Name (nsSslServerName):"), 'left', 0, 0);
    $table->attach_defaults($label, 0, 1, $rows-1, $rows);
 
    $combonsSslServer = Gtk2::Combo->new();
@@ -519,7 +518,7 @@ sub show_configbox {
 
    # special option nsRevocationUrl
    $label = GUI::HELPERS::create_label(
-         gettext("Netscape Revocation URL (nsRevocationUrl):"), 'left', 0, 0);
+         _("Netscape Revocation URL (nsRevocationUrl):"), 'left', 0, 0);
    $table->attach_defaults($label, 0, 1, $rows-1, $rows);
 
    $combonsRevocationUrl = Gtk2::Combo->new();
@@ -544,7 +543,7 @@ sub show_configbox {
 
    # special option nsRenewalUrl
    $label = GUI::HELPERS::create_label(
-         gettext("Netscape Renewal URL (nsRenewalUrl):"), 'left', 0, 0);
+         _("Netscape Renewal URL (nsRenewalUrl):"), 'left', 0, 0);
    $table->attach_defaults($label, 0, 1, $rows-1, $rows);
 
    $combonsRenewalUrl = Gtk2::Combo->new();
@@ -605,12 +604,12 @@ sub show_configbox {
    $vbox->pack_start($label, 0, 0, 0);
    
    $label = GUI::HELPERS::create_label(
-         gettext("These Settings are passed to OpenSSL for creating Client Certificates"), 
+         _("These Settings are passed to OpenSSL for creating Client Certificates"), 
          'center', 0, 1);
    $vbox->pack_start($label, 0, 0, 0);
    
    $label = GUI::HELPERS::create_label(
-         gettext("Multiple Values can be separated by \",\""),
+         _("Multiple Values can be separated by \",\""),
          'center', 0, 0);
    $vbox->pack_start($label, 0, 0, 0);
    
@@ -630,18 +629,18 @@ sub show_configbox {
    $label = GUI::HELPERS::create_label(' ', 'center', 0, 0);
    $vbox->pack_start($label, 0, 0, 0);
 
-   $label = GUI::HELPERS::create_label(gettext("Client Certificate Settings"),
+   $label = GUI::HELPERS::create_label(_("Client Certificate Settings"),
          'center', 0, 0);
    $box->{'nb'}->append_page($vbox, $label);
 
    # special option subjectAltName
    $label = GUI::HELPERS::create_label(
-         gettext("Subject alternative name (subjectAltName):"), 'left', 0, 0);
+         _("Subject alternative name (subjectAltName):"), 'left', 0, 0);
    $table->attach_defaults($label, 0, 1, $rows-1, $rows);
 
    $main->{'radiobox'} = Gtk2::HBox->new(0, 0);
    $main->{'radio1'} = Gtk2::RadioButton->new(undef, 
-         gettext($main->{'words'}{'ip'}));
+         _($main->{'words'}{'ip'}));
    $main->{'radio1'}->signal_connect('toggled' => 
          sub { GUI::CALLBACK::toggle_to_var_pref($main->{'radio1'},
             \$main->{'TCONFIG'}->{'client_cert'}->{'subjectAltNameType'},
@@ -649,7 +648,7 @@ sub show_configbox {
    $main->{'radiobox'}->add($main->{'radio1'});
 
    $main->{'radio2'} = Gtk2::RadioButton->new($main->{'radio1'},
-         gettext($main->{'words'}{'dns'}));
+         _($main->{'words'}{'dns'}));
    $main->{'radio2'}->signal_connect('toggled' =>
          sub { GUI::CALLBACK::toggle_to_var_pref($main->{'radio2'},
             \$main->{'TCONFIG'}->{'client_cert'}->{'subjectAltNameType'},
@@ -657,7 +656,7 @@ sub show_configbox {
    $main->{'radiobox'}->add($main->{'radio2'});
 
    $main->{'radio3'} = Gtk2::RadioButton->new($main->{'radio1'},
-         gettext($main->{'words'}{'mail'}));
+         _($main->{'words'}{'mail'}));
    $main->{'radio3'}->signal_connect('toggled' => 
          sub { GUI::CALLBACK::toggle_to_var_pref($main->{'radio3'},
             \$main->{'TCONFIG'}->{'client_cert'}->{'subjectAltNameType'},
@@ -665,7 +664,7 @@ sub show_configbox {
    $main->{'radiobox'}->add($main->{'radio3'});
 
    $main->{'radio4'} = Gtk2::RadioButton->new($main->{'radio1'}, 
-         gettext($main->{'words'}{'raw'}));
+         _($main->{'words'}{'raw'}));
    $main->{'radio4'}->signal_connect('toggled' => 
          sub { GUI::CALLBACK::toggle_to_var_pref($main->{'radio4'},
             \$main->{'TCONFIG'}->{'client_cert'}->{'subjectAltNameType'},
@@ -742,12 +741,12 @@ sub show_configbox {
 
    # special option keyUsage
    $label = GUI::HELPERS::create_label(
-         gettext("Key Usage (keyUsage):"), 'left', 0, 0);
+         _("Key Usage (keyUsage):"), 'left', 0, 0);
    $table->attach_defaults($label, 0, 1, $rows-1, $rows);
 
    $main->{'radiobox'} = Gtk2::HBox->new(0, 0);
    $main->{'radio1'} = Gtk2::RadioButton->new(undef, 
-         gettext($main->{'words'}{'critical'}));
+         _($main->{'words'}{'critical'}));
    if($main->{'TCONFIG'}->{'client_cert'}->{'keyUsageType'} eq 'critical') {
       $main->{'radio1'}->set_active(1)
    }
@@ -758,7 +757,7 @@ sub show_configbox {
    $main->{'radiobox'}->add($main->{'radio1'});
 
    $main->{'radio2'} = Gtk2::RadioButton->new($main->{'radio1'}, 
-         gettext($main->{'words'}{'noncritical'}));
+         _($main->{'words'}{'noncritical'}));
    if($main->{'TCONFIG'}->{'client_cert'}->{'keyUsageType'} eq 'noncritical') {
       $main->{'radio2'}->set_active(1)
    }
@@ -817,12 +816,12 @@ sub show_configbox {
 
    # special option extendedKeyUsage
    $label = GUI::HELPERS::create_label(
-         gettext("Extended Key Usage (extendedKeyUsage):"), 'left', 0, 0);
+         _("Extended Key Usage (extendedKeyUsage):"), 'left', 0, 0);
    $table->attach_defaults($label, 0, 1, $rows-1, $rows);
 
    $main->{'radiobox'} = Gtk2::HBox->new(0, 0);
    $main->{'radio1'} = Gtk2::RadioButton->new(undef, 
-         gettext($main->{'words'}{'critical'}));
+         _($main->{'words'}{'critical'}));
    if($main->{'TCONFIG'}->{'client_cert'}->{'extendedKeyUsageType'} eq 'critical') {
       $main->{'radio1'}->set_active(1)
    }
@@ -833,7 +832,7 @@ sub show_configbox {
    $main->{'radiobox'}->add($main->{'radio1'});
 
    $main->{'radio2'} = Gtk2::RadioButton->new($main->{'radio1'}, 
-         gettext($main->{'words'}{'noncritical'}));
+         _($main->{'words'}{'noncritical'}));
    if($main->{'TCONFIG'}->{'client_cert'}->{'extendedKeyUsageType'} eq 'noncritical') {
       $main->{'radio2'}->set_active(1)
    }
@@ -892,7 +891,7 @@ sub show_configbox {
 
    # special option nsCerttype
    $label = GUI::HELPERS::create_label(
-         gettext("Netscape Certificate Type (nsCertType):"), 'left', 0, 0);
+         _("Netscape Certificate Type (nsCertType):"), 'left', 0, 0);
    $table->attach_defaults($label, 0, 1, $rows-1, $rows);
 
    $combocnsCertType = Gtk2::Combo->new();
@@ -922,7 +921,7 @@ sub show_configbox {
 
    # special option nsRevocationUrl
    $label = GUI::HELPERS::create_label(
-         gettext("Netscape Revocation URL (nsRevocationUrl):"), 'left', 0, 0);
+         _("Netscape Revocation URL (nsRevocationUrl):"), 'left', 0, 0);
    $table->attach_defaults($label, 0, 1, $rows-1, $rows);
 
    $combocnsRevocationUrl = Gtk2::Combo->new();
@@ -946,7 +945,7 @@ sub show_configbox {
 
    # special option nsRenewalUrl
    $label = GUI::HELPERS::create_label(
-         gettext("Netscape Renewal URL (nsRenewalUrl):"), 'left', 0, 0);
+         _("Netscape Renewal URL (nsRenewalUrl):"), 'left', 0, 0);
    $table->attach_defaults($label, 0, 1, $rows-1, $rows);
 
    $combocnsRenewalUrl = Gtk2::Combo->new();
@@ -1012,12 +1011,12 @@ sub show_configbox {
    $vbox->pack_start($label, 0, 0, 0);
    
    $label = GUI::HELPERS::create_label(
-         gettext("These Settings are passed to OpenSSL for creating CA Certificates"),
+         _("These Settings are passed to OpenSSL for creating CA Certificates"),
          'center', 0, 1);
    $vbox->pack_start($label, 0, 0, 0);
    
    $label = GUI::HELPERS::create_label(
-         gettext("Multiple Values can be separated by \",\""),
+         _("Multiple Values can be separated by \",\""),
          'center', 1, 0);
    $vbox->pack_start($label, 0, 0, 0);
    
@@ -1037,15 +1036,15 @@ sub show_configbox {
    $label = GUI::HELPERS::create_label(' ', 'center', 0, 0);
    $vbox->pack_start($label, 0, 0, 0);
 
-   $label = GUI::HELPERS::create_label(gettext("CA Certificate Settings"), 
+   $label = GUI::HELPERS::create_label(_("CA Certificate Settings"), 
          'center', 0, 0);
-   $label = Gtk2::Label->new(gettext("CA Certificate Settings"));
+   $label = Gtk2::Label->new(_("CA Certificate Settings"));
 
    $box->{'nb'}->append_page($vbox, $label);
 
    # special option subjectAltName
    $label = GUI::HELPERS::create_label(
-         gettext("Subject alternative name (subjectAltName):"), 'left', 0, 0);
+         _("Subject alternative name (subjectAltName):"), 'left', 0, 0);
    $table->attach_defaults($label, 0, 1, $rows-1, $rows);
 
    $combocasubjectAltName = Gtk2::Combo->new();
@@ -1074,7 +1073,7 @@ sub show_configbox {
 
    # special option nsCerttype
    $label = GUI::HELPERS::create_label(
-         gettext("Netscape Certificate Type (nsCertType):"), 'left', 0, 0);
+         _("Netscape Certificate Type (nsCertType):"), 'left', 0, 0);
    $table->attach_defaults($label, 0, 1, $rows-1, $rows);
 
    $combocansCertType = Gtk2::Combo->new();
@@ -1105,12 +1104,12 @@ sub show_configbox {
 
    # special option keyUsage
    $label = GUI::HELPERS::create_label(
-         gettext("Key Usage (keyUsage):"), 'left', 0, 0);
+         _("Key Usage (keyUsage):"), 'left', 0, 0);
    $table->attach_defaults($label, 0, 1, $rows-1, $rows);
 
    $main->{'radiobox'} = Gtk2::HBox->new(0, 0);
    $main->{'radio1'} = Gtk2::RadioButton->new(undef, 
-         gettext($main->{'words'}{'critical'}));
+         _($main->{'words'}{'critical'}));
    if($main->{'TCONFIG'}->{'v3_ca'}->{'keyUsageType'} eq 'critical') {
       $main->{'radio1'}->set_active(1)
    }
@@ -1121,7 +1120,7 @@ sub show_configbox {
    $main->{'radiobox'}->add($main->{'radio1'});
 
    $main->{'radio2'} = Gtk2::RadioButton->new($main->{'radio1'}, 
-         gettext($main->{'words'}{'noncritical'}));
+         _($main->{'words'}{'noncritical'}));
    if($main->{'TCONFIG'}->{'v3_ca'}->{'keyUsageType'} eq 'noncritical') {
       $main->{'radio2'}->set_active(1)
    }
@@ -1180,7 +1179,7 @@ sub show_configbox {
 
    # special option nsRevocationUrl
    $label = GUI::HELPERS::create_label(
-         gettext("Netscape Revocation URL (nsRevocationUrl):"), 'left', 0, 0);
+         _("Netscape Revocation URL (nsRevocationUrl):"), 'left', 0, 0);
    $table->attach_defaults($label, 0, 1, $rows-1, $rows);
 
    $combocansRevocationUrl = Gtk2::Combo->new();
@@ -1232,12 +1231,12 @@ sub show_configbox {
    $vbox->pack_start($label, 0, 0, 0);
    
    $label = GUI::HELPERS::create_label(
-         gettext("These Settings are passed to OpenSSL for creating Certificate Revocation Lists"), 
+         _("These Settings are passed to OpenSSL for creating Certificate Revocation Lists"), 
          'center', 0, 1);
    $vbox->pack_start($label, 0, 0, 0);
    
    $label = GUI::HELPERS::create_label(
-         gettext("Multiple Values can be separated by \",\""),
+         _("Multiple Values can be separated by \",\""),
          'center', 0, 0);
    $vbox->pack_start($label, 0, 0, 0);
    
@@ -1258,7 +1257,7 @@ sub show_configbox {
    $vbox->pack_start($label, 0, 0, 0);
 
    $label = GUI::HELPERS::create_label(
-         gettext("Revocation List Settings"), 'center', 0, 0);
+         _("Revocation List Settings"), 'center', 0, 0);
    $box->{'nb'}->append_page($vbox, $label);
 
    foreach $key (@options) { 
@@ -1285,7 +1284,8 @@ sub show_config_ca {
    my ($main, $opts, $mode) = @_;
 
    my(@options, $key, $box, $button_ok, $button_cancel, $table, $label,
-         $entry, $rows, $combo, @combostrings);
+         $entry, $rows, @combostrings, $combonsCertType, $combosubjectAltName,
+         $combokeyUsage);
 
    @options = qw(
          authorityKeyIdentifier
@@ -1299,7 +1299,7 @@ sub show_config_ca {
          );
    
    if(not defined($opts->{'name'})) {
-      GUI::HELPERS::print_warning(gettext("Can't get CA name"));
+      GUI::HELPERS::print_warning(_("Can't get CA name"));
       return;
    }
 
@@ -1319,7 +1319,7 @@ sub show_config_ca {
    $button_cancel->signal_connect('clicked', sub { $box->destroy() });
 
    $box = GUI::HELPERS::dialog_box(
-         gettext("CA Configuration"), gettext("CA Configuration"), 
+         _("CA Configuration"), _("CA Configuration"), 
          $button_ok, $button_cancel);
 
 
@@ -1327,17 +1327,17 @@ sub show_config_ca {
    $box->vbox->pack_start($label, 0, 0, 0);
 
    $label = GUI::HELPERS::create_label(
-         gettext("These Settings are passed to OpenSSL for creating this CA Certificate"), 
+         _("These Settings are passed to OpenSSL for creating this CA Certificate"), 
          'center', 0, 1);
    $box->vbox->pack_start($label, 0, 0, 0);
 
    $label = GUI::HELPERS::create_label(
-         gettext("and the CA Certificates of every SubCA, created with this CA."),
+         _("and the CA Certificates of every SubCA, created with this CA."),
          'center', 0, 1);
    $box->vbox->pack_start($label, 0, 0, 0);
    
    $label = GUI::HELPERS::create_label(
-         gettext("Multiple Values can be separated by \",\""),
+         _("Multiple Values can be separated by \",\""),
          'center', 0, 0);
    $box->vbox->pack_start($label, 0, 0, 0);
    
@@ -1345,7 +1345,7 @@ sub show_config_ca {
    $box->vbox->pack_start($label, 0, 0, 0);
 
    $label = GUI::HELPERS::create_label(
-         gettext("If you are unsure: leave the defaults untouched"), 
+         _("If you are unsure: leave the defaults untouched"), 
          'center', 0, 0);
    $box->vbox->pack_start($label, 0, 0, 0);
 
@@ -1355,12 +1355,12 @@ sub show_config_ca {
 
    # special option keyUsage
    $label = GUI::HELPERS::create_label(
-         gettext("Key Usage (keyUsage):"), 'left', 0, 0);
+         _("Key Usage (keyUsage):"), 'left', 0, 0);
    $table->attach_defaults($label, 0, 1, $rows-1, $rows);
 
    $main->{'radiobox'} = Gtk2::HBox->new(0, 0);
    $main->{'radio1'} = Gtk2::RadioButton->new(undef,
-         gettext($main->{'words'}{'critical'}));
+         _($main->{'words'}{'critical'}));
    if($main->{'TCONFIG'}->{'v3_ca'}->{'keyUsageType'} eq 'critical') {
       $main->{'radio1'}->set_active(1)
    }
@@ -1370,7 +1370,7 @@ sub show_config_ca {
    $main->{'radiobox'}->add($main->{'radio1'});
 
    $main->{'radio2'} = Gtk2::RadioButton->new($main->{'radio1'},
-         gettext($main->{'words'}{'noncritical'}));
+         _($main->{'words'}{'noncritical'}));
    if($main->{'TCONFIG'}->{'v3_ca'}->{'keyUsageType'} eq 'noncritical') {
       $main->{'radio2'}->set_active(1)
    }
@@ -1379,14 +1379,14 @@ sub show_config_ca {
          \$main->{'TCONFIG'}->{'v3_ca'}->{'keyUsageType'}, 'noncritical')});
    $main->{'radiobox'}->add($main->{'radio2'});
 
-   $combo = Gtk2::Combo->new();
+   $combokeyUsage = Gtk2::Combo->new();
    @combostrings = ($main->{'words'}{'none'}, 
                     $main->{'words'}{'keyCertSign'}, 
                     $main->{'words'}{'cRLSign'}, 
                     $main->{'words'}{'keyCertSign, cRLSign'});
-   $combo->set_popdown_strings(@combostrings);
-   $combo->set_use_arrows(1);
-   $combo->set_value_in_list(1, 0);
+   $combokeyUsage->set_popdown_strings(@combostrings);
+   $combokeyUsage->set_use_arrows(1);
+   $combokeyUsage->set_value_in_list(1, 0);
 
    if(defined($main->{'TCONFIG'}->{'v3_ca'}->{'keyUsage'})) {
      if($main->{'TCONFIG'}->{'v3_ca'}->{'keyUsage'} 
@@ -1395,32 +1395,32 @@ sub show_config_ca {
         $main->{'radio2'}->set_sensitive(1);
 
         if($main->{'TCONFIG'}->{'v3_ca'}->{'keyUsage'} eq 'keyCertSign') {
-           $combo->entry->set_text($main->{'words'}{'keyCertSign'});
+           $combokeyUsage->entry->set_text($main->{'words'}{'keyCertSign'});
         }elsif($main->{'TCONFIG'}->{'v3_ca'}->{'keyUsage'} eq 'cRLSign') {
-           $combo->entry->set_text($main->{'words'}{'cRLSign'});
+           $combokeyUsage->entry->set_text($main->{'words'}{'cRLSign'});
         }elsif($main->{'TCONFIG'}->{'v3_ca'}->{'keyUsage'} eq 
                                                  'keyCertSign, cRLSign') {
-           $combo->entry->set_text($main->{'words'}{'keyCertSign, cRLSign'});
+           $combokeyUsage->entry->set_text($main->{'words'}{'keyCertSign, cRLSign'});
         }else {
-           $combo->entry->set_text($main->{'words'}{'none'});
+           $combokeyUsage->entry->set_text($main->{'words'}{'none'});
            $main->{'radio1'}->set_sensitive(0);
            $main->{'radio2'}->set_sensitive(0);
         }
      }else {
-        $combo->entry->set_text($main->{'words'}{'none'});
+        $combokeyUsage->entry->set_text($main->{'words'}{'none'});
         $main->{'radio1'}->set_sensitive(0);
         $main->{'radio2'}->set_sensitive(0);
      }
    } else { 
-      $combo->entry->set_text($main->{'words'}{'none'});
+      $combokeyUsage->entry->set_text($main->{'words'}{'none'});
       $main->{'radio1'}->set_sensitive(0);
       $main->{'radio2'}->set_sensitive(0);
    }
-   $combo->entry->signal_connect('changed' =>
-         sub{&GUI::CALLBACK::entry_to_var_key($combo, 
-            $combo->entry, \$main->{'TCONFIG'}->{'v3_ca'}->{'keyUsage'}, 
+   $combokeyUsage->entry->signal_connect('changed' =>
+         sub{&GUI::CALLBACK::entry_to_var_key($combokeyUsage, 
+            $combokeyUsage->entry, \$main->{'TCONFIG'}->{'v3_ca'}->{'keyUsage'}, 
          undef, $main->{words}, $main->{'radio1'},  $main->{'radio2'})});
-   $table->attach_defaults($combo, 1, 2, $rows-1, $rows);
+   $table->attach_defaults($combokeyUsage, 1, 2, $rows-1, $rows);
    $rows++;
 
    $table->attach_defaults($main->{'radiobox'}, 1, 2, $rows-1, $rows);
@@ -1428,10 +1428,10 @@ sub show_config_ca {
 
    # special option nsCerttype
    $label = GUI::HELPERS::create_label(
-         gettext("Netscape Certificate Type (nsCertType):"), 'left', 0, 0);
+         _("Netscape Certificate Type (nsCertType):"), 'left', 0, 0);
    $table->attach_defaults($label, 0, 1, $rows-1, $rows);
 
-   $combo = Gtk2::Combo->new();
+   $combonsCertType = Gtk2::Combo->new();
    @combostrings = ($main->{'words'}{'none'}, 
                     $main->{'words'}{'emailCA'},
                     $main->{'words'}{'sslCA'},
@@ -1441,49 +1441,49 @@ sub show_config_ca {
                     $main->{'words'}{'emailCA, objCA'},
                     $main->{'words'}{'sslCA, emailCA, objCA'} 
                     );
-   $combo->set_popdown_strings(@combostrings);
-   $combo->set_use_arrows(1);
-   $combo->set_value_in_list(1, 0);
+   $combonsCertType->set_popdown_strings(@combostrings);
+   $combonsCertType->set_use_arrows(1);
+   $combonsCertType->set_value_in_list(1, 0);
    if(defined($main->{'TCONFIG'}->{'v3_ca'}->{'nsCertType'})) {
-      $combo->entry->set_text(
+      $combonsCertType->entry->set_text(
             $main->{'words'}{$main->{'TCONFIG'}->{'v3_ca'}->{'nsCertType'}});
    } else {
-      $combo->entry->set_text($main->{'words'}{'none'});
+      $combonsCertType->entry->set_text($main->{'words'}{'none'});
    }
-   $combo->entry->signal_connect('changed' =>
-         sub{GUI::CALLBACK::entry_to_var($combo, 
-         $combo->entry, \$main->{'TCONFIG'}->{'v3_ca'}->{'nsCertType'}, 
+   $combonsCertType->entry->signal_connect('changed' =>
+         sub{GUI::CALLBACK::entry_to_var($combonsCertType, 
+         $combonsCertType->entry, \$main->{'TCONFIG'}->{'v3_ca'}->{'nsCertType'}, 
          undef, $main->{words})});
-   $table->attach_defaults($combo, 1, 2, $rows-1, $rows);
+   $table->attach_defaults($combonsCertType, 1, 2, $rows-1, $rows);
    $rows++;
 
    # special option subjectAltName
    $label = GUI::HELPERS::create_label(
-         gettext("Subject alternative name (subjectAltName):"), 'left', 0, 0);
+         _("Subject alternative name (subjectAltName):"), 'left', 0, 0);
    $table->attach_defaults($label, 0, 1, $rows-1, $rows);
 
-   $combo = Gtk2::Combo->new();
+   $combosubjectAltName = Gtk2::Combo->new();
    @combostrings = ($main->{'words'}{'none'}, $main->{'words'}{'emailcopy'});
-   $combo->set_popdown_strings(@combostrings);
-   $combo->set_use_arrows(1);
-   $combo->set_value_in_list(1, 0);
+   $combosubjectAltName->set_popdown_strings(@combostrings);
+   $combosubjectAltName->set_use_arrows(1);
+   $combosubjectAltName->set_value_in_list(1, 0);
 
    if(defined($main->{'TCONFIG'}->{'v3_ca'}->{'subjectAltName'})) {
      if($main->{'TCONFIG'}->{'v3_ca'}->{'subjectAltName'} 
         eq 'emailcopy') { 
-        $combo->entry->set_text($main->{'words'}{'emailcopy'});
+        $combosubjectAltName->entry->set_text($main->{'words'}{'emailcopy'});
      }elsif($main->{'TCONFIG'}->{'v3_ca'}->{'subjectAltName'} 
         eq 'none') { 
-        $combo->entry->set_text($main->{'words'}{'none'});
+        $combosubjectAltName->entry->set_text($main->{'words'}{'none'});
      }
    } else { 
-      $combo->entry->set_text($main->{'words'}{'none'});
+      $combosubjectAltName->entry->set_text($main->{'words'}{'none'});
    }
-   $combo->entry->signal_connect('changed' =>
-         sub{GUI::CALLBACK::entry_to_var_san($combo,
-         $combo->entry, \$main->{'TCONFIG'}->{'v3_ca'}->{'subjectAltName'}, 
+   $combosubjectAltName->entry->signal_connect('changed' =>
+         sub{GUI::CALLBACK::entry_to_var_san($combosubjectAltName,
+         $combosubjectAltName->entry, \$main->{'TCONFIG'}->{'v3_ca'}->{'subjectAltName'}, 
          undef, $main->{words})});
-   $table->attach_defaults($combo, 1, 2, $rows-1, $rows);
+   $table->attach_defaults($combosubjectAltName, 1, 2, $rows-1, $rows);
    $rows++;
 
    foreach $key (@options) {

@@ -1,6 +1,6 @@
 # Copyright (c) Stephan Martin <sm@sm-zone.net>
 #
-# $Id: OpenSSL.pm,v 1.11 2006/05/23 16:55:43 sm Exp $
+# $Id: OpenSSL.pm,v 1.14 2006/07/13 22:36:13 sm Exp $
 # 
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -21,7 +21,6 @@ use strict;
 package OpenSSL;
 
 use POSIX;
-use Locale::gettext;
 use IPC::Open3;
 use Time::Local;
 
@@ -71,7 +70,7 @@ sub newkey {
       my($rdfh, $wtfh);
       $ext = "$cmd\n\n";
       $pid = open3($wtfh, $rdfh, $rdfh, $cmd);
-      $t = gettext("Creating DSA key in progress...");
+      $t = _("Creating DSA key in progress...");
       ($box, $bar) = GUI::HELPERS::create_activity_bar($t);
       $i = 0;
       while(defined($c = getc($rdfh))) {
@@ -105,7 +104,7 @@ sub newkey {
    my($rdfh, $wtfh);
    $ext = "$cmd\n\n";
    $pid = open3($wtfh, $rdfh, $rdfh, $cmd);
-   $t = gettext("Creating RSA key in progress...");
+   $t = _("Creating RSA key in progress...");
    ($box, $bar) = GUI::HELPERS::create_activity_bar($t);
    $i = 0;
    while(defined($c = getc($rdfh))) {
@@ -318,14 +317,14 @@ sub newreq {
    $cmd .= " -"."$opts->{'digest'}";
 
    $ENV{'SSLPASS'} = $opts->{'pass'};
-   #   print "DEBUG call: $cmd\n";
+   print "DEBUG call: $cmd\n";
    
    my($rdfh, $wtfh);
    $ext = "$cmd\n\n";
    $pid = open3($wtfh, $rdfh, $rdfh, $cmd);
 
    foreach(@{$opts->{'dn'}}) {
-      # print "DEBUG: add to dn: $_\n";
+      print "DEBUG: add to dn: $_\n";
       if(defined($_)) {
          print $wtfh "$_\n";
       } else {
@@ -338,6 +337,8 @@ sub newreq {
    }
    waitpid($pid, 0);
    $ret = $? >> 8;
+
+   print "DEBUG return: $ext\n";
    
    delete($ENV{'SSLPASS'});
 
@@ -395,10 +396,11 @@ sub newcrl {
    $ENV{'SSLPASS'} = $opts->{ 'pass'};
    my($rdfh, $wtfh);
    $ext = "$cmd\n\n";
+   #print STDERR "DEBUG: cmd: $cmd";
    $pid = open3($wtfh, $rdfh, $rdfh, $cmd);
    while(<$rdfh>) {
       $ext .= $_;
-      # print STDERR "DEBUG: cmd return: $_";
+      #print STDERR "DEBUG: cmd return: $_";
       if($_ =~ /unable to load CA private key/) {
          delete($ENV{'SSLPASS'});
          waitpid($pid, 0);
@@ -451,7 +453,7 @@ sub parsecrl {
    delete($self->{'CACHE'}->{$file});
 
    open(IN, $file) || do {
-      $t = sprintf(gettext("Can't open CRL '%s': %s"), $file, $!);
+      $t = sprintf(_("Can't open CRL '%s': %s"), $file, $!);
       GUI::HELPERS::print_warning($t);
       return;
    };
@@ -466,7 +468,7 @@ sub parsecrl {
          );
 
    if($ret) {
-      $t = gettext("Error converting CLR");
+      $t = _("Error converting CRL");
       GUI::HELPERS::print_warning($t, $ext);
       return;
    }
@@ -479,7 +481,7 @@ sub parsecrl {
          );
 
    if($ret) {
-      $t = gettext("Error converting CLR");
+      $t = _("Error converting CRL");
       GUI::HELPERS::print_warning($t, $ext);
       return;
    }
@@ -577,7 +579,7 @@ sub parsecert {
          );
 
    if($ret) {
-      $t = gettext("Error converting Certificate");
+      $t = _("Error converting Certificate");
       GUI::HELPERS::print_warning($t, $ext);
       return;
    }
@@ -590,7 +592,7 @@ sub parsecert {
          );
 
    if($ret) {
-      $t = gettext("Error converting Certificate");
+      $t = _("Error converting Certificate");
       GUI::HELPERS::print_warning($t, $ext);
       return;
    }
@@ -650,7 +652,7 @@ sub parsecert {
    $ret = $? >> 8;
 
    if($ret) {
-      $t = gettext("Error reading fingerprint from Certificate");
+      $t = _("Error reading fingerprint from Certificate");
       GUI::HELPERS::print_warning($t, $ext);
    }
 
@@ -667,7 +669,7 @@ sub parsecert {
    $ret = $? >> 8;
 
    if($ret) {
-      $t = gettext("Error reading fingerprint from Certificate");
+      $t = _("Error reading fingerprint from Certificate");
       GUI::HELPERS::print_warning($t, $ext);
    }
 
@@ -685,7 +687,7 @@ sub parsecert {
    $ret = $? >> 8;
 
    if($ret) {
-      $t = gettext("Error reading subject from Certificate");
+      $t = _("Error reading subject from Certificate");
       GUI::HELPERS::print_warning($t, $ext);
    }
 
@@ -695,12 +697,12 @@ sub parsecert {
       $crl = $self->parsecrl($crlfile, 1);
       #print STDERR "DEBUG: parsed crl $crlfile : $crl\n";
 
-      defined($crl) || GUI::HELPERS::print_error(gettext("Can't read CRL"));
+      defined($crl) || GUI::HELPERS::print_error(_("Can't read CRL"));
   
-      $tmp->{'STATUS'} = gettext("VALID");
+      $tmp->{'STATUS'} = _("VALID");
   
       if($tmp->{'EXPDATE'} < $time) {
-         $tmp->{'STATUS'} = gettext("EXPIRED");
+         $tmp->{'STATUS'} = _("EXPIRED");
          # keep database up to date
          if($crl->{'ISSUER'} eq $tmp->{'ISSUER'}) {
             _set_expired($tmp->{'SERIAL'}, $indexfile);
@@ -713,12 +715,12 @@ sub parsecert {
               #print STDERR "DEBUG: check revoked: $revoked->{'SERIAL'}\n";
             next if ($tmp->{'SERIAL'} ne $revoked->{'SERIAL'});
             if ($tmp->{'SERIAL'} eq $revoked->{'SERIAL'}) {
-               $tmp->{'STATUS'} = gettext("REVOKED");
+               $tmp->{'STATUS'} = _("REVOKED");
             }
          }
       }
    } else {
-      $tmp->{'STATUS'} = gettext("UNDEFINED");
+      $tmp->{'STATUS'} = _("UNDEFINED");
    }
 
    $self->{'CACHE'}->{$file} = $tmp;
@@ -745,7 +747,7 @@ sub parsereq {
    }
 
    open(IN, $file) || do {
-      $t = sprintf(gettext("Can't open Request file %s: %s"), $file, $!);
+      $t = sprintf(_("Can't open Request file %s: %s"), $file, $!);
       GUI::HELPERS::print_warning($t);
       return;
    };
@@ -762,7 +764,7 @@ sub parsereq {
          );
 
    if($ret) {
-      $t = gettext("Error converting Request");
+      $t = _("Error converting Request");
       GUI::HELPERS::print_warning($t, $ext);
       return;
    }
@@ -776,7 +778,7 @@ sub parsereq {
          );
 
    if($ret) {
-      $t = gettext("Error converting Request");
+      $t = _("Error converting Request");
       GUI::HELPERS::print_warning($t, $ext);
       return;
    }
@@ -858,7 +860,7 @@ sub convdata {
    }
 
    open(IN, $file) || do {
-      my $t = sprintf(gettext("Can't open file %s: %s"), $file, $!);
+      my $t = sprintf(_("Can't open file %s: %s"), $file, $!);
       GUI::HELPERS::print_warning($t);
       return;
    };
@@ -976,7 +978,7 @@ sub read_index {
    my (@lines, @index);
    
    open(IN, "<$index") || do {
-      my $t = sprintf(gettext("Can't read index %s: %s"), $index, $!);
+      my $t = sprintf(_("Can't read index %s: %s"), $index, $!);
       GUI::HELPERS::print_warning($t);
       return;
    };
@@ -1008,7 +1010,7 @@ sub _set_expired {
    my ($serial, $index) =@_;
    
    open(IN, "<$index") || do {
-      my $t = sprintf(gettext("Can't read index %s: %s"), $index, $!);
+      my $t = sprintf(_("Can't read index %s: %s"), $index, $!);
       GUI::HELPERS::print_warning($t);
       return;
    };
@@ -1018,7 +1020,7 @@ sub _set_expired {
    close IN;
 
    open(OUT, ">$index") || do {
-      my $t = sprintf(gettext("Can't write index %s: %s"), $index, $!);
+      my $t = sprintf(_("Can't write index %s: %s"), $index, $!);
       GUI::HELPERS::print_warning($t);
       return;
    };

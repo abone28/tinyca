@@ -7,1670 +7,1671 @@ msgid ""
 msgstr ""
 "Project-Id-Version: cs\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2006-05-23 18:57+0200\n"
+"POT-Creation-Date: 2006-07-13 23:47+0200\n"
 "PO-Revision-Date: 2004-11-22 19:55+0200\n"
-"Last-Translator: Robert Wolf <gentoo@slave.umbr.cas.cz>\n"
+"Last-Translator: Robert Wolf <r.wolf.gentoo@atlas.cz>\n"
 "Language-Team: czech\n"
 "MIME-Version: 1.0\n"
-"Content-Type: text/plain; charset=iso-8859-2\n"
+"Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 
-#: ../lib/CA.pm:45
+#: ../lib/CA.pm:44
 msgid "error: can't open basedir: "
-msgstr "chyba: nelze otev¯Ìt hlavnÌ adres·¯: "
+msgstr "chyba: nelze otev≈ô√≠t hlavn√≠ adres√°≈ô: "
 
-#: ../lib/CA.pm:103
+#: ../lib/CA.pm:102
 msgid "  Opening CA: "
-msgstr "  OtevÌr·nÌ CA: "
+msgstr "  Otev√≠r√°n√≠ CA: "
 
-#: ../lib/CA.pm:110 ../lib/CA.pm:271
+#: ../lib/CA.pm:109 ../lib/CA.pm:270
 msgid "Invalid CA selected"
-msgstr "Zvolena neplatn· CA"
+msgstr "Zvolena neplatn√° CA"
 
-#: ../lib/CA.pm:155
+#: ../lib/CA.pm:154
 msgid "  Initializing OpenSSL"
 msgstr "  Inicializace OpenSSL"
 
-#: ../lib/CA.pm:161
+#: ../lib/CA.pm:160
 msgid "  Check for CA Version"
-msgstr "  Zjiπªov·nÌ verze CA"
+msgstr "  Zji≈°≈•ov√°n√≠ verze CA"
 
-#: ../lib/CA.pm:168 ../lib/CA.pm:196
+#: ../lib/CA.pm:167 ../lib/CA.pm:195
 msgid "Can't open index file: "
-msgstr "Nelze otev¯Ìt indexov˝ soubor: "
+msgstr "Nelze otev≈ô√≠t indexov√Ω soubor: "
 
-#: ../lib/CA.pm:183
+#: ../lib/CA.pm:182
 msgid "  Convert CA"
-msgstr "  P¯ev·dÌm CA"
+msgstr "  P≈ôev√°d√≠m CA"
 
-#: ../lib/CA.pm:202
+#: ../lib/CA.pm:201
 msgid "Can't open index backup: "
-msgstr "Nelze otev¯Ìt z·lohu index˘: "
+msgstr "Nelze otev≈ô√≠t z√°lohu index≈Ø: "
 
-#: ../lib/CA.pm:219
+#: ../lib/CA.pm:218
 msgid "This CA is converted for openssl 0.9.7x now."
-msgstr "Tato CA je nynÌ zkonvertov·na pro openssl 0.9.7x"
+msgstr "Tato CA je nyn√≠ zkonvertov√°na pro openssl 0.9.7x"
 
-#: ../lib/CA.pm:221
+#: ../lib/CA.pm:220
 msgid "You will find a backup copy of the index file at: "
-msgstr "Z·loænÌ kopii indexovÈho souboru najdete zde: "
+msgstr "Z√°lo≈æn√≠ kopii indexov√©ho souboru najdete zde: "
 
-#: ../lib/CA.pm:230
+#: ../lib/CA.pm:229
 msgid "  Read Configuration"
-msgstr "  »tenÌ konfigurace"
+msgstr "  ƒåten√≠ konfigurace"
 
-#: ../lib/CA.pm:236
+#: ../lib/CA.pm:235
 msgid "  Create GUI"
-msgstr "  Vytv·¯enÌ GUI"
+msgstr "  Vytv√°≈ôen√≠ GUI"
 
-#: ../lib/CA.pm:242
+#: ../lib/CA.pm:241
 msgid "  Create Toolbar"
-msgstr "  Vytv·¯enÌ panelu n·stroj˘"
+msgstr "  Vytv√°≈ôen√≠ panelu n√°stroj≈Ø"
 
-#: ../lib/CA.pm:248
+#: ../lib/CA.pm:247
 msgid "  Actual CA: "
-msgstr "  Aktu·lnÌ CA: "
+msgstr "  Aktu√°ln√≠ CA: "
 
-#: ../lib/CA.pm:333
+#: ../lib/CA.pm:332
 #, c-format
 msgid "CA: %s deleted"
-msgstr "CA: odstranÏno %s"
+msgstr "CA: odstranƒõno %s"
 
-#: ../lib/CA.pm:387
+#: ../lib/CA.pm:386
 msgid "Password of parent CA is needed for creating a Sub CA"
-msgstr "Heslo nad¯ÌzenÈ CA je nutnÈ pro vytvo¯enÌ pod¯ÌzenÈ CA"
+msgstr "Heslo nad≈ô√≠zen√© CA je nutn√© pro vytvo≈ôen√≠ pod≈ô√≠zen√© CA"
+
+#: ../lib/CA.pm:395
+msgid "Name must be filled in and must"
+msgstr "Jm√©no mus√≠ b√Ωt zad√°no a nesm√≠"
 
 #: ../lib/CA.pm:396
-msgid "Name must be filled in and must"
-msgstr "JmÈno musÌ b˝t zad·no a nesmÌ"
-
-#: ../lib/CA.pm:397
 msgid " not contain Spaces"
 msgstr " obsahovat mezery"
 
-#: ../lib/CA.pm:409
+#: ../lib/CA.pm:408
 msgid "Please specify at least Common Name, "
-msgstr "ProsÌm, zadejte alespoÚ ObecnÈ jmÈno, "
+msgstr "Pros√≠m, zadejte alespo≈à Obecn√© jm√©no, "
 
-#: ../lib/CA.pm:410
+#: ../lib/CA.pm:409
 msgid "Country and Password"
-msgstr "St·t a Heslo"
+msgstr "St√°t a Heslo"
 
-#: ../lib/CA.pm:417 ../lib/REQ.pm:110
+#: ../lib/CA.pm:416 ../lib/REQ.pm:109
 msgid "Passwords don't match"
-msgstr "Hesla nesouhlasÌ"
+msgstr "Hesla nesouhlas√≠"
 
-#: ../lib/CA.pm:425 ../lib/REQ.pm:121
+#: ../lib/CA.pm:424 ../lib/REQ.pm:120
 msgid "Country must be exact 2 letter code"
-msgstr "St·t musÌ obsahovat p¯esnÏ 2 znaky"
+msgstr "St√°t mus√≠ obsahovat p≈ôesnƒõ 2 znaky"
 
-#: ../lib/CA.pm:429
+#: ../lib/CA.pm:428
 #, c-format
 msgid "CA: %s already exists"
-msgstr "CA: %s jiæ existuje"
+msgstr "CA: %s ji≈æ existuje"
 
-#: ../lib/CA.pm:469
+#: ../lib/CA.pm:468
 msgid "Name for storage must be filled in and must not contain spaces"
-msgstr "JmÈno pro ˙loæiπtÏ musÌ b˝t zad·no a nesmÌ obsahovat mezery"
+msgstr "Jm√©no pro √∫lo≈æi≈°tƒõ mus√≠ b√Ωt zad√°no a nesm√≠ obsahovat mezery"
 
-#: ../lib/CA.pm:478
+#: ../lib/CA.pm:477
 msgid "You didn't give a password for the private CA key."
-msgstr "Nezadal jste heslo pro soukrom˝ klÌË CA."
+msgstr "Nezadal jste heslo pro soukrom√Ω kl√≠ƒç CA."
 
-#: ../lib/CA.pm:480
+#: ../lib/CA.pm:479
 msgid "The import will fail, if the key is encrypted."
-msgstr "Import neprobÏhne, pokud klÌË nenÌ zaπifrov·n."
+msgstr "Import neprobƒõhne, pokud je kl√≠ƒç za≈°ifrov√°n."
 
-#: ../lib/CA.pm:489
+#: ../lib/CA.pm:488
 msgid "Please give a new password for the CA"
-msgstr "ProsÌm, zadejte novÈ heslo pro CA"
+msgstr "Pros√≠m, zadejte nov√© heslo pro CA"
 
-#: ../lib/CA.pm:496
+#: ../lib/CA.pm:495
 msgid "New passwords don't match"
-msgstr "Hesla nesouhlasÌ"
+msgstr "Nov√° Hesla nesouhlas√≠"
 
-#: ../lib/CA.pm:504
+#: ../lib/CA.pm:503
 msgid "Please give a CA certificate to import"
-msgstr "ProsÌm, zvolte CA certifik·t pro import"
+msgstr "Pros√≠m, zvolte CA certifik√°t pro import"
 
-#: ../lib/CA.pm:509
+#: ../lib/CA.pm:508
 #, c-format
 msgid ""
 "Can't read CA certificate file:\n"
 "%s"
 msgstr ""
-"Nelze ËÌst soubor certifik·tu CA:\n"
+"Nelze ƒç√≠st soubor certifik√°tu CA:\n"
 "%s"
 
-#: ../lib/CA.pm:519
+#: ../lib/CA.pm:518
 msgid "Please give a CA keyfile to import"
-msgstr "ProsÌm, zvolte soubor s klÌËem CA pro import"
+msgstr "Pros√≠m, zvolte soubor s kl√≠ƒçem CA pro import"
 
-#: ../lib/CA.pm:524
+#: ../lib/CA.pm:523
 #, c-format
 msgid ""
 "Can't read CA key file:\n"
 "%s"
 msgstr ""
-"Nelze ËÌst soubor s klÌËem CA:\n"
+"Nelze ƒç√≠st soubor s kl√≠ƒçem CA:\n"
 "%s"
 
-#: ../lib/CA.pm:536
+#: ../lib/CA.pm:535
 msgid "Please give an Index file to import.\n"
-msgstr "ProsÌm, zvolte indexov˝ soubor pro import.\n"
+msgstr "Pros√≠m, zvolte indexov√Ω soubor pro import.\n"
+
+#: ../lib/CA.pm:536
+msgid "If you don't have an Index file, i'll try to generate one.\n"
+msgstr "Pokud nem√°te indexov√Ω soubor, pokus√≠m se jej vygenerovat.\n"
 
 #: ../lib/CA.pm:537
-msgid "If you don't have an Index file, i'll try to generate one.\n"
-msgstr "Pokud nem·te indexov˝ soubor, pokusÌm se jej vygenerovat.\n"
-
-#: ../lib/CA.pm:538
 msgid "Attention: This will cause all Certificates to show up as valid.\n"
 msgstr ""
-"Pozor: Toto zp˘sobÌ, æe budou vπechny certifik·ty zobrazov·ny jako platnÈ.\n"
+"Pozor: Toto zp≈Øsob√≠, ≈æe budou v≈°echny certifik√°ty zobrazov√°ny jako platn√©.\n"
 
-#: ../lib/CA.pm:539
+#: ../lib/CA.pm:538
 msgid "Attention: Revoked Certificates will not be determined."
-msgstr "Pozor: OdvolanÈ certifik·ty nebudou zohlednÏny."
+msgstr "Pozor: Odvolan√© certifik√°ty nebudou zohlednƒõny."
 
-#: ../lib/CA.pm:550
+#: ../lib/CA.pm:549
 #, c-format
 msgid ""
 "Can't read Index file:\n"
 "%s"
 msgstr ""
-"Nelze ËÌst indexov˝ soubor:\n"
+"Nelze ƒç√≠st indexov√Ω soubor:\n"
 "%s"
 
-#: ../lib/CA.pm:563
+#: ../lib/CA.pm:562
 msgid "Please give a directory containing the certificates to import"
-msgstr "ProsÌm, zvolte adres·¯, kter˝ obsahuje certifik·ty pro import"
+msgstr "Pros√≠m, zvolte adres√°≈ô, kter√Ω obsahuje certifik√°ty pro import"
 
-#: ../lib/CA.pm:568
+#: ../lib/CA.pm:567
 #, c-format
 msgid ""
 "Can't find certificate directory:\n"
 "%s"
 msgstr ""
-"Nelze najÌt adres·¯ s certifik·ty:\n"
+"Nelze naj√≠t adres√°≈ô s certifik√°ty:\n"
 "%s"
 
-#: ../lib/CA.pm:579
+#: ../lib/CA.pm:578
 #, c-format
 msgid "CA: %s already exists. Please choose another name"
-msgstr "CA: %s jiæ existuje. ProsÌm, zvolte jinÈ jmÈno"
+msgstr "CA: %s ji≈æ existuje. Pros√≠m, zvolte jin√© jm√©no"
 
-#: ../lib/CA.pm:595
+#: ../lib/CA.pm:594
 msgid "Can't find X509v3 Basic Constraints in CA Certificate\n"
 msgstr ""
-"Nelze najÌt X509v3 z·kladnÌ omezenÌ (Basic Constraints) v certifik·tu CA\n"
+"Nelze naj√≠t X509v3 z√°kladn√≠ omezen√≠ (Basic Constraints) v certifik√°tu CA\n"
 
-#: ../lib/CA.pm:596
+#: ../lib/CA.pm:595
 msgid "Import canceled"
-msgstr "Import zruπen"
+msgstr "Import zru≈°en"
+
+#: ../lib/CA.pm:601
+msgid "The selected CA Certificate is no valid CA certificate\n"
+msgstr "Vybran√Ω certifik√°t CA nen√≠ platn√Ω certifik√°t CA\n"
 
 #: ../lib/CA.pm:602
-msgid "The selected CA Certificate is no valid CA certificate\n"
-msgstr "Vybran˝ certifik·t CA nenÌ platn˝ certifik·t CA\n"
-
-#: ../lib/CA.pm:603
 #, c-format
 msgid "X509v3 Basic Constraint is set to: %s"
-msgstr "X509v3 z·kladnÌ omezenÌ (Basic Constraint) je nastaveno na: %s"
+msgstr "X509v3 z√°kladn√≠ omezen√≠ (Basic Constraint) je nastaveno na: %s"
 
-#: ../lib/CA.pm:613
+#: ../lib/CA.pm:612
 #, c-format
 msgid ""
 "Can't open Index file:\n"
 "%s"
 msgstr ""
-"Nelze otev¯Ìt indexov˝ soubor:\n"
+"Nelze otev≈ô√≠t indexov√Ω soubor:\n"
 "%s"
 
-#: ../lib/CA.pm:666 ../lib/CERT.pm:62
+#: ../lib/CA.pm:665 ../lib/CERT.pm:61
 #, c-format
 msgid "Can't open Certificate directory: %s"
-msgstr "Nelze otev¯Ìt adres·¯ s certifik·ty: %s"
+msgstr "Nelze otev≈ô√≠t adres√°≈ô s certifik√°ty: %s"
 
-#: ../lib/CA.pm:685 ../lib/CERT.pm:85
+#: ../lib/CA.pm:684 ../lib/CERT.pm:84
 #, c-format
 msgid "   Read Certificate: %s"
-msgstr "   »tenÌ certifik·tu: %s"
+msgstr "   ƒåten√≠ certifik√°tu: %s"
 
-#: ../lib/CA.pm:695
+#: ../lib/CA.pm:694
 #, c-format
 msgid "Can't read Certificate file: %s"
-msgstr "Nelze ËÌst soubor certifik·tu: %s"
+msgstr "Nelze ƒç√≠st soubor certifik√°tu: %s"
 
-#: ../lib/CA.pm:719
+#: ../lib/CA.pm:718
 #, c-format
 msgid "Can't write Certificate file: %s"
-msgstr "Nelze zapsat soubor certifik·tu: %s"
+msgstr "Nelze zapsat soubor certifik√°tu: %s"
 
-#: ../lib/CA.pm:769 ../lib/CA.pm:928
+#: ../lib/CA.pm:768 ../lib/CA.pm:927
 msgid "Can't open Index file: "
-msgstr "Nelze otev¯Ìt indexov˝ soubor: "
+msgstr "Nelze otev≈ô√≠t indexov√Ω soubor: "
 
-#: ../lib/CA.pm:781
+#: ../lib/CA.pm:780
 #, c-format
 msgid "Can't write CA Certificate file: %s"
-msgstr "Nelze zapsat soubor certifik·tu CA: %s"
+msgstr "Nelze zapsat soubor certifik√°tu CA: %s"
 
-#: ../lib/CA.pm:801 ../lib/CA.pm:935
+#: ../lib/CA.pm:800 ../lib/CA.pm:934
 msgid "Can't write Serial file: "
 msgstr "Nelze zapsat soubor serial: "
 
-#: ../lib/CA.pm:815
+#: ../lib/CA.pm:814
 #, c-format
 msgid "Can't write CA Key file: %s"
-msgstr "Nelze zapsat soubor s klÌËem CA: %s"
+msgstr "Nelze zapsat soubor s kl√≠ƒçem CA: %s"
 
-#: ../lib/CA.pm:832 ../lib/CA.pm:1156
+#: ../lib/CA.pm:831 ../lib/CA.pm:1155
 msgid "Generating CRL failed"
-msgstr "Selhalo vytv·¯enÌ CRL"
+msgstr "Selhalo vytv√°≈ôen√≠ CRL"
 
-#: ../lib/CA.pm:845
+#: ../lib/CA.pm:844
 #, c-format
 msgid "Succesfully imported %d certificates\n"
-msgstr "⁄spÏπnÏ bylo importov·no %d certifik·t˘\n"
+msgstr "√öspƒõ≈°nƒõ bylo importov√°no %d certifik√°t≈Ø\n"
 
-#: ../lib/CA.pm:846
+#: ../lib/CA.pm:845
 msgid "Check the configuration of your imported CA."
-msgstr "Zkontrolujte nastavenÌ VaπÌ naimportovanÈ CA."
+msgstr "Zkontrolujte nastaven√≠ Va≈°√≠ naimportovan√© CA."
 
-#: ../lib/CA.pm:863 ../lib/CA.pm:972
+#: ../lib/CA.pm:862 ../lib/CA.pm:971
 msgid "No CA name given"
-msgstr "Nebylo zad·no jmÈno CA"
+msgstr "Nebylo zad√°no jm√©no CA"
 
-#: ../lib/CA.pm:872 ../lib/CA.pm:877 ../lib/CA.pm:882 ../lib/CA.pm:887
-#: ../lib/CA.pm:892 ../lib/CA.pm:897
+#: ../lib/CA.pm:871 ../lib/CA.pm:876 ../lib/CA.pm:881 ../lib/CA.pm:886
+#: ../lib/CA.pm:891 ../lib/CA.pm:896
 msgid "Can't create directory: "
-msgstr "Nelze vytvo¯it adres·¯: "
+msgstr "Nelze vytvo≈ôit adres√°≈ô: "
 
-#: ../lib/CA.pm:906
+#: ../lib/CA.pm:905
 #, c-format
 msgid "Can't open template file %s %s"
-msgstr "Nelze otev¯Ìt soubor πablony %s %s"
+msgstr "Nelze otev≈ô√≠t soubor ≈°ablony %s %s"
 
-#: ../lib/CA.pm:911 ../lib/CA.pm:1208 ../lib/CA.pm:1275 ../lib/CERT.pm:638
-#: ../lib/KEY.pm:228 ../lib/REQ.pm:741
+#: ../lib/CA.pm:910 ../lib/CA.pm:1207 ../lib/CA.pm:1274 ../lib/CERT.pm:637
+#: ../lib/KEY.pm:227 ../lib/REQ.pm:740
 #, c-format
 msgid "Can't open output file: %s: %s"
-msgstr "Nelze otev¯Ìt v˝stupnÌ soubor: %s: %s"
+msgstr "Nelze otev≈ô√≠t v√Ωstupn√≠ soubor: %s: %s"
 
-#: ../lib/CA.pm:985 ../lib/KEY.pm:483 ../lib/REQ.pm:168
+#: ../lib/CA.pm:984 ../lib/KEY.pm:482 ../lib/REQ.pm:167
 msgid "Generating key failed"
-msgstr "Selhalo vytv·¯enÌ klÌËe"
+msgstr "Selhalo vytv√°≈ôen√≠ kl√≠ƒçe"
 
-#: ../lib/CA.pm:1019 ../lib/REQ.pm:194
+#: ../lib/CA.pm:1018 ../lib/REQ.pm:193
 msgid "Generating Request failed"
-msgstr "Selhalo vytv·¯enÌ poæadavku-Request"
+msgstr "Selhalo vytv√°≈ôen√≠ po≈æadavku-Request"
 
-#: ../lib/CA.pm:1028 ../lib/CA.pm:1042 ../lib/CERT.pm:103
+#: ../lib/CA.pm:1027 ../lib/CA.pm:1041 ../lib/CERT.pm:102
 msgid "Can't read Certificate"
-msgstr "Nelze ËÌst certifik·t"
+msgstr "Nelze ƒç√≠st certifik√°t"
 
-#: ../lib/CA.pm:1033 ../lib/CA.pm:1047
+#: ../lib/CA.pm:1032 ../lib/CA.pm:1046
 msgid "Can't write Certificate"
-msgstr "Nelze zapsat certifik·t"
+msgstr "Nelze zapsat certifik√°t"
 
-#: ../lib/CA.pm:1087
+#: ../lib/CA.pm:1086
 msgid "Generating certificate failed"
-msgstr "Selhalo vytv·¯enÌ certifik·tu"
+msgstr "Selhalo vytv√°≈ôen√≠ certifik√°tu"
 
-#: ../lib/CA.pm:1107 ../lib/CA.pm:1132
+#: ../lib/CA.pm:1106 ../lib/CA.pm:1131
 #, c-format
 msgid "Can't open ca certificate file %s %s"
-msgstr "Nelze otev¯Ìt soubor CA certifik·tu %s %s"
+msgstr "Nelze otev≈ô√≠t soubor CA certifik√°tu %s %s"
 
-#: ../lib/CA.pm:1116
+#: ../lib/CA.pm:1115
 #, c-format
 msgid "Can't create certificate chain file: %s: %s"
-msgstr "Nelze vytvo¯it soubor ¯etÏzu certifik·t˘ (certificate chain): %s: %s"
+msgstr "Nelze vytvo≈ôit soubor ≈ôetƒõzu certifik√°t≈Ø (certificate chain): %s: %s"
 
-#: ../lib/CA.pm:1165
+#: ../lib/CA.pm:1164
 #, c-format
 msgid "CA: %s created"
-msgstr "CA: vytvo¯eno %s"
+msgstr "CA: vytvo≈ôeno %s"
 
-#: ../lib/CA.pm:1200
+#: ../lib/CA.pm:1199
 #, c-format
 msgid "Can't open certificate chain file: %s: %s"
-msgstr "Nelze otev¯Ìt soubor ¯etÏzu certifik·t˘ (certificate chain): %s: %s"
+msgstr "Nelze otev≈ô√≠t soubor ≈ôetƒõzu certifik√°t≈Ø (certificate chain): %s: %s"
 
-#: ../lib/CA.pm:1221
+#: ../lib/CA.pm:1220
 #, c-format
 msgid "Certificate Chain succesfully exported to: %s"
-msgstr "ÿetÏz certifik·t˘ (Certificate chain) ˙spÏπnÏ exportov·n do: %s"
+msgstr "≈òetƒõz certifik√°t≈Ø (Certificate chain) √∫spƒõ≈°nƒõ exportov√°n do: %s"
 
-#: ../lib/CA.pm:1256 ../lib/CERT.pm:581 ../lib/GUI.pm:167 ../lib/KEY.pm:349
-#: ../lib/REQ.pm:72 ../lib/REQ.pm:390
+#: ../lib/CA.pm:1255 ../lib/CERT.pm:580 ../lib/GUI.pm:166 ../lib/KEY.pm:348
+#: ../lib/REQ.pm:71 ../lib/REQ.pm:389
 msgid "Can't read CA certificate"
-msgstr "Nelze ËÌst certifik·t CA"
+msgstr "Nelze ƒç√≠st certifik√°t CA"
 
-#: ../lib/CA.pm:1266
+#: ../lib/CA.pm:1265
 #, c-format
 msgid "Invalid Format for export_ca_cert(): %s"
-msgstr "Neplatn˝ form·t pro export_ca_cert(): %s"
+msgstr "Neplatn√Ω form√°t pro export_ca_cert(): %s"
 
-#: ../lib/CA.pm:1288
+#: ../lib/CA.pm:1287
 #, c-format
 msgid "Certificate succesfully exported to: %s"
-msgstr "Certifik·t ˙spÏπnÏ exportov·n do: %s"
+msgstr "Certifik√°t √∫spƒõ≈°nƒõ exportov√°n do: %s"
 
-#: ../lib/CA.pm:1321
+#: ../lib/CA.pm:1320
 msgid "Please give the output file"
-msgstr "Zadejte prosÌm jmÈno v˝stupnÌho souboru"
+msgstr "Zadejte pros√≠m jm√©no v√Ωstupn√≠ho souboru"
 
-#: ../lib/CA.pm:1329
+#: ../lib/CA.pm:1328
 msgid "Please give the CA password to create the Revocation List"
 msgstr ""
-"Zadejte prosÌm heslo CA pro vytvo¯enÌ seznamu odvolan˝ch certifik·t˘ (CRL)"
+"Zadejte pros√≠m heslo CA pro vytvo≈ôen√≠ seznamu odvolan√Ωch certifik√°t≈Ø (CRL)"
 
-#: ../lib/CA.pm:1350
+#: ../lib/CA.pm:1349
 msgid ""
 "Wrong CA password given\n"
 "Generating Revocation List failed"
 msgstr ""
-"Zad·no nespr·vnÈ heslo CA\n"
-"Vytv·¯enÌ seznamu odvolan˝ch certifik·t˘ (CRL) selhalo"
+"Zad√°no nespr√°vn√© heslo CA\n"
+"Vytv√°≈ôen√≠ seznamu odvolan√Ωch certifik√°t≈Ø (CRL) selhalo"
 
-#: ../lib/CA.pm:1354
+#: ../lib/CA.pm:1353
 msgid ""
 "CA Key not found\n"
 "Generating Revocation List failed"
 msgstr ""
-"KlÌË CA nebyl nalezen\n"
-"Vytv·¯enÌ seznamu odvolan˝ch certifik·t˘ (CRL) selhalo"
+"Kl√≠ƒç CA nebyl nalezen\n"
+"Vytv√°≈ôen√≠ seznamu odvolan√Ωch certifik√°t≈Ø (CRL) selhalo"
 
-#: ../lib/CA.pm:1358 ../lib/CA.pm:1364
+#: ../lib/CA.pm:1357 ../lib/CA.pm:1363
 msgid "Generating Revocation List failed"
-msgstr "Vytv·¯enÌ seznamu odvolan˝ch certifik·t˘ (CRL) selhalo"
+msgstr "Vytv√°≈ôen√≠ seznamu odvolan√Ωch certifik√°t≈Ø (CRL) selhalo"
 
-#: ../lib/CA.pm:1372
+#: ../lib/CA.pm:1371
 #, c-format
 msgid "CRL successfully exported to: %s"
-msgstr "CRL ˙spÏπnÏ exportov·n do: %s"
+msgstr "CRL √∫spƒõ≈°nƒõ exportov√°n do: %s"
 
-#: ../lib/CERT.pm:144 ../lib/CERT.pm:200 ../lib/CERT.pm:323 ../lib/CERT.pm:382
-#: ../lib/GUI.pm:852
+#: ../lib/CERT.pm:143 ../lib/CERT.pm:199 ../lib/CERT.pm:322 ../lib/CERT.pm:381
+#: ../lib/GUI.pm:851
 msgid "Please select a Certificate first"
-msgstr "ProsÌm, nejd¯Ìve zvolte certifik·t"
+msgstr "Pros√≠m, nejd≈ô√≠ve zvolte certifik√°t"
 
-#: ../lib/CERT.pm:152 ../lib/CERT.pm:210 ../lib/CERT.pm:334 ../lib/CERT.pm:401
-#: ../lib/GUI.pm:2707 ../lib/GUI.pm:2718 ../lib/OpenSSL.pm:700
-#: ../lib/GUI/X509_browser.pm:278
+#: ../lib/CERT.pm:151 ../lib/CERT.pm:209 ../lib/CERT.pm:333 ../lib/CERT.pm:400
+#: ../lib/GUI.pm:2706 ../lib/GUI.pm:2717 ../lib/OpenSSL.pm:702
+#: ../lib/GUI/X509_browser.pm:276
 msgid "VALID"
-msgstr "PLATN›"
+msgstr "PLATN√ù"
 
-#: ../lib/CERT.pm:154
+#: ../lib/CERT.pm:153
 #, c-format
 msgid ""
 "Can't renew Certifikate with Status: %s\n"
 "Please revoke the Certificate first"
 msgstr ""
-"Nelze obnovit certifik·t s v˝sledkem: %s\n"
-"ProsÌm, nejd¯Ìve certifik·t odvolejte"
+"Nelze obnovit certifik√°t s v√Ωsledkem: %s\n"
+"Pros√≠m, nejd≈ô√≠ve certifik√°t odvolejte"
 
-#: ../lib/CERT.pm:169
+#: ../lib/CERT.pm:168
 msgid ""
 "Key and Request are necessary for renewal of a Certificate\n"
 "Renewal is not possible!"
 msgstr ""
-"K obnovenÌ certifik·tu je nutn˝ klÌË a æ·dost (Request)\n"
-"ObnovenÌ nenÌ moænÈ!"
+"K obnoven√≠ certifik√°tu je nutn√Ω kl√≠ƒç a ≈æ√°dost (Request)\n"
+"Obnoven√≠ nen√≠ mo≈æn√©!"
 
-#: ../lib/CERT.pm:211
+#: ../lib/CERT.pm:210
 #, c-format
 msgid "Can't revoke Certifikate with Status: %s"
-msgstr "Nelze odvolat certifik·t s v˝sledkem: %s"
+msgstr "Nelze odvolat certifik√°t s v√Ωsledkem: %s"
 
-#: ../lib/CERT.pm:257
+#: ../lib/CERT.pm:256
 msgid ""
 "Wrong CA password given\n"
 "Revoking the Certificate failed"
 msgstr ""
-"Zad·no neplatnÈ heslo CA\n"
-"Odvol·nÌ certifik·tu selhalo"
+"Zad√°no neplatn√© heslo CA\n"
+"Odvol√°n√≠ certifik√°tu selhalo"
 
-#: ../lib/CERT.pm:264
+#: ../lib/CERT.pm:263
 msgid ""
 "CA Key not found\n"
 "Revoking the Certificate failed"
 msgstr ""
-"KlÌË CA nenalezen\n"
-"Odvol·nÌ certifik·tu selhalo"
+"Kl√≠ƒç CA nenalezen\n"
+"Odvol√°n√≠ certifik√°tu selhalo"
 
-#: ../lib/CERT.pm:271
+#: ../lib/CERT.pm:270
 msgid "Revoking the Certificate failed"
-msgstr "Odvol·nÌ certifik·tu selhalo"
+msgstr "Odvol√°n√≠ certifik√°tu selhalo"
 
-#: ../lib/CERT.pm:291
+#: ../lib/CERT.pm:290
 msgid "Generating a new Revocation List failed"
-msgstr "Vytvo¯enÌ novÈho seznamu zneplatnÏn˝ch certifik·t˘ (CRL) selhalo"
+msgstr "Vytvo≈ôen√≠ nov√©ho seznamu zneplatnƒõn√Ωch certifik√°t≈Ø (CRL) selhalo"
 
-#: ../lib/CERT.pm:336
+#: ../lib/CERT.pm:335
 msgid ""
 "Can't delete VALID certificate!\n"
 "Please revoke the Certificate first."
 msgstr ""
-"Nelze odstranit PLATN› certifik·t!\n"
-"ProsÌm, nejd¯Ìve certifik·t zneplatnÏte."
+"Nelze odstranit PLATN√ù certifik√°t!\n"
+"Pros√≠m, nejd≈ô√≠ve certifik√°t zneplatnƒõte."
 
-#: ../lib/CERT.pm:402
+#: ../lib/CERT.pm:401
 msgid "Certificate seems not to be VALID"
-msgstr "Certifik·t z¯ejmÏ nenÌ PLATN›"
+msgstr "Certifik√°t z≈ôejmƒõ nen√≠ PLATN√ù"
 
-#: ../lib/CERT.pm:404
+#: ../lib/CERT.pm:403
 msgid "Export is not possible"
-msgstr "Export nenÌ moæn˝"
+msgstr "Export nen√≠ mo≈æn√Ω"
 
-#: ../lib/CERT.pm:431 ../lib/KEY.pm:173
+#: ../lib/CERT.pm:430 ../lib/KEY.pm:172
 msgid "Please give at least the output file"
-msgstr "ProsÌm, zadejte alespoÚ v˝stupnÌ soubor"
+msgstr "Pros√≠m, zadejte alespo≈à v√Ωstupn√≠ soubor"
 
-#: ../lib/CERT.pm:437
+#: ../lib/CERT.pm:436
 msgid "Key is necessary for export as PKCS#12"
-msgstr "KlÌË je nutn˝ pro export jako PKCS#12"
+msgstr "Kl√≠ƒç je nutn√Ω pro export jako PKCS#12"
 
-#: ../lib/CERT.pm:439 ../lib/CERT.pm:455 ../lib/KEY.pm:258 ../lib/KEY.pm:309
+#: ../lib/CERT.pm:438 ../lib/CERT.pm:454 ../lib/KEY.pm:257 ../lib/KEY.pm:308
 msgid "Export is not possible!"
-msgstr "Export nenÌ moæn˝!"
+msgstr "Export nen√≠ mo≈æn√Ω!"
 
-#: ../lib/CERT.pm:453
+#: ../lib/CERT.pm:452
 #, fuzzy, c-format
 msgid "Key is necessary for export as %s"
-msgstr "KlÌË je nutn˝ pro export jako Zip"
+msgstr "Kl√≠ƒç je nutn√Ω pro export jako %s"
 
-#: ../lib/CERT.pm:493 ../lib/KEY.pm:217
+#: ../lib/CERT.pm:492 ../lib/KEY.pm:216
 #, fuzzy, c-format
 msgid "Can't open Certificate file: %s: %s"
-msgstr "Nelze otev¯Ìt soubor CA certifik·tu %s %s"
+msgstr "Nelze otev≈ô√≠t soubor CA certifik√°tu %s %s"
 
-#: ../lib/CERT.pm:526 ../lib/KEY.pm:289
+#: ../lib/CERT.pm:525 ../lib/KEY.pm:288
 msgid "Generating PKCS#12 failed"
-msgstr "Vytv·¯enÌ PKCS#12 selhalo"
+msgstr "Vytv√°≈ôen√≠ PKCS#12 selhalo"
 
-#: ../lib/CERT.pm:534 ../lib/CERT.pm:617 ../lib/KEY.pm:296 ../lib/KEY.pm:382
+#: ../lib/CERT.pm:533 ../lib/CERT.pm:616 ../lib/KEY.pm:295 ../lib/KEY.pm:381
 #, c-format
 msgid "Certificate and Key successfully exported to %s"
-msgstr "Certifik·t a klÌË ˙spÏπnÏ exportov·n do %s"
+msgstr "Certifik√°t a kl√≠ƒç √∫spƒõ≈°nƒõ exportov√°n do %s"
 
-#: ../lib/CERT.pm:547 ../lib/CERT.pm:568 ../lib/REQ.pm:694
+#: ../lib/CERT.pm:546 ../lib/CERT.pm:567 ../lib/REQ.pm:693
 #, c-format
 msgid "Can't create temporary file: %s: %s"
-msgstr "Nelze vytvo¯it doËasn˝ soubor: %s: %s"
+msgstr "Nelze vytvo≈ôit doƒçasn√Ω soubor: %s: %s"
 
-#: ../lib/CERT.pm:559
+#: ../lib/CERT.pm:558
 #, fuzzy, c-format
 msgid "Can't read Key file: %s: %s"
-msgstr "Nelze otev¯Ìt soubor klÌËe: %s: %s"
+msgstr "Nelze ƒç√≠st soubor kl√≠ƒçe: %s: %s"
 
-#: ../lib/CERT.pm:589 ../lib/KEY.pm:322 ../lib/KEY.pm:338 ../lib/KEY.pm:356
+#: ../lib/CERT.pm:588 ../lib/KEY.pm:321 ../lib/KEY.pm:337 ../lib/KEY.pm:355
 msgid "Can't create temporary file"
-msgstr "Nelze vytvo¯it doËasn˝ soubor"
+msgstr "Nelze vytvo≈ôit doƒçasn√Ω soubor"
 
-#: ../lib/CERT.pm:610 ../lib/KEY.pm:376
+#: ../lib/CERT.pm:609 ../lib/KEY.pm:375
 #, fuzzy, c-format
 msgid "Generating %s file failed"
-msgstr "Vytv·¯enÌ Zip souboru selhalo"
+msgstr "Vytv√°≈ôen√≠ souboru %s selhalo"
 
-#: ../lib/CERT.pm:629
+#: ../lib/CERT.pm:628
 #, c-format
 msgid "Invalid Format for export_cert(): %s"
-msgstr "Neplatn˝ form·t pro export_cert(): %s"
+msgstr "Neplatn√Ω form√°t pro export_cert(): %s"
 
-#: ../lib/CERT.pm:649
+#: ../lib/CERT.pm:648
 #, c-format
 msgid "Certificate successfully exported to: %s"
-msgstr "Certifik·t ˙spÏπnÏ exportov·n do: %s"
+msgstr "Certifik√°t √∫spƒõ≈°nƒõ exportov√°n do: %s"
 
-#: ../lib/GUI.pm:172 ../lib/GUI.pm:179
+#: ../lib/GUI.pm:171 ../lib/GUI.pm:178
 msgid "CA"
 msgstr "CA"
 
-#: ../lib/GUI.pm:186
+#: ../lib/GUI.pm:185
 msgid "CA Information"
 msgstr "CA informace"
 
-#: ../lib/GUI.pm:205
+#: ../lib/GUI.pm:204
 msgid "Certificates"
-msgstr "Certifik·ty"
+msgstr "Certifik√°ty"
 
-#: ../lib/GUI.pm:245 ../lib/GUI.pm:2690 ../lib/GUI/WORDS.pm:58
-#: ../lib/GUI/X509_browser.pm:162 ../lib/GUI/X509_browser.pm:170
-#: ../lib/GUI/X509_browser.pm:179
+#: ../lib/GUI.pm:244 ../lib/GUI.pm:2689 ../lib/GUI/WORDS.pm:56
+#: ../lib/GUI/X509_browser.pm:160 ../lib/GUI/X509_browser.pm:168
+#: ../lib/GUI/X509_browser.pm:177
 msgid "Common Name"
-msgstr "ObecnÈ jmÈno (CN)"
+msgstr "Obecn√© jm√©no (CN)"
 
-#: ../lib/GUI.pm:246 ../lib/GUI.pm:1274 ../lib/GUI.pm:2315
-#: ../lib/GUI/WORDS.pm:59 ../lib/GUI/X509_browser.pm:163
-#: ../lib/GUI/X509_browser.pm:171 ../lib/GUI/X509_browser.pm:180
+#: ../lib/GUI.pm:245 ../lib/GUI.pm:1273 ../lib/GUI.pm:2314
+#: ../lib/GUI/WORDS.pm:57 ../lib/GUI/X509_browser.pm:161
+#: ../lib/GUI/X509_browser.pm:169 ../lib/GUI/X509_browser.pm:178
 msgid "eMail Address"
 msgstr "eMail adresa"
 
-#: ../lib/GUI.pm:247 ../lib/GUI/WORDS.pm:61 ../lib/GUI/X509_browser.pm:164
-#: ../lib/GUI/X509_browser.pm:172 ../lib/GUI/X509_browser.pm:181
+#: ../lib/GUI.pm:246 ../lib/GUI/WORDS.pm:59 ../lib/GUI/X509_browser.pm:162
+#: ../lib/GUI/X509_browser.pm:170 ../lib/GUI/X509_browser.pm:179
 msgid "Organizational Unit"
-msgstr "OrganizaËnÌ jednotka (OU)"
+msgstr "Organizaƒçn√≠ jednotka (OU)"
 
-#: ../lib/GUI.pm:248 ../lib/GUI/WORDS.pm:60 ../lib/GUI/X509_browser.pm:165
-#: ../lib/GUI/X509_browser.pm:173 ../lib/GUI/X509_browser.pm:182
+#: ../lib/GUI.pm:247 ../lib/GUI/WORDS.pm:58 ../lib/GUI/X509_browser.pm:163
+#: ../lib/GUI/X509_browser.pm:171 ../lib/GUI/X509_browser.pm:180
 msgid "Organization"
 msgstr "Organizace (O)"
 
-#: ../lib/GUI.pm:249 ../lib/GUI/WORDS.pm:62 ../lib/GUI/X509_browser.pm:166
-#: ../lib/GUI/X509_browser.pm:174 ../lib/GUI/X509_browser.pm:183
+#: ../lib/GUI.pm:248 ../lib/GUI/WORDS.pm:60 ../lib/GUI/X509_browser.pm:164
+#: ../lib/GUI/X509_browser.pm:172 ../lib/GUI/X509_browser.pm:181
 msgid "Location"
-msgstr "UmÌstÏnÌ"
+msgstr "Um√≠stƒõn√≠"
 
-#: ../lib/GUI.pm:250 ../lib/GUI/WORDS.pm:63 ../lib/GUI/X509_browser.pm:167
-#: ../lib/GUI/X509_browser.pm:175 ../lib/GUI/X509_browser.pm:184
+#: ../lib/GUI.pm:249 ../lib/GUI/WORDS.pm:61 ../lib/GUI/X509_browser.pm:165
+#: ../lib/GUI/X509_browser.pm:173 ../lib/GUI/X509_browser.pm:182
 msgid "State"
-msgstr "ZemÏ"
+msgstr "St√°t"
 
-#: ../lib/GUI.pm:251 ../lib/GUI/WORDS.pm:64 ../lib/GUI/X509_browser.pm:168
-#: ../lib/GUI/X509_browser.pm:176 ../lib/GUI/X509_browser.pm:185
+#: ../lib/GUI.pm:250 ../lib/GUI/WORDS.pm:62 ../lib/GUI/X509_browser.pm:166
+#: ../lib/GUI/X509_browser.pm:174 ../lib/GUI/X509_browser.pm:183
 msgid "Country"
-msgstr "St·t"
+msgstr "Zemƒõ"
 
-#: ../lib/GUI.pm:252 ../lib/GUI/WORDS.pm:70 ../lib/GUI/X509_browser.pm:186
+#: ../lib/GUI.pm:251 ../lib/GUI/WORDS.pm:68 ../lib/GUI/X509_browser.pm:184
 msgid "Type"
 msgstr "Typ"
 
-#: ../lib/GUI.pm:266
+#: ../lib/GUI.pm:265
 msgid "Keys"
-msgstr "KlÌËe"
+msgstr "Kl√≠ƒçe"
 
-#: ../lib/GUI.pm:309
+#: ../lib/GUI.pm:308
 msgid "Requests"
-msgstr "Æ·dosti"
+msgstr "≈Ω√°dosti"
 
-#: ../lib/GUI.pm:400
+#: ../lib/GUI.pm:399
 #, c-format
 msgid "  Actual CA: %s"
-msgstr "  Aktu·lnÌ CA: %s"
+msgstr "  Aktu√°ln√≠ CA: %s"
 
-#: ../lib/GUI.pm:403
+#: ../lib/GUI.pm:402
 #, c-format
 msgid "  Actual CA: %s - Certificates"
-msgstr "  Aktu·lnÌ CA: %s - Certifik·ty"
+msgstr "  Aktu√°ln√≠ CA: %s - Certifik√°ty"
 
-#: ../lib/GUI.pm:406
+#: ../lib/GUI.pm:405
 #, c-format
 msgid "  Actual CA: %s - Keys"
-msgstr "  Aktu·lnÌ CA: %s - KlÌËe"
+msgstr "  Aktu√°ln√≠ CA: %s - Kl√≠ƒçe"
 
-#: ../lib/GUI.pm:409
+#: ../lib/GUI.pm:408
 #, c-format
 msgid "  Actual CA: %s - Requests"
-msgstr "  Aktu·lnÌ CA: %s - Æ·dosti (Requests)"
+msgstr "  Aktu√°ln√≠ CA: %s - ≈Ω√°dosti (Requests)"
 
-#: ../lib/GUI.pm:458 ../lib/GUI.pm:1142
+#: ../lib/GUI.pm:457 ../lib/GUI.pm:1141
 msgid "Open CA"
-msgstr "Otev¯Ìt CA"
+msgstr "Otev≈ô√≠t CA"
 
-#: ../lib/GUI.pm:464
+#: ../lib/GUI.pm:463
 msgid "New CA"
-msgstr "Nov· CA"
+msgstr "Nov√° CA"
 
-#: ../lib/GUI.pm:470 ../lib/GUI.pm:2383
+#: ../lib/GUI.pm:469 ../lib/GUI.pm:2382
 msgid "Import CA"
 msgstr "Import CA"
 
-#: ../lib/GUI.pm:476 ../lib/GUI.pm:1144
+#: ../lib/GUI.pm:475 ../lib/GUI.pm:1143
 msgid "Delete CA"
 msgstr "Odstranit CA"
 
-#: ../lib/GUI.pm:486 ../lib/GUI.pm:525 ../lib/GUI.pm:593
+#: ../lib/GUI.pm:485 ../lib/GUI.pm:524 ../lib/GUI.pm:592
 msgid "Details"
 msgstr "Detaily"
 
-#: ../lib/GUI.pm:492
+#: ../lib/GUI.pm:491
 msgid "History"
-msgstr ""
+msgstr "Historie"
 
-#: ../lib/GUI.pm:498
+#: ../lib/GUI.pm:497
 msgid "Sub CA"
 msgstr "Pod CA"
 
-#: ../lib/GUI.pm:504
+#: ../lib/GUI.pm:503
 msgid "Export CA"
 msgstr "Export CA"
 
-#: ../lib/GUI.pm:510 ../lib/GUI.pm:1420
+#: ../lib/GUI.pm:509 ../lib/GUI.pm:1419
 msgid "Export CRL"
 msgstr "Export CRL"
 
-#: ../lib/GUI.pm:517
+#: ../lib/GUI.pm:516
 msgid "Export Chain"
-msgstr "Export ¯etÏzu"
+msgstr "Export ≈ôetƒõzu"
 
-#: ../lib/GUI.pm:531 ../lib/GUI.pm:599
+#: ../lib/GUI.pm:530 ../lib/GUI.pm:598
 msgid "View"
 msgstr "Zobrazit"
 
-#: ../lib/GUI.pm:541 ../lib/GUI.pm:605
+#: ../lib/GUI.pm:540 ../lib/GUI.pm:604
 msgid "New"
-msgstr "Nov˝"
+msgstr "Nov√Ω"
 
-#: ../lib/GUI.pm:548 ../lib/GUI.pm:579
+#: ../lib/GUI.pm:547 ../lib/GUI.pm:578
 msgid "Export"
 msgstr "Export"
 
-#: ../lib/GUI.pm:554
+#: ../lib/GUI.pm:553
 msgid "Revoke"
 msgstr "Odvolat"
 
-#: ../lib/GUI.pm:564
+#: ../lib/GUI.pm:563
 msgid "Renew"
 msgstr "Obnovit"
 
-#: ../lib/GUI.pm:571 ../lib/GUI.pm:585 ../lib/GUI.pm:628
+#: ../lib/GUI.pm:570 ../lib/GUI.pm:584 ../lib/GUI.pm:627
 msgid "Delete"
 msgstr "Odstranit"
 
-#: ../lib/GUI.pm:611
+#: ../lib/GUI.pm:610
 msgid "Import"
 msgstr "Import"
 
-#: ../lib/GUI.pm:621
+#: ../lib/GUI.pm:620
 msgid "Sign"
 msgstr "Podepsat"
 
-#: ../lib/GUI.pm:647
+#: ../lib/GUI.pm:646
 msgid "_CA"
 msgstr "_CA"
 
-#: ../lib/GUI.pm:650
+#: ../lib/GUI.pm:649
 msgid "_Open CA"
-msgstr "_Otev¯Ìt CA"
+msgstr "_Otev≈ô√≠t CA"
 
-#: ../lib/GUI.pm:655
+#: ../lib/GUI.pm:654
 msgid "_New CA"
-msgstr "_Nov· CA"
+msgstr "_Nov√° CA"
 
-#: ../lib/GUI.pm:660
+#: ../lib/GUI.pm:659
 msgid "_Delete CA"
 msgstr "O_dstranit CA"
 
-#: ../lib/GUI.pm:668
+#: ../lib/GUI.pm:667
 msgid "_Exit"
 msgstr "Kon_ec"
 
-#: ../lib/GUI.pm:675
+#: ../lib/GUI.pm:674
 msgid "_Preferences"
-msgstr "_NastavenÌ"
+msgstr "_P≈ôedvolby"
 
-#: ../lib/GUI.pm:678
+#: ../lib/GUI.pm:677
 #, fuzzy
 msgid "Experts Only!!"
-msgstr "Pouze pro odbornÌky!!"
+msgstr "Pouze pro odborn√≠ky!!"
 
-#: ../lib/GUI.pm:683
+#: ../lib/GUI.pm:682
 msgid "OpenSSL _Configuration"
-msgstr "OpenSSL _konfigurace"
+msgstr "OpenSSL konfigura_ce"
 
-#: ../lib/GUI.pm:690 ../lib/GUI.pm:693
+#: ../lib/GUI.pm:689 ../lib/GUI.pm:692
 msgid "_Help"
-msgstr "N·_povÏda"
+msgstr "_Help-N√°povƒõda"
 
-#: ../lib/GUI.pm:698
+#: ../lib/GUI.pm:697
 msgid "_About TinyCA"
 msgstr "O _aplikaci TinyCA"
 
-#: ../lib/GUI.pm:729
+#: ../lib/GUI.pm:728
 msgid "Invalid mode for show_text():"
-msgstr "Neplatn˝ mÛd pro show_text():"
+msgstr "Neplatn√Ω m√≥d pro show_text():"
 
-#: ../lib/GUI.pm:734 ../lib/GUI.pm:849 ../lib/REQ.pm:237 ../lib/REQ.pm:368
+#: ../lib/GUI.pm:733 ../lib/GUI.pm:848 ../lib/REQ.pm:236 ../lib/REQ.pm:367
 msgid "Please select a Request first"
-msgstr "ProsÌm, nejd¯Ìve vyberte æ·dost (Request)"
+msgstr "Pros√≠m, nejd≈ô√≠ve vyberte ≈æ√°dost (Request)"
 
-#: ../lib/GUI.pm:737
+#: ../lib/GUI.pm:736
 msgid "Please select a certificate first"
-msgstr "ProsÌm, nejd¯Ìve vyberte certifik·t"
+msgstr "Pros√≠m, nejd≈ô√≠ve vyberte certifik√°t"
 
-#: ../lib/GUI.pm:753 ../lib/GUI.pm:868 ../lib/GUI/X509_browser.pm:458
-#: ../lib/GUI/X509_browser.pm:517
+#: ../lib/GUI.pm:752 ../lib/GUI.pm:867 ../lib/GUI/X509_browser.pm:456
+#: ../lib/GUI/X509_browser.pm:515
 msgid "Can't read file"
-msgstr "Nelze ËÌst soubor"
+msgstr "Nelze ƒç√≠st soubor"
 
-#: ../lib/GUI.pm:755
+#: ../lib/GUI.pm:754
 msgid "Request"
-msgstr "Æ·dost"
+msgstr "≈Ω√°dost"
 
-#: ../lib/GUI.pm:755
+#: ../lib/GUI.pm:754
 msgid "Certificate"
-msgstr "Certifik·t"
+msgstr "Certifik√°t"
 
-#: ../lib/GUI.pm:816
+#: ../lib/GUI.pm:815
 #, fuzzy, c-format
 msgid "Invalid mode for _show_popup_menu(): %s"
-msgstr "Neplatn˝ mÛd pro show_text():"
+msgstr "Neplatn√Ω m√≥d pro _show_popup_menu(): %s"
 
-#: ../lib/GUI.pm:844
+#: ../lib/GUI.pm:843
 msgid "Invalid mode for show_details():"
-msgstr "Neplatn˝ mÛd pro show_details():"
+msgstr "Neplatn√Ω m√≥d pro show_details():"
 
-#: ../lib/GUI.pm:870 ../lib/GUI.pm:970 ../lib/GUI.pm:3041
+#: ../lib/GUI.pm:869 ../lib/GUI.pm:969 ../lib/GUI.pm:3040
 msgid "Request Details"
-msgstr "Detaily æ·dosti"
+msgstr "Detaily ≈æ√°dosti"
 
-#: ../lib/GUI.pm:870 ../lib/GUI.pm:970 ../lib/GUI.pm:2898
+#: ../lib/GUI.pm:869 ../lib/GUI.pm:969 ../lib/GUI.pm:2897
 msgid "Certificate Details"
-msgstr "Detaily certifik·tu"
+msgstr "Detaily certifik√°tu"
 
-#: ../lib/GUI.pm:912 ../lib/GUI.pm:1680 ../lib/GUI.pm:3062
+#: ../lib/GUI.pm:911 ../lib/GUI.pm:1679 ../lib/GUI.pm:3061
 msgid "Import Request"
-msgstr "Importovat æ·dost"
+msgstr "Importovat ≈æ√°dost"
 
-#: ../lib/GUI.pm:914 ../lib/GUI.pm:2439
+#: ../lib/GUI.pm:913 ../lib/GUI.pm:2438
 msgid "Import CA Certificate"
-msgstr "Importovat CA certifik·t"
+msgstr "Importovat CA certifik√°t"
 
-#: ../lib/GUI.pm:922
+#: ../lib/GUI.pm:921
 msgid "Do you want to import the following Certificate Request?"
-msgstr "Chcete importovat n·sledujÌcÌ æ·dost o certifik·t?"
+msgstr "Chcete importovat n√°sleduj√≠c√≠ ≈æ√°dost o certifik√°t?"
 
-#: ../lib/GUI.pm:924
+#: ../lib/GUI.pm:923
 msgid "Do you want to import the following CA Certificate?"
-msgstr "Chcete importovat n·sledujÌcÌ certifik·t CA?"
+msgstr "Chcete importovat n√°sleduj√≠c√≠ certifik√°t CA?"
 
-#: ../lib/GUI.pm:978
+#: ../lib/GUI.pm:977
 msgid "Subject DN"
 msgstr "DN subjektu"
 
-#: ../lib/GUI.pm:1002
+#: ../lib/GUI.pm:1001
 msgid "Issuer"
 msgstr "Vydavatel"
 
-#: ../lib/GUI.pm:1028
+#: ../lib/GUI.pm:1027
 msgid "Validity"
 msgstr "Platnost"
 
-#: ../lib/GUI.pm:1044
+#: ../lib/GUI.pm:1043
 msgid "Key/Request Details:"
-msgstr "Detaily klÌËe/æ·dosti (Request):"
+msgstr "Detaily kl√≠ƒçe/≈æ√°dosti (Request):"
 
-#: ../lib/GUI.pm:1044
+#: ../lib/GUI.pm:1043
 msgid "Key/Certificate Details:"
-msgstr "Detaily klÌËe/certifik·tu:"
+msgstr "Detaily kl√≠ƒçe/certifik√°tu:"
 
-#: ../lib/GUI.pm:1060
+#: ../lib/GUI.pm:1059
 msgid "Fingerprints"
 msgstr "Fingerprints"
 
-#: ../lib/GUI.pm:1076
+#: ../lib/GUI.pm:1075
 msgid "Requested X.509 Extensions"
-msgstr "Poæadovan· X.509 rozπÌ¯enÌ"
+msgstr "Po≈æadovan√° X.509 roz≈°√≠≈ôen√≠"
 
-#: ../lib/GUI.pm:1076
+#: ../lib/GUI.pm:1075
 msgid "X.509v3 Extensions"
-msgstr "X.509v3 rozπÌ¯enÌ"
+msgstr "X.509v3 roz≈°√≠≈ôen√≠"
 
-#: ../lib/GUI.pm:1101
+#: ../lib/GUI.pm:1100
 msgid "Requested Netscape Extensions"
-msgstr "Poæadovan· Netscape rozπÌ¯enÌ"
+msgstr "Po≈æadovan√° Netscape roz≈°√≠≈ôen√≠"
 
-#: ../lib/GUI.pm:1101
+#: ../lib/GUI.pm:1100
 msgid "Netscape Extensions"
-msgstr "Netscape rozπÌ¯enÌ"
+msgstr "Netscape roz≈°√≠≈ôen√≠"
 
-#: ../lib/GUI.pm:1146
+#: ../lib/GUI.pm:1145
 msgid "Invalid action given: "
-msgstr "Zad·na neplatn· akce: "
+msgstr "Zad√°na neplatn√° akce: "
 
-#: ../lib/GUI.pm:1168 ../lib/GUI.pm:1214
+#: ../lib/GUI.pm:1167 ../lib/GUI.pm:1213
 msgid "Invalid action for show_select_ca_dialog(): "
-msgstr "Neplatn· akce pro show_select_ca_dialog(): "
+msgstr "Neplatn√° akce pro show_select_ca_dialog(): "
 
-#: ../lib/GUI.pm:1190
+#: ../lib/GUI.pm:1189
 msgid "Available CAs"
-msgstr ""
+msgstr "CA k dispozici"
+
+#: ../lib/GUI.pm:1245
+msgid "Create Request"
+msgstr "Vytvo≈ôit ≈æ√°dost"
 
 #: ../lib/GUI.pm:1246
-msgid "Create Request"
-msgstr "Vytvo¯it æ·dost"
-
-#: ../lib/GUI.pm:1247
 msgid "Create a new Certificate Request"
-msgstr "Vytvo¯it novou æ·dost o certifik·t"
+msgstr "Vytvo≈ôit novou ≈æ√°dost o certifik√°t"
 
-#: ../lib/GUI.pm:1261
+#: ../lib/GUI.pm:1260
 msgid "Common Name (eg, your Name,"
-msgstr "ObecnÈ jmÈno (nap¯. Vaπe jmÈno,"
+msgstr "Obecn√© jm√©no (nap≈ô. Va≈°e jm√©no,"
 
-#: ../lib/GUI.pm:1266
+#: ../lib/GUI.pm:1265
 msgid "your eMail Address"
-msgstr "Vaπe emailov· adresa"
+msgstr "Va≈°e emailov√° adresa"
 
-#: ../lib/GUI.pm:1270
+#: ../lib/GUI.pm:1269
 msgid "or the Servers Name)"
-msgstr "nebo jmÈno serveru"
+msgstr "nebo jm√©no serveru)"
 
-#: ../lib/GUI.pm:1278
+#: ../lib/GUI.pm:1277
 msgid "Password (protect your private Key):"
-msgstr "Heslo (chr·nÌ V·π soukrom˝ klÌË):"
+msgstr "Heslo (chr√°n√≠ V√°≈° soukrom√Ω kl√≠ƒç):"
 
-#: ../lib/GUI.pm:1282 ../lib/GUI.pm:2295
+#: ../lib/GUI.pm:1281 ../lib/GUI.pm:2294
 msgid "Password (confirmation):"
-msgstr "Heslo (potvrzenÌ):"
+msgstr "Heslo (potvrzen√≠):"
 
-#: ../lib/GUI.pm:1286 ../lib/GUI.pm:2287
+#: ../lib/GUI.pm:1285 ../lib/GUI.pm:2286
 msgid "Country Name (2 letter code):"
-msgstr "JmÈno st·tu (kÛd 2 pÌsmena):"
+msgstr "Jm√©no zemƒõ (k√≥d 2 p√≠smena):"
 
-#: ../lib/GUI.pm:1290 ../lib/GUI.pm:2299
+#: ../lib/GUI.pm:1289 ../lib/GUI.pm:2298
 msgid "State or Province Name:"
-msgstr "JmÈno zemÏ nebo kraje"
+msgstr "Jm√©no st√°tu nebo kraje"
 
-#: ../lib/GUI.pm:1294 ../lib/GUI.pm:2303
+#: ../lib/GUI.pm:1293 ../lib/GUI.pm:2302
 msgid "Locality Name (eg. city):"
-msgstr "JmÈno mÌsta (nap¯. mÏsto):"
+msgstr "Jm√©no m√≠sta (nap≈ô. mƒõsto):"
 
-#: ../lib/GUI.pm:1298 ../lib/GUI.pm:2307
+#: ../lib/GUI.pm:1297 ../lib/GUI.pm:2306
 msgid "Organization Name (eg. company):"
-msgstr "JmÈno organizace (nap¯. firma):"
+msgstr "Jm√©no organizace (nap≈ô. firma):"
 
-#: ../lib/GUI.pm:1304 ../lib/GUI.pm:1309 ../lib/GUI.pm:2311
+#: ../lib/GUI.pm:1303 ../lib/GUI.pm:1308 ../lib/GUI.pm:2310
 msgid "Organizational Unit Name (eg. section):"
-msgstr "JmÈno organizaËnÌ jednotky (nap¯. sekce):"
+msgstr "Jm√©no organizaƒçn√≠ jednotky (nap≈ô. sekce):"
 
-#: ../lib/GUI.pm:1314 ../lib/GUI.pm:2323 ../lib/GUI/WORDS.pm:67
+#: ../lib/GUI.pm:1313 ../lib/GUI.pm:2322 ../lib/GUI/WORDS.pm:65
 msgid "Keylength"
-msgstr "DÈlka klÌËe"
+msgstr "D√©lka kl√≠ƒçe"
 
-#: ../lib/GUI.pm:1322 ../lib/GUI.pm:2353
+#: ../lib/GUI.pm:1321 ../lib/GUI.pm:2352
 msgid "Digest"
-msgstr "V˝tah-digest"
+msgstr "V√Ωtah-digest"
 
-#: ../lib/GUI.pm:1329
+#: ../lib/GUI.pm:1328
 msgid "Algorithm"
 msgstr "Algoritmus"
 
-#: ../lib/GUI.pm:1360 ../lib/GUI.pm:2919
+#: ../lib/GUI.pm:1359 ../lib/GUI.pm:2918
 msgid "Revoke Certificate"
-msgstr "Odvolat certifik·t"
+msgstr "Odvolat certifik√°t"
 
-#: ../lib/GUI.pm:1369 ../lib/GUI.pm:1445 ../lib/GUI.pm:2094
+#: ../lib/GUI.pm:1368 ../lib/GUI.pm:1444 ../lib/GUI.pm:2093
 msgid "CA Password:"
 msgstr "Heslo CA:"
 
-#: ../lib/GUI.pm:1375
+#: ../lib/GUI.pm:1374
 msgid "Revocation Reason:"
-msgstr "D˘vod odvol·nÌ:"
+msgstr "D≈Øvod odvol√°n√≠:"
 
-#: ../lib/GUI.pm:1420
+#: ../lib/GUI.pm:1419
 msgid "Export Revocation List to File"
-msgstr "Exportovat seznam odvolan˝ch certifik·t˘ (CRL) do souboru"
+msgstr "Exportovat seznam odvolan√Ωch certifik√°t≈Ø (CRL) do souboru"
 
-#: ../lib/GUI.pm:1428 ../lib/GUI.pm:1516 ../lib/GUI.pm:1564 ../lib/GUI.pm:1688
-#: ../lib/GUI.pm:1756
+#: ../lib/GUI.pm:1427 ../lib/GUI.pm:1515 ../lib/GUI.pm:1563 ../lib/GUI.pm:1687
+#: ../lib/GUI.pm:1755
 msgid "File:"
 msgstr "Soubor:"
 
-#: ../lib/GUI.pm:1439 ../lib/GUI.pm:1527 ../lib/GUI.pm:1575 ../lib/GUI.pm:1698
-#: ../lib/GUI.pm:1773 ../lib/GUI.pm:2436 ../lib/GUI.pm:2455 ../lib/GUI.pm:2474
-#: ../lib/GUI.pm:2493
+#: ../lib/GUI.pm:1438 ../lib/GUI.pm:1526 ../lib/GUI.pm:1574 ../lib/GUI.pm:1697
+#: ../lib/GUI.pm:1772 ../lib/GUI.pm:2435 ../lib/GUI.pm:2454 ../lib/GUI.pm:2473
+#: ../lib/GUI.pm:2492
 msgid "Browse..."
-msgstr ""
+msgstr "Proch√°zet..."
 
-#: ../lib/GUI.pm:1442 ../lib/GUI.pm:1555 ../lib/GUI.pm:1578
+#: ../lib/GUI.pm:1441 ../lib/GUI.pm:1554 ../lib/GUI.pm:1577
 msgid "Export CA Certificate"
-msgstr "Exportovat certifik·t CA"
+msgstr "Exportovat certifik√°t CA"
 
-#: ../lib/GUI.pm:1449 ../lib/GUI.pm:2100 ../lib/GUI.pm:2319
+#: ../lib/GUI.pm:1448 ../lib/GUI.pm:2099 ../lib/GUI.pm:2318
 msgid "Valid for (Days):"
-msgstr "Platn˝ (dn˘):"
+msgstr "Platn√Ω (dn≈Ø):"
 
-#: ../lib/GUI.pm:1453 ../lib/GUI.pm:1582 ../lib/GUI.pm:1780
+#: ../lib/GUI.pm:1452 ../lib/GUI.pm:1581 ../lib/GUI.pm:1779
 msgid "Export Format:"
-msgstr "Form·t exportu:"
+msgstr "Form√°t exportu:"
 
-#: ../lib/GUI.pm:1459 ../lib/GUI.pm:1588
+#: ../lib/GUI.pm:1458 ../lib/GUI.pm:1587
 msgid "PEM"
 msgstr "PEM"
 
-#: ../lib/GUI.pm:1468 ../lib/GUI.pm:1597
+#: ../lib/GUI.pm:1467 ../lib/GUI.pm:1596
 msgid "DER"
 msgstr "DER"
 
-#: ../lib/GUI.pm:1477 ../lib/GUI.pm:1606
+#: ../lib/GUI.pm:1476 ../lib/GUI.pm:1605
 msgid "TXT"
 msgstr "TXT"
 
-#: ../lib/GUI.pm:1508 ../lib/GUI.pm:1530
+#: ../lib/GUI.pm:1507 ../lib/GUI.pm:1529
 msgid "Export CA Certificate Chain"
-msgstr "Exportovat ¯etÏz certifik·t˘ CA (CA certificate chain)"
+msgstr "Exportovat ≈ôetƒõz certifik√°t≈Ø CA (CA certificate chain)"
 
-#: ../lib/GUI.pm:1509
+#: ../lib/GUI.pm:1508
 msgid "Export CA Certificate Chain to File"
-msgstr "Exportovat ¯etÏz certifik·t˘ CA (CA Certificate Chain) do souboru"
+msgstr "Exportovat ≈ôetƒõz certifik√°t≈Ø CA (CA Certificate Chain) do souboru"
 
-#: ../lib/GUI.pm:1556
+#: ../lib/GUI.pm:1555
 msgid "Export CA Certificate to File"
-msgstr "Exportovat certifik·t CA do souboru"
+msgstr "Exportovat certifik√°t CA do souboru"
 
-#: ../lib/GUI.pm:1636 ../lib/GUI.pm:1637
+#: ../lib/GUI.pm:1635 ../lib/GUI.pm:1636
 msgid "Export Key without Passphrase"
-msgstr "Exportovat klÌË bez fr·ze"
+msgstr "Exportovat kl√≠ƒç bez fr√°ze"
 
-#: ../lib/GUI.pm:1641
+#: ../lib/GUI.pm:1640
 msgid "I hope you know what you're doing?"
-msgstr "Douf·m, æe vÌte, co dÏl·te!"
+msgstr "Douf√°m, ≈æe v√≠te, co dƒõl√°te!"
 
-#: ../lib/GUI.pm:1645
+#: ../lib/GUI.pm:1644
 msgid "The Key Passphrase is needed for decryption of the Key"
-msgstr "Fr·ze klÌËe je nutn· pro dekÛdov·nÌ klÌËe"
+msgstr "Fr√°ze kl√≠ƒçe je nutn√° pro dek√≥dov√°n√≠ kl√≠ƒçe"
 
-#: ../lib/GUI.pm:1654
+#: ../lib/GUI.pm:1653
 msgid "Password:"
 msgstr "Heslo:"
 
-#: ../lib/GUI.pm:1680 ../lib/GUI.pm:1701
+#: ../lib/GUI.pm:1679 ../lib/GUI.pm:1700
 msgid "Import Request from File"
-msgstr "Importovat æ·dost ze souboru"
+msgstr "Importovat ≈æ√°dost ze souboru"
 
-#: ../lib/GUI.pm:1722 ../lib/GUI.pm:1760 ../lib/GUI.pm:2912
+#: ../lib/GUI.pm:1721 ../lib/GUI.pm:1759 ../lib/GUI.pm:2911
 msgid "Export Certificate"
-msgstr "Exportovat certifik·t"
+msgstr "Exportovat certifik√°t"
 
-#: ../lib/GUI.pm:1724 ../lib/GUI.pm:1762 ../lib/GUI.pm:2869
+#: ../lib/GUI.pm:1723 ../lib/GUI.pm:1761 ../lib/GUI.pm:2868
 msgid "Export Key"
-msgstr "Exportovat klÌË"
+msgstr "Exportovat kl√≠ƒç"
 
-#: ../lib/GUI.pm:1727
+#: ../lib/GUI.pm:1726
 msgid "Invalid mode for show_export_dialog(): "
-msgstr "Neplatn˝ mÛd pro show_export_dialog(): "
+msgstr "Neplatn√Ω m√≥d pro show_export_dialog(): "
 
-#: ../lib/GUI.pm:1744
+#: ../lib/GUI.pm:1743
 msgid "Export Certificate to File"
-msgstr "Exportovat certifik·t do souboru"
+msgstr "Exportovat certifik√°t do souboru"
 
-#: ../lib/GUI.pm:1746
+#: ../lib/GUI.pm:1745
 msgid "Export Key to File"
-msgstr "Exportovat klÌË do souboru"
+msgstr "Exportovat kl√≠ƒç do souboru"
 
-#: ../lib/GUI.pm:1784
+#: ../lib/GUI.pm:1783
 msgid "PEM (Certificate)"
-msgstr "PEM (certifik·t)"
+msgstr "PEM (certifik√°t)"
 
-#: ../lib/GUI.pm:1786
+#: ../lib/GUI.pm:1785
 msgid "PEM (Key)"
-msgstr "PEM (klÌË)"
+msgstr "PEM (kl√≠ƒç)"
 
-#: ../lib/GUI.pm:1795
+#: ../lib/GUI.pm:1794
 msgid "DER (Certificate)"
-msgstr "DER (certifik·t)"
+msgstr "DER (certifik√°t)"
 
-#: ../lib/GUI.pm:1797
+#: ../lib/GUI.pm:1796
 msgid "DER (Key without Passphrase)"
-msgstr "DER (klÌË bez fr·ze)"
+msgstr "DER (kl√≠ƒç bez fr√°ze)"
 
-#: ../lib/GUI.pm:1805
+#: ../lib/GUI.pm:1804
 msgid "PKCS#12 (Certificate & Key)"
-msgstr "PKCS#12 (certifik·t a klÌË)"
+msgstr "PKCS#12 (certifik√°t a kl√≠ƒç)"
 
-#: ../lib/GUI.pm:1812
+#: ../lib/GUI.pm:1811
 msgid "Zip (Certificate & Key)"
-msgstr "Zip (certifik·t a klÌË)"
+msgstr "Zip (certifik√°t a kl√≠ƒç)"
 
-#: ../lib/GUI.pm:1822
+#: ../lib/GUI.pm:1821
 #, fuzzy
 msgid "Tar (Certificate & Key)"
-msgstr "Zip (certifik·t a klÌË)"
+msgstr "Tar (certifik√°t a kl√≠ƒç)"
 
-#: ../lib/GUI.pm:1834
+#: ../lib/GUI.pm:1833
 msgid "TXT (Certificate)"
-msgstr "TXT (certifik·t)"
+msgstr "TXT (certifik√°t)"
 
-#: ../lib/GUI.pm:1840
+#: ../lib/GUI.pm:1839
 #, fuzzy
 msgid "Without Passphrase (PEM/PKCS#12)"
-msgstr "Bez fr·ze (PEM)"
+msgstr "Bez fr√°ze (PEM/PKCS#12)"
 
-#: ../lib/GUI.pm:1846 ../lib/GUI.pm:1873 ../lib/GUI.pm:1892 ../lib/GUI.pm:2019
-#: ../lib/GUI.pm:2044 ../lib/GUI.pm:2197
+#: ../lib/GUI.pm:1845 ../lib/GUI.pm:1872 ../lib/GUI.pm:1891 ../lib/GUI.pm:2018
+#: ../lib/GUI.pm:2043 ../lib/GUI.pm:2196
 msgid "Yes"
 msgstr "Ano"
 
-#: ../lib/GUI.pm:1851 ../lib/GUI.pm:1878 ../lib/GUI.pm:1897 ../lib/GUI.pm:2025
-#: ../lib/GUI.pm:2050 ../lib/GUI.pm:2203
+#: ../lib/GUI.pm:1850 ../lib/GUI.pm:1877 ../lib/GUI.pm:1896 ../lib/GUI.pm:2024
+#: ../lib/GUI.pm:2049 ../lib/GUI.pm:2202
 msgid "No"
 msgstr "Ne"
 
-#: ../lib/GUI.pm:1861
+#: ../lib/GUI.pm:1860
 msgid "Include Key (PEM)"
-msgstr ""
+msgstr "Vƒçetnƒõ kl√≠ƒçe (PEM)"
 
-#: ../lib/GUI.pm:1866
+#: ../lib/GUI.pm:1865
 #, fuzzy
 msgid "Include Certificate (PEM)"
-msgstr "Certifik·t CA (PEM/DER):"
+msgstr "Vƒçetnƒõ certifik√°tu (PEM)"
 
-#: ../lib/GUI.pm:1886
+#: ../lib/GUI.pm:1885
 #, fuzzy
 msgid "Include Fingerprint (PEM)"
-msgstr "Fingerprint (MD5)"
+msgstr "Vƒçetnƒõ Fingerprintu (PEM)"
 
-#: ../lib/GUI.pm:1994 ../lib/GUI.pm:1995
+#: ../lib/GUI.pm:1993 ../lib/GUI.pm:1994
 msgid "Export to PKCS#12"
 msgstr "Exportovat do PKCS#12"
 
-#: ../lib/GUI.pm:2002
+#: ../lib/GUI.pm:2001
 msgid "Key Password:"
-msgstr "Heslo klÌËe:"
+msgstr "Heslo kl√≠ƒçe:"
 
-#: ../lib/GUI.pm:2006
+#: ../lib/GUI.pm:2005
 msgid "Export Password:"
 msgstr "Heslo pro export:"
 
-#: ../lib/GUI.pm:2009
+#: ../lib/GUI.pm:2008
 msgid "Friendly Name:"
-msgstr ""
+msgstr "Jednoduch√© jm√©no:"
 
-#: ../lib/GUI.pm:2013
+#: ../lib/GUI.pm:2012
 #, fuzzy
 msgid "Without Passphrase"
-msgstr "Bez fr·ze (PEM)"
+msgstr "Bez fr√°ze"
 
-#: ../lib/GUI.pm:2038
+#: ../lib/GUI.pm:2037
 msgid "Add CA Certificate to PKCS#12 structure"
-msgstr "P¯idat certifik·t CA do PKCS#12 struktury"
+msgstr "P≈ôidat certifik√°t CA do PKCS#12 struktury"
 
-#: ../lib/GUI.pm:2086 ../lib/GUI.pm:3069
+#: ../lib/GUI.pm:2085 ../lib/GUI.pm:3068
 msgid "Sign Request"
-msgstr "Podepsat æ·dost"
+msgstr "Podepsat ≈æ√°dost"
 
-#: ../lib/GUI.pm:2086
+#: ../lib/GUI.pm:2085
 msgid "Sign Request/Create Certificate"
-msgstr "Podepsat æ·dost/Vytvo¯it certifik·t"
+msgstr "Podepsat ≈æ√°dost/Vytvo≈ôit certifik√°t"
 
-#: ../lib/GUI.pm:2111 ../lib/GUI.pm:2156
+#: ../lib/GUI.pm:2110 ../lib/GUI.pm:2155
 msgid "Subject alternative name (IP Address):"
-msgstr "AlternativnÌ jmÈno subjektu (IP adresa):"
+msgstr "Alternativn√≠ jm√©no subjektu (IP adresa):"
 
-#: ../lib/GUI.pm:2114 ../lib/GUI.pm:2159
+#: ../lib/GUI.pm:2113 ../lib/GUI.pm:2158
 msgid "Subject alternative name (DNS Name):"
-msgstr "AlternativnÌ jmÈno subjektu (DNS jmÈno):"
+msgstr "Alternativn√≠ jm√©no subjektu (DNS jm√©no):"
 
-#: ../lib/GUI.pm:2117 ../lib/GUI.pm:2165
+#: ../lib/GUI.pm:2116 ../lib/GUI.pm:2164
 #, fuzzy
 msgid "Subject alternative name (raw):"
-msgstr "AlternativnÌ jmÈno subjektu (raw):"
+msgstr "Alternativn√≠ jm√©no subjektu (raw):"
 
-#: ../lib/GUI.pm:2125 ../lib/GUI.pm:2173
+#: ../lib/GUI.pm:2124 ../lib/GUI.pm:2172
 msgid "Extended Key Usage:"
-msgstr "RozπÌ¯enÈ pouæitÌ klÌËe:"
+msgstr "Roz≈°√≠≈ôen√© pou≈æit√≠ kl√≠ƒçe:"
 
-#: ../lib/GUI.pm:2132
+#: ../lib/GUI.pm:2131
 msgid "Netscape SSL Server Name:"
-msgstr "Netscape jmÈno serveru SSL:"
+msgstr "Netscape jm√©no serveru SSL:"
 
-#: ../lib/GUI.pm:2139 ../lib/GUI.pm:2180
+#: ../lib/GUI.pm:2138 ../lib/GUI.pm:2179
 msgid "Netscape Revocation URL:"
-msgstr "Netscape URL odvolan˝ch:"
+msgstr "Netscape URL odvolan√Ωch:"
 
-#: ../lib/GUI.pm:2146 ../lib/GUI.pm:2187
+#: ../lib/GUI.pm:2145 ../lib/GUI.pm:2186
 msgid "Netscape Renewal URL:"
-msgstr "Netscape URL obnoven˝ch:"
+msgstr "Netscape URL obnoven√Ωch:"
 
-#: ../lib/GUI.pm:2162
+#: ../lib/GUI.pm:2161
 msgid "Subject alternative name (eMail Address):"
-msgstr "AlternativnÌ jmÈno subjektu (eMailov· adresa):"
+msgstr "Alternativn√≠ jm√©no subjektu (eMailov√° adresa):"
 
-#: ../lib/GUI.pm:2209
+#: ../lib/GUI.pm:2208
 msgid "Add eMail Address to Subject DN:"
-msgstr "P¯idat eMailovou adresu k DN subjektu:"
+msgstr "P≈ôidat eMailovou adresu k DN subjektu:"
 
-#: ../lib/GUI.pm:2239 ../lib/GUI.pm:2243
+#: ../lib/GUI.pm:2238 ../lib/GUI.pm:2242
 msgid "Create CA"
-msgstr "Vytvo¯it CA"
+msgstr "Vytvo≈ôit CA"
 
-#: ../lib/GUI.pm:2239
+#: ../lib/GUI.pm:2238
 msgid "Create a new Sub CA"
-msgstr "Vytvo¯it novou pod¯Ìzenou CA"
+msgstr "Vytvo≈ôit novou pod≈ô√≠zenou CA"
 
-#: ../lib/GUI.pm:2243
+#: ../lib/GUI.pm:2242
 msgid "Create a new CA"
-msgstr "Vytvo¯it novou CA"
+msgstr "Vytvo≈ôit novou CA"
 
-#: ../lib/GUI.pm:2256
+#: ../lib/GUI.pm:2255
 msgid "CA Password (for creating the new CA):"
-msgstr "Heslo CA (pro vytvo¯enÌ novÈ CA):"
+msgstr "Heslo CA (pro vytvo≈ôen√≠ nov√© CA):"
 
-#: ../lib/GUI.pm:2267 ../lib/GUI.pm:2404
+#: ../lib/GUI.pm:2266 ../lib/GUI.pm:2403
 msgid "Name (for local storage):"
-msgstr "JmÈno (pro lok·lnÌ uloæenÌ):"
+msgstr "Jm√©no (pro lok√°ln√≠ ulo≈æen√≠):"
 
-#: ../lib/GUI.pm:2274
+#: ../lib/GUI.pm:2273
 msgid "Data for CA Certificate"
-msgstr "Data pro certifik·t CA"
+msgstr "Data pro certifik√°t CA"
 
-#: ../lib/GUI.pm:2283
+#: ../lib/GUI.pm:2282
 msgid "Common Name (for the CA):"
-msgstr "ObecnÈ jmÈno (pro CA):"
+msgstr "Obecn√© jm√©no (pro CA):"
 
-#: ../lib/GUI.pm:2291
+#: ../lib/GUI.pm:2290
 msgid "Password (needed for signing):"
-msgstr "Heslo (pot¯ebnÈ pro podepisov·nÌ):"
+msgstr "Heslo (pot≈ôebn√© pro podepsov√°n√≠):"
 
-#: ../lib/GUI.pm:2383
+#: ../lib/GUI.pm:2382
 msgid "Import an existing CA into TinyCA"
-msgstr "Import existujÌcÌ CA do TinyCA"
+msgstr "Import existuj√≠c√≠ CA do TinyCA"
 
-#: ../lib/GUI.pm:2394
+#: ../lib/GUI.pm:2393
 msgid "Password of the private CA key (Needed for import):"
-msgstr "Heslo soukromÈho klÌËe CA (pot¯ebnÈ pro import):"
+msgstr "Heslo soukrom√©ho kl√≠ƒçe CA (pot≈ôebn√© pro import):"
 
-#: ../lib/GUI.pm:2408
+#: ../lib/GUI.pm:2407
 msgid "New password for the CA:"
-msgstr "NovÈ heslo pro CA:"
+msgstr "Nov√© heslo pro CA:"
 
-#: ../lib/GUI.pm:2412
+#: ../lib/GUI.pm:2411
 msgid "Confirm password:"
-msgstr "PotvrzenÌ hesla:"
+msgstr "Potvrzen√≠ hesla:"
 
-#: ../lib/GUI.pm:2417
+#: ../lib/GUI.pm:2416
 msgid "Files/Directories to import"
-msgstr "Soubory/Adres·¯e pro import"
+msgstr "Soubory/Adres√°≈ôe pro import"
 
-#: ../lib/GUI.pm:2425
+#: ../lib/GUI.pm:2424
 msgid "CA Certificate (PEM/DER):"
-msgstr "Certifik·t CA (PEM/DER):"
+msgstr "Certifik√°t CA (PEM/DER):"
 
-#: ../lib/GUI.pm:2444
+#: ../lib/GUI.pm:2443
 msgid "CA private key (PEM/DER):"
-msgstr "Soukrom˝ klÌË CA (PEM/DER):"
+msgstr "Soukrom√Ω kl√≠ƒç CA (PEM/DER):"
 
-#: ../lib/GUI.pm:2458
+#: ../lib/GUI.pm:2457
 #, fuzzy
 msgid "Import CA private Key"
-msgstr "Importovat soukrom˝ klÌË CA"
+msgstr "Importovat soukrom√Ω kl√≠ƒç CA"
 
-#: ../lib/GUI.pm:2463
+#: ../lib/GUI.pm:2462
 #, fuzzy
 msgid "OpenSSL Index File (index.txt):"
-msgstr "Indexov˝ soubor (index.txt):"
+msgstr "OpenSSL indexov√Ω soubor (index.txt):"
 
-#: ../lib/GUI.pm:2477
+#: ../lib/GUI.pm:2476
 msgid "Import Index File"
-msgstr "Importovat indexov˝ soubor"
+msgstr "Importovat indexov√Ω soubor"
 
-#: ../lib/GUI.pm:2482
+#: ../lib/GUI.pm:2481
 msgid "Directory containing certificates (PEM/DER):"
-msgstr "Adres·¯ obsahujÌcÌ certifik·ty (PEM/DER):"
+msgstr "Adres√°≈ô obsahuj√≠c√≠ certifik√°ty (PEM/DER):"
 
-#: ../lib/GUI.pm:2496
+#: ../lib/GUI.pm:2495
 #, fuzzy
 msgid "Import Certificates from directory"
-msgstr "Importovat certifik·ty z adres·¯e"
+msgstr "Importovat certifik√°ty z adres√°≈ôe"
 
-#: ../lib/GUI.pm:2510
+#: ../lib/GUI.pm:2509
 msgid "You are kidding, are you??"
-msgstr "Æertujeπ, co?"
+msgstr "≈Ωertuje≈°, co?"
+
+#: ../lib/GUI.pm:2531
+#, fuzzy
+msgid "Spanish: Ramon Pons Vivanco <rpons\\@rinu.org>"
+msgstr "≈†panƒõlsk√Ω: Ramon Pons Vivanco <rpons@rinu.org>"
 
 #: ../lib/GUI.pm:2532
 #, fuzzy
-msgid "Spanish: Ramon Pons Vivanco <rpons\\@rinu.org>"
-msgstr "©panÏlsk˝: Ramon Pons Vivanco <rpons@rinu.org>"
+msgid "Czech: Robert Wolf <gentoo\\@slave.umbr.cas.cz>"
+msgstr "ƒåesk√Ω: Robert Wolf <gentoo@slave.umbr.cas.cz>"
 
 #: ../lib/GUI.pm:2533
 #, fuzzy
-msgid "Czech: Robert Wolf <gentoo\\@slave.umbr.cas.cz>"
-msgstr "»esk˝: Robert Wolf <gentoo@slave.umbr.cas.cz>"
-
-#: ../lib/GUI.pm:2534
 msgid "French: Thibault Le Meur <Thibault.Lemeur\\@supelec.fr>"
-msgstr ""
+msgstr "Francouzsk√Ω: Thibault Le Meur <Thibault.Lemeur@supelec.fr>"
 
-#: ../lib/GUI.pm:2550
+#: ../lib/GUI.pm:2549
 msgid "Do you really want to delete the selected Request?"
-msgstr "Opravdu chcete odstranit vybranou æ·dost?"
+msgstr "Opravdu chcete odstranit vybranou ≈æ√°dost (Request)?"
 
-#: ../lib/GUI.pm:2552
+#: ../lib/GUI.pm:2551
 msgid "Do you really want to delete the selected Key?"
-msgstr "Opravdu chcete odstranit vybran˝ klÌË?"
+msgstr "Opravdu chcete odstranit vybran√Ω kl√≠ƒç?"
 
-#: ../lib/GUI.pm:2554
+#: ../lib/GUI.pm:2553
 msgid "Do you really want to delete the selected Certificate?"
-msgstr "Opravdu chcete odstranit vybran˝ certifik·t?"
+msgstr "Opravdu chcete odstranit vybran√Ω certifik√°t?"
 
-#: ../lib/GUI.pm:2604
+#: ../lib/GUI.pm:2603
 #, fuzzy
 msgid "Overwrite Request/Key"
-msgstr "Odstranit æ·dost"
+msgstr "P≈ôepsat ≈æ√°dost(Request)/kl√≠ƒç"
 
-#: ../lib/GUI.pm:2610
+#: ../lib/GUI.pm:2609
 msgid "The Key or the Request is already existing!"
-msgstr "KlÌË nebo æ·dost jiæ existuje!"
+msgstr "Kl√≠ƒç nebo ≈æ√°dost (Request) ji≈æ existuje!"
 
-#: ../lib/GUI.pm:2615
+#: ../lib/GUI.pm:2614
 #, fuzzy
 msgid "You won't be able to sign this Request"
-msgstr "nebudete moci podepsat tuto æ·dost!"
+msgstr "Nebudete moci podepsat tuto ≈æ√°dost (Request)"
 
-#: ../lib/GUI.pm:2620
+#: ../lib/GUI.pm:2619
 #, fuzzy
 msgid "if the corresponding certificate is still valid"
-msgstr "Pokud odpovÌdajÌcÌ certifik·t nezaniknul nebo nebyl odvol·n "
+msgstr "pokud odpov√≠daj√≠c√≠ certifik√°t je st√°le platn√Ω"
 
-#: ../lib/GUI.pm:2637
+#: ../lib/GUI.pm:2636
 msgid "The Certificate will be longer valid than your CA!"
-msgstr "Certifik·t bude platn˝ dÈle neæ Vaπe CA!"
+msgstr "Certifik√°t bude platn√Ω d√©le ne≈æ Va≈°e CA!"
 
-#: ../lib/GUI.pm:2639
+#: ../lib/GUI.pm:2638
 msgid "This may cause problems with some software!!"
-msgstr "Toto m˘æe zp˘sobit problÈmy s nÏkter˝mi programy!!"
+msgstr "Toto m≈Ø≈æe zp≈Øsobit probl√©my s nƒõkter√Ωmi programy!!"
 
-#: ../lib/GUI.pm:2654
+#: ../lib/GUI.pm:2653
 msgid "Expirationdate Warning"
-msgstr "Varov·nÌ data platnosti"
+msgstr "Varov√°n√≠ data platnosti"
 
-#: ../lib/GUI.pm:2689 ../lib/GUI/WORDS.pm:71
+#: ../lib/GUI.pm:2688 ../lib/GUI/WORDS.pm:69
 msgid "Serial"
-msgstr "SeriovÈ ËÌslo"
+msgstr "Seriov√© ƒç√≠slo"
 
-#: ../lib/GUI.pm:2691 ../lib/GUI/WORDS.pm:72 ../lib/GUI/X509_browser.pm:177
+#: ../lib/GUI.pm:2690 ../lib/GUI/WORDS.pm:70 ../lib/GUI/X509_browser.pm:175
 msgid "Status"
 msgstr "Stav"
 
-#: ../lib/GUI.pm:2692 ../lib/GUI/WORDS.pm:66
+#: ../lib/GUI.pm:2691 ../lib/GUI/WORDS.pm:64
 msgid "Expiration Date"
-msgstr "Datum z·niku"
+msgstr "Datum z√°niku"
+
+#: ../lib/GUI.pm:2692
+#, fuzzy
+msgid "Revocation Date"
+msgstr "Datum odvol√°n√≠"
 
 #: ../lib/GUI.pm:2693
 #, fuzzy
-msgid "Revocation Date"
-msgstr "Datum vytvo¯enÌ"
-
-#: ../lib/GUI.pm:2694
-#, fuzzy
 msgid "Revocation Reason"
-msgstr "D˘vod odvol·nÌ:"
+msgstr "D≈Øvod odvol√°n√≠:"
 
-#: ../lib/GUI.pm:2720 ../lib/OpenSSL.pm:703
+#: ../lib/GUI.pm:2719 ../lib/OpenSSL.pm:705
 msgid "EXPIRED"
-msgstr "ZANIKL›"
+msgstr "ZANIKL√ù"
 
-#: ../lib/GUI.pm:2722 ../lib/OpenSSL.pm:716
+#: ../lib/GUI.pm:2721 ../lib/OpenSSL.pm:718
 msgid "REVOKED"
-msgstr "ODVOLAN›"
+msgstr "ODVOLAN√ù"
 
-#: ../lib/GUI.pm:2742
+#: ../lib/GUI.pm:2741
 msgid "CA History"
-msgstr ""
+msgstr "Historie CA"
 
-#: ../lib/GUI.pm:2776
+#: ../lib/GUI.pm:2775
 msgid "Overwrite Certificate"
-msgstr "P¯epsat certifik·t"
+msgstr "P≈ôepsat certifik√°t"
 
-#: ../lib/GUI.pm:2782
+#: ../lib/GUI.pm:2781
 #, fuzzy
 msgid "There seems to be a certificate with the same Subject already."
-msgstr "Zd· se, æe certifik·t jiæ existuje."
+msgstr "Zd√° se, ≈æe ji≈æ existuje certifik√°t se stejn√Ωm subjectem."
 
-#: ../lib/GUI.pm:2787
+#: ../lib/GUI.pm:2786
 msgid ""
 "Creating a new one (overwrite) will fail if it's not revoked or expired!"
-msgstr "Vytvo¯enÌ novÈho (p¯eps·nÌ) selæe, pokud nenÌ odvol·n nebo nezaniknul!"
+msgstr "Vytvo≈ôen√≠ nov√©ho (p≈ôeps√°n√≠) sel≈æe, pokud nen√≠ odvol√°n nebo nezaniknul!"
 
-#: ../lib/GUI.pm:2793
+#: ../lib/GUI.pm:2792
 msgid "Really try to overwrite the Certificate?"
-msgstr "Opravdu chcete zkusit p¯epsat certifik·t?"
+msgstr "Opravdu chcete zkusit p≈ôepsat certifik√°t?"
 
-#: ../lib/GUI.pm:2826
+#: ../lib/GUI.pm:2825
 msgid "Convert CA"
 msgstr "Konvertovat CA"
 
-#: ../lib/GUI.pm:2834
+#: ../lib/GUI.pm:2833
 msgid ""
 "This CA seems to be created with openssl 0.9.6x. And it seems like you have "
 "switched to openssl 0.9.7x."
 msgstr ""
-"Zd· se, æe tato CA byla vytvo¯ena pomocÌ openssl 0.9.6x. A zd· se, æe jste "
-"zmÏnil openssl na verzi 0.9.7x."
+"Zd√° se, ≈æe tato CA byla vytvo≈ôena pomoc√≠ openssl 0.9.6x. A zd√° se, ≈æe jste "
+"zmƒõnil openssl na verzi 0.9.7x."
 
-#: ../lib/GUI.pm:2842
+#: ../lib/GUI.pm:2841
 msgid ""
 "You won't be able to revoke the existing certificates without converting the "
 "index file of this CA to the new format."
 msgstr ""
-"Nebude moænÈ odvolat existujÌcÌ certifik·ty bez zkonvertov·nÌ indexovÈho "
-"souboru tÈto CA na nov˝ form·t."
+"Nebude mo≈æn√© odvolat existuj√≠c√≠ certifik√°ty bez zkonvertov√°n√≠ indexov√©ho "
+"souboru t√©to CA na nov√Ω form√°t."
 
-#: ../lib/GUI.pm:2850
+#: ../lib/GUI.pm:2849
 msgid ""
 "Attention: it will not be easy to switch back, this has to be done manually"
 msgstr ""
-"Pozor: nebude snadnÈ vr·tit se zpÏt, bude to muset b˝t provedeno manu·lnÏ"
+"Pozor: nebude snadn√© vr√°tit se zpƒõt, bude to muset b√Ωt provedeno manu√°lnƒõ"
 
-#: ../lib/GUI.pm:2876
+#: ../lib/GUI.pm:2875
 msgid "Delete Key"
-msgstr "Odstranit klÌË"
+msgstr "Odstranit kl√≠ƒç"
 
-#: ../lib/GUI.pm:2905
+#: ../lib/GUI.pm:2904
 msgid "View Certificate"
-msgstr "Zobrazit certifik·t"
+msgstr "Zobrazit certifik√°t"
 
-#: ../lib/GUI.pm:2926
+#: ../lib/GUI.pm:2925
 #, fuzzy
 msgid "Renew Certificate"
-msgstr "Odvolat certifik·t"
+msgstr "Obnovit certifik√°t"
 
-#: ../lib/GUI.pm:2934
+#: ../lib/GUI.pm:2933
 msgid "Delete Certificate"
-msgstr "Odstranit certifik·t"
+msgstr "Odstranit certifik√°t"
 
-#: ../lib/GUI.pm:2957
+#: ../lib/GUI.pm:2956
 msgid "Create Key and Certificate (Server)"
-msgstr "Vytvo¯it klÌË a certifik·t (Server)"
+msgstr "Vytvo≈ôit kl√≠ƒç a certifik√°t (Server)"
 
-#: ../lib/GUI.pm:2963
+#: ../lib/GUI.pm:2962
 msgid "Create Key and Certificate (Client)"
-msgstr "Vytvo¯it klÌË a certifik·t (Klient)"
+msgstr "Vytvo≈ôit kl√≠ƒç a certifik√°t (Klient)"
 
-#: ../lib/GUI.pm:2984
+#: ../lib/GUI.pm:2983
 #, fuzzy
 msgid "Renew Certificate (Server)"
-msgstr "Obnovit certifik·t"
+msgstr "Obnovit certifik√°t (Server)"
 
-#: ../lib/GUI.pm:2991
+#: ../lib/GUI.pm:2990
 #, fuzzy
 msgid "Renew Certificate (Client)"
-msgstr "Obnovit certifik·t"
+msgstr "Obnovit certifik√°t (Klient)"
 
-#: ../lib/GUI.pm:3013
+#: ../lib/GUI.pm:3012
 msgid "Sign Request (Server)"
-msgstr "Podepsat æ·dost (Server)"
+msgstr "Podepsat ≈æ√°dost (Server)"
 
-#: ../lib/GUI.pm:3020
+#: ../lib/GUI.pm:3019
 msgid "Sign Request (Client)"
-msgstr "Podepsat æ·dost (Klient)"
+msgstr "Podepsat ≈æ√°dost (Klient)"
 
-#: ../lib/GUI.pm:3048
+#: ../lib/GUI.pm:3047
 msgid "View Request"
-msgstr "Zobrazit æ·dost"
+msgstr "Zobrazit ≈æ√°dost"
 
-#: ../lib/GUI.pm:3055
+#: ../lib/GUI.pm:3054
 msgid "New Request"
-msgstr "Nov· æ·dost"
+msgstr "Nov√° ≈æ√°dost"
 
-#: ../lib/GUI.pm:3077
+#: ../lib/GUI.pm:3076
 msgid "Delete Request"
-msgstr "Odstranit æ·dost"
+msgstr "Odstranit ≈æ√°dost"
 
-#: ../lib/HELPERS.pm:208
+#: ../lib/HELPERS.pm:207
 #, c-format
 msgid "Can't write exportdir: %s, %s"
 msgstr "Nelze zapsat exportdir: %s, %s"
 
-#: ../lib/KEY.pm:46 ../lib/KEY.pm:138
+#: ../lib/KEY.pm:45 ../lib/KEY.pm:137
 msgid "Please select a Key first"
-msgstr "ProsÌm, vyberte nejd¯Ìve klÌË"
+msgstr "Pros√≠m, vyberte nejd≈ô√≠ve kl√≠ƒç"
 
-#: ../lib/KEY.pm:55
+#: ../lib/KEY.pm:54
 msgid "Key file not found:"
-msgstr "Soubor klÌËe nebyl nalezen:"
+msgstr "Soubor kl√≠ƒçe nebyl nalezen:"
 
-#: ../lib/KEY.pm:102
+#: ../lib/KEY.pm:101
 msgid "Can't open key directory"
-msgstr "Nelze otev¯Ìt adres·¯ klÌË˘"
+msgstr "Nelze otev≈ô√≠t adres√°≈ô kl√≠ƒç≈Ø"
 
-#: ../lib/KEY.pm:195
+#: ../lib/KEY.pm:194
 msgid ""
 "Wrong password given\n"
 "Decrypting of the Key failed\n"
 "Export is not possible"
 msgstr ""
-"Zad·no nespr·vnÈ heslo\n"
-"DekÛdov·nÌ klÌËe selhalo\n"
-"NenÌ moænÈ exportovat"
+"Zad√°no nespr√°vn√© heslo\n"
+"Dek√≥dov√°n√≠ kl√≠ƒçe selhalo\n"
+"Nen√≠ mo≈æn√© exportovat"
 
-#: ../lib/KEY.pm:200
+#: ../lib/KEY.pm:199
 msgid "Converting failed, Export not possible"
-msgstr "Konverze selhala, nenÌ moænÈ exportovat"
+msgstr "Konverze selhala, nen√≠ mo≈æn√© exportovat"
 
-#: ../lib/KEY.pm:207 ../lib/KEY.pm:411
+#: ../lib/KEY.pm:206 ../lib/KEY.pm:410
 #, c-format
 msgid "Can't open Key file: %s: %s"
-msgstr "Nelze otev¯Ìt soubor klÌËe: %s: %s"
+msgstr "Nelze otev≈ô√≠t soubor kl√≠ƒçe: %s: %s"
 
-#: ../lib/KEY.pm:240
+#: ../lib/KEY.pm:239
 #, c-format
 msgid "Key succesfully exported to %s"
-msgstr "KlÌË ˙spÏπnÏ exportov·n do %s"
+msgstr "Kl√≠ƒç √∫spƒõ≈°nƒõ exportov√°n do %s"
 
-#: ../lib/KEY.pm:256
+#: ../lib/KEY.pm:255
 msgid "Certificate is necessary for export as PKCS#12"
-msgstr "Certifik·t je vyæadov·n pro export jako PKCS#12"
+msgstr "Certifik√°t je vy≈æadov√°n pro export jako PKCS#12"
 
-#: ../lib/KEY.pm:306
+#: ../lib/KEY.pm:305
 #, fuzzy, c-format
 msgid "Certificate is necessary for export as %s file"
-msgstr "Certifik·t je vyæadov·n pro export jako Zip soubor"
+msgstr "Certifik√°t je vy≈æadov√°n pro export jako %s soubor"
 
-#: ../lib/KEY.pm:331
+#: ../lib/KEY.pm:330
 msgid "Can't read Key file"
-msgstr "Nelze ËÌst soubor s klÌËem"
+msgstr "Nelze ƒç√≠st soubor s kl√≠ƒçem"
 
-#: ../lib/KEY.pm:393
+#: ../lib/KEY.pm:392
 #, c-format
 msgid "Invalid format for export requested: %s"
-msgstr "Poæadov·n neplatn˝ form·t pro export: %s"
+msgstr "Po≈æadov√°n neplatn√Ω form√°t pro export: %s"
 
-#: ../lib/KEY.pm:399
+#: ../lib/KEY.pm:398
 msgid "Something Failed ??"
-msgstr "NÏco selhalo ??"
+msgstr "Nƒõco selhalo ??"
 
-#: ../lib/KEY.pm:449
+#: ../lib/KEY.pm:448
 #, c-format
 msgid ""
 "Can't open Key file:\n"
 "%s"
 msgstr ""
-"Nelze otev¯Ìt soubor klÌËe:\n"
+"Nelze otev≈ô√≠t soubor kl√≠ƒçe:\n"
 "%s"
 
-#: ../lib/KEY.pm:486
+#: ../lib/KEY.pm:485
 msgid "The password for your old CA Key is wrong"
-msgstr "Heslo pro V·π star˝ klÌË CA je πpatnÈ"
+msgstr "Heslo pro V√°≈° star√Ω kl√≠ƒç CA je ≈°patn√©"
 
-#: ../lib/OpenSSL.pm:74
+#: ../lib/OpenSSL.pm:73
 msgid "Creating DSA key in progress..."
-msgstr "ProbÌh· tvorba DSA klÌËe..."
+msgstr "Prob√≠h√° tvorba DSA kl√≠ƒçe..."
 
-#: ../lib/OpenSSL.pm:108
+#: ../lib/OpenSSL.pm:107
 msgid "Creating RSA key in progress..."
-msgstr "ProbÌh· tvorba RSA klÌËe..."
+msgstr "Prob√≠h√° tvorba RSA kl√≠ƒçe..."
 
-#: ../lib/OpenSSL.pm:454
+#: ../lib/OpenSSL.pm:456
 #, c-format
 msgid "Can't open CRL '%s': %s"
-msgstr "Nelze otev¯Ìt CRL '%s': %s"
+msgstr "Nelze otev≈ô√≠t CRL '%s': %s"
 
-#: ../lib/OpenSSL.pm:469 ../lib/OpenSSL.pm:482
-msgid "Error converting CLR"
+#: ../lib/OpenSSL.pm:471 ../lib/OpenSSL.pm:484
+msgid "Error converting CRL"
 msgstr "Chyba konverze CRL"
 
-#: ../lib/OpenSSL.pm:580 ../lib/OpenSSL.pm:593
+#: ../lib/OpenSSL.pm:582 ../lib/OpenSSL.pm:595
 msgid "Error converting Certificate"
-msgstr "Chyba konverze certifik·tu"
+msgstr "Chyba konverze certifik√°tu"
 
-#: ../lib/OpenSSL.pm:653 ../lib/OpenSSL.pm:670
+#: ../lib/OpenSSL.pm:655 ../lib/OpenSSL.pm:672
 msgid "Error reading fingerprint from Certificate"
-msgstr "Chyba ËtenÌ fingerprintu z certifik·tu"
+msgstr "Chyba ƒçten√≠ fingerprintu z certifik√°tu"
 
-#: ../lib/OpenSSL.pm:688
+#: ../lib/OpenSSL.pm:690
 msgid "Error reading subject from Certificate"
-msgstr "Chyba ËtenÌ subjektu z certifik·tu"
+msgstr "Chyba ƒçten√≠ subjektu z certifik√°tu"
 
-#: ../lib/OpenSSL.pm:698
+#: ../lib/OpenSSL.pm:700
 msgid "Can't read CRL"
-msgstr "Nelze ËÌst CRL"
+msgstr "Nelze ƒç√≠st CRL"
 
-#: ../lib/OpenSSL.pm:721
+#: ../lib/OpenSSL.pm:723
 msgid "UNDEFINED"
-msgstr "NEDEFINOVAN›"
+msgstr "NEDEFINOVAN√ù"
 
-#: ../lib/OpenSSL.pm:748
+#: ../lib/OpenSSL.pm:750
 #, c-format
 msgid "Can't open Request file %s: %s"
-msgstr "Nelze otev¯Ìt soubor s æ·dostÌ %s: %s"
+msgstr "Nelze otev≈ô√≠t soubor s ≈æ√°dost√≠ %s: %s"
 
-#: ../lib/OpenSSL.pm:765 ../lib/OpenSSL.pm:779 ../lib/REQ.pm:686
+#: ../lib/OpenSSL.pm:767 ../lib/OpenSSL.pm:781 ../lib/REQ.pm:685
 msgid "Error converting Request"
-msgstr "Chyba p¯i konverzi æ·dosti"
+msgstr "Chyba p≈ôi konverzi ≈æ√°dosti"
 
-#: ../lib/OpenSSL.pm:861
+#: ../lib/OpenSSL.pm:863
 #, c-format
 msgid "Can't open file %s: %s"
-msgstr "Nelze otev¯Ìt soubor %s: %s"
+msgstr "Nelze otev≈ô√≠t soubor %s: %s"
 
-#: ../lib/OpenSSL.pm:979 ../lib/OpenSSL.pm:1011
+#: ../lib/OpenSSL.pm:981 ../lib/OpenSSL.pm:1013
 #, c-format
 msgid "Can't read index %s: %s"
-msgstr "Nelze ËÌst index %s: %s"
+msgstr "Nelze ƒç√≠st index %s: %s"
 
-#: ../lib/OpenSSL.pm:1021
+#: ../lib/OpenSSL.pm:1023
 #, c-format
 msgid "Can't write index %s: %s"
 msgstr "Nelze zapsat index %s: %s"
 
-#: ../lib/REQ.pm:59
+#: ../lib/REQ.pm:58
 #, c-format
 msgid "Strange value for 'opts': %s"
-msgstr "Zvl·πtnÌ hodnota pro 'opts': %s"
+msgstr "Zvl√°≈°tn√≠ hodnota pro 'opts': %s"
+
+#: ../lib/REQ.pm:101
+msgid "Please specify at least Common Name "
+msgstr "Pros√≠m, zadejte alespo≈à obecn√© jm√©no "
 
 #: ../lib/REQ.pm:102
-msgid "Please specify at least Common Name "
-msgstr "ProsÌm, zadejte alespoÚ obecnÈ jmÈno "
-
-#: ../lib/REQ.pm:103
 msgid "and Password"
 msgstr "a heslo"
 
-#: ../lib/REQ.pm:247 ../lib/REQ.pm:377
+#: ../lib/REQ.pm:246 ../lib/REQ.pm:376
 msgid "Request file not found"
-msgstr "Nebyl nalezen soubor æ·dosti"
+msgstr "Nebyl nalezen soubor ≈æ√°dosti"
 
-#: ../lib/REQ.pm:300
+#: ../lib/REQ.pm:299
 msgid "Can't open Request directory"
-msgstr "Nelze otev¯Ìt adres·¯ æ·dostÌ"
+msgstr "Nelze otev≈ô√≠t adres√°≈ô ≈æ√°dost√≠"
 
-#: ../lib/REQ.pm:321
+#: ../lib/REQ.pm:320
 #, c-format
 msgid "   Read Request: %s"
-msgstr "   »tenÌ æ·dosti: %s"
+msgstr "   ƒåten√≠ ≈æ√°dosti: %s"
 
-#: ../lib/REQ.pm:415
+#: ../lib/REQ.pm:414
 #, fuzzy
 msgid "Can't read Request file"
-msgstr "Nelze ËÌst soubor æ·dosti:"
+msgstr "Nelze ƒç√≠st soubor ≈æ√°dosti:"
 
-#: ../lib/REQ.pm:459
+#: ../lib/REQ.pm:458
 msgid "Can't read serial"
-msgstr "Nelze ËÌst sÈriovÈ ËÌslo"
+msgstr "Nelze ƒç√≠st s√©riov√© ƒç√≠slo"
 
-#: ../lib/REQ.pm:532
+#: ../lib/REQ.pm:531
 msgid ""
 "Wrong CA password given\n"
 "Signing of the Request failed"
 msgstr ""
-"Zad·no nespr·vnÈ heslo CA\n"
-"Podeps·nÌ æ·dosti selhalo"
+"Zad√°no nespr√°vn√© heslo CA\n"
+"Podeps√°n√≠ ≈æ√°dosti selhalo"
 
-#: ../lib/REQ.pm:538
+#: ../lib/REQ.pm:537
 msgid ""
 "CA Key not found\n"
 "Signing of the Request failed"
 msgstr ""
-"KlÌË CA nebyl nalezen\n"
-"Podeps·nÌ æ·dosti selhalo"
+"Kl√≠ƒç CA nebyl nalezen\n"
+"Podeps√°n√≠ ≈æ√°dosti selhalo"
 
-#: ../lib/REQ.pm:544
+#: ../lib/REQ.pm:543
 msgid ""
 "Certificate already existing\n"
 "Signing of the Request failed"
 msgstr ""
-"Certifik·t jiæ existuje\n"
-"Podeps·nÌ æ·dosti selhalo"
+"Certifik√°t ji≈æ existuje\n"
+"Podeps√°n√≠ ≈æ√°dosti selhalo"
 
-#: ../lib/REQ.pm:550
+#: ../lib/REQ.pm:549
 msgid ""
 "Invalid IP Address given\n"
 "Signing of the Request failed"
 msgstr ""
-"Byla zad·na neplatn· IP adresa\n"
-"Podeps·nÌ æ·dosti selhalo"
+"Byla zad√°na neplatn√° IP adresa\n"
+"Podeps√°n√≠ ≈æ√°dosti selhalo"
 
-#: ../lib/REQ.pm:557 ../lib/REQ.pm:575
+#: ../lib/REQ.pm:556 ../lib/REQ.pm:574
 msgid "Signing of the Request failed"
-msgstr "Podeps·nÌ æ·dosti selhalo"
+msgstr "Podeps√°n√≠ ≈æ√°dosti selhalo"
 
-#: ../lib/REQ.pm:582
+#: ../lib/REQ.pm:581
 msgid "Can't read Certificate file"
-msgstr "Nelze ËÌst soubor certifik·tu"
+msgstr "Nelze ƒç√≠st soubor certifik√°tu"
 
-#: ../lib/REQ.pm:588 ../lib/REQ.pm:598
+#: ../lib/REQ.pm:587 ../lib/REQ.pm:597
 msgid "Can't write Certificate file"
-msgstr "Nelze zapsat soubor certifik·tu"
+msgstr "Nelze zapsat soubor certifik√°tu"
 
-#: ../lib/REQ.pm:610
+#: ../lib/REQ.pm:609
 msgid ""
 "Request signed succesfully.\n"
 "Certificate created"
 msgstr ""
-"Æ·dost ˙spÏπnÏ podeps·na.\n"
-"Certifik·t vytvo¯en"
+"≈Ω√°dost √∫spƒõ≈°nƒõ podeps√°na.\n"
+"Certifik√°t vytvo≈ôen"
 
-#: ../lib/REQ.pm:651
+#: ../lib/REQ.pm:650
 msgid "Please select a Request file first"
-msgstr "ProsÌm, vyberte nejd¯Ìve soubor æ·dosti"
+msgstr "Pros√≠m, vyberte nejd≈ô√≠ve soubor ≈æ√°dosti"
 
-#: ../lib/REQ.pm:657
+#: ../lib/REQ.pm:656
 msgid "Can't find Request file: "
-msgstr "Nelze najÌt soubor æ·dosti: "
+msgstr "Nelze naj√≠t soubor ≈æ√°dosti: "
 
-#: ../lib/REQ.pm:663
+#: ../lib/REQ.pm:662
 msgid "Can't read Request file:"
-msgstr "Nelze ËÌst soubor æ·dosti:"
+msgstr "Nelze ƒç√≠st soubor ≈æ√°dosti:"
 
-#: ../lib/REQ.pm:709
+#: ../lib/REQ.pm:708
 msgid "Parsing Request failed"
-msgstr "Zpracov·nÌ æ·dosti selhalo"
+msgstr "Zpracov√°n√≠ ≈æ√°dosti selhalo"
 
-#: ../lib/TCONFIG.pm:43
+#: ../lib/TCONFIG.pm:42
 msgid "Please select a CA first"
-msgstr "ProsÌm, vyberte nejd¯Ìve CA"
+msgstr "Pros√≠m, vyberte nejd≈ô√≠ve CA"
 
-#: ../lib/TCONFIG.pm:50
+#: ../lib/TCONFIG.pm:49
 msgid "Can't open configuration"
-msgstr "Nelze otev¯Ìt konfiguraci"
+msgstr "Nelze otev≈ô√≠t konfiguraci"
 
-#: ../lib/TCONFIG.pm:285 ../lib/TCONFIG.pm:300 ../lib/GUI/TCONFIG.pm:48
+#: ../lib/TCONFIG.pm:284 ../lib/TCONFIG.pm:299 ../lib/GUI/TCONFIG.pm:47
 #: ../lib/GUI/TCONFIG.pm:1302
 msgid "Can't get CA name"
-msgstr "Nelze zÌskat jmÈno CA"
+msgstr "Nelze z√≠skat jm√©no CA"
 
-#: ../lib/TCONFIG.pm:328
+#: ../lib/TCONFIG.pm:327
 msgid "Can't open configfile"
-msgstr "Nelze otev¯Ìt configfile"
+msgstr "Nelze otev≈ô√≠t configfile"
 
-#: ../lib/GUI/HELPERS.pm:55 ../lib/GUI/HELPERS.pm:95 ../lib/GUI/HELPERS.pm:136
+#: ../lib/GUI/HELPERS.pm:54 ../lib/GUI/HELPERS.pm:94 ../lib/GUI/HELPERS.pm:135
 #, fuzzy
 msgid "Command Details"
-msgstr "Detaily"
+msgstr "Detaily p≈ô√≠kazu"
 
-#: ../lib/GUI/HELPERS.pm:306
+#: ../lib/GUI/HELPERS.pm:305
 msgid "Request Files (*.pem, *.der, *.req)"
-msgstr ""
+msgstr "Soubory ≈æ√°dosti (*.pem, *.der, *.req)"
 
-#: ../lib/GUI/HELPERS.pm:313
+#: ../lib/GUI/HELPERS.pm:312
 msgid "All Files (*.*)"
-msgstr ""
+msgstr "V≈°echny soubory (*.*)"
 
-#: ../lib/GUI/TCONFIG.pm:75
+#: ../lib/GUI/TCONFIG.pm:74
 msgid ""
 "All Settings are written unchanged to openssl.conf.\n"
 "So please study the documentation of OpenSSL if you don't know exactly what "
@@ -1678,325 +1679,325 @@ msgid ""
 "If you are still unsure - keep the defaults and everything is expected to "
 "work fine."
 msgstr ""
-"Vπechna nastavenÌ jsou zaps·na beze zmÏny do openssl.conf.\n"
-"ProsÌm, proËtÏte si dokumentaci k OpenSSL, pokud nevÌte p¯esnÏ, co m·te "
-"dÏlat.\n"
-"Pokud si st·le nejste jisti, nechte v˝chozÌ nastavenÌ a vπechny by mÏlo "
-"fungovat spr·vnÏ."
+"V≈°echna nastaven√≠ jsou zaps√°na beze zmƒõny do openssl.conf.\n"
+"Pros√≠m, proƒçtƒõte si dokumentaci k OpenSSL, pokud nev√≠te p≈ôesnƒõ, co m√°te "
+"dƒõlat.\n"
+"Pokud si st√°le nejste jisti, nechte v√Ωchoz√≠ nastaven√≠ a v≈°echny by mƒõlo "
+"fungovat spr√°vnƒõ."
 
-#: ../lib/GUI/TCONFIG.pm:109 ../lib/GUI/TCONFIG.pm:117
+#: ../lib/GUI/TCONFIG.pm:108 ../lib/GUI/TCONFIG.pm:116
 msgid "OpenSSL Configuration"
 msgstr "Konfigurace OpenSSL"
 
-#: ../lib/GUI/TCONFIG.pm:130
+#: ../lib/GUI/TCONFIG.pm:129
 msgid "Only change these options, if you really know, what you are doing!!"
-msgstr "Tato nastavenÌ mÏÚte pouze v p¯ÌpadÏ, æe vÌte, co dÏl·te!!"
+msgstr "Tato nastaven√≠ mƒõ≈àte pouze v p≈ô√≠padƒõ, ≈æe v√≠te, co dƒõl√°te!!"
 
-#: ../lib/GUI/TCONFIG.pm:138
+#: ../lib/GUI/TCONFIG.pm:137
 msgid "You should be aware, that some options may break some crappy software!!"
 msgstr ""
-"MÏjte na pamÏti, æe nÏkter· nastavenÌ mohou naruπit nÏkter˝ πpatn˝ software!!"
+"Mƒõjte na pamƒõti, ≈æe nƒõkter√° nastaven√≠ mohou naru≈°it nƒõkter√Ω ≈°patn√Ω software!!"
 
-#: ../lib/GUI/TCONFIG.pm:147 ../lib/GUI/TCONFIG.pm:1348
+#: ../lib/GUI/TCONFIG.pm:146 ../lib/GUI/TCONFIG.pm:1348
 msgid "If you are unsure: leave the defaults untouched"
-msgstr "Pokud jste nejist˝: nechte v˝chozÌ hodnoty nezmÏnÏny"
+msgstr "Pokud jste nejist√Ω: nechte v√Ωchoz√≠ hodnoty nezmƒõnƒõny"
 
-#: ../lib/GUI/TCONFIG.pm:183
+#: ../lib/GUI/TCONFIG.pm:182
 msgid "These Settings are passed to OpenSSL for creating Server Certificates"
-msgstr "Tato nastavenÌ jsou p¯ed·na OpenSSL pro vytv·¯enÌ certifik·t˘ serveru"
+msgstr "Tato nastaven√≠ jsou p≈ôed√°na OpenSSL pro vytv√°≈ôen√≠ certifik√°t≈Ø serveru"
 
-#: ../lib/GUI/TCONFIG.pm:188 ../lib/GUI/TCONFIG.pm:613
-#: ../lib/GUI/TCONFIG.pm:1020 ../lib/GUI/TCONFIG.pm:1240
+#: ../lib/GUI/TCONFIG.pm:187 ../lib/GUI/TCONFIG.pm:612
+#: ../lib/GUI/TCONFIG.pm:1019 ../lib/GUI/TCONFIG.pm:1239
 #: ../lib/GUI/TCONFIG.pm:1340
 msgid "Multiple Values can be separated by \",\""
-msgstr "VÌce hodnot m˘æe b˝t oddÏleno \",\""
+msgstr "V√≠ce hodnot m≈Ø≈æe b√Ωt oddƒõleno \",\""
 
-#: ../lib/GUI/TCONFIG.pm:208 ../lib/GUI/TCONFIG.pm:210
+#: ../lib/GUI/TCONFIG.pm:207 ../lib/GUI/TCONFIG.pm:209
 msgid "Server Certificate Settings"
-msgstr "NastavenÌ certifik·tu serveru"
+msgstr "Nastaven√≠ certifik√°tu serveru"
 
-#: ../lib/GUI/TCONFIG.pm:216 ../lib/GUI/TCONFIG.pm:639
-#: ../lib/GUI/TCONFIG.pm:1048 ../lib/GUI/TCONFIG.pm:1462
+#: ../lib/GUI/TCONFIG.pm:215 ../lib/GUI/TCONFIG.pm:638
+#: ../lib/GUI/TCONFIG.pm:1047 ../lib/GUI/TCONFIG.pm:1462
 msgid "Subject alternative name (subjectAltName):"
-msgstr "AlternativnÌ jmÈno subjektu (subjectAltName):"
+msgstr "Alternativn√≠ jm√©no subjektu (subjectAltName):"
 
-#: ../lib/GUI/TCONFIG.pm:313 ../lib/GUI/TCONFIG.pm:745
-#: ../lib/GUI/TCONFIG.pm:1108 ../lib/GUI/TCONFIG.pm:1358
+#: ../lib/GUI/TCONFIG.pm:312 ../lib/GUI/TCONFIG.pm:744
+#: ../lib/GUI/TCONFIG.pm:1107 ../lib/GUI/TCONFIG.pm:1358
 msgid "Key Usage (keyUsage):"
-msgstr "UæitÌ klÌËe (keyUsage):"
+msgstr "U≈æit√≠ kl√≠ƒçe (keyUsage):"
 
-#: ../lib/GUI/TCONFIG.pm:392 ../lib/GUI/TCONFIG.pm:820
+#: ../lib/GUI/TCONFIG.pm:391 ../lib/GUI/TCONFIG.pm:819
 msgid "Extended Key Usage (extendedKeyUsage):"
-msgstr "RozπÌ¯enÌ uæitÌ klÌËe (extendedKeyUsage):"
+msgstr "Roz≈°√≠≈ôen√≠ u≈æit√≠ kl√≠ƒçe (extendedKeyUsage):"
 
-#: ../lib/GUI/TCONFIG.pm:468 ../lib/GUI/TCONFIG.pm:895
-#: ../lib/GUI/TCONFIG.pm:1077 ../lib/GUI/TCONFIG.pm:1431
+#: ../lib/GUI/TCONFIG.pm:467 ../lib/GUI/TCONFIG.pm:894
+#: ../lib/GUI/TCONFIG.pm:1076 ../lib/GUI/TCONFIG.pm:1431
 msgid "Netscape Certificate Type (nsCertType):"
-msgstr "Netscape typ certifik·tu (nsCertType):"
+msgstr "Netscape typ certifik√°tu (nsCertType):"
 
-#: ../lib/GUI/TCONFIG.pm:497
+#: ../lib/GUI/TCONFIG.pm:496
 msgid "Netscape SSL Server Name (nsSslServerName):"
-msgstr "Netscape jmÈno SSL serveru (nsSslServerName):"
+msgstr "Netscape jm√©no SSL serveru (nsSslServerName):"
 
-#: ../lib/GUI/TCONFIG.pm:522 ../lib/GUI/TCONFIG.pm:925
-#: ../lib/GUI/TCONFIG.pm:1183
+#: ../lib/GUI/TCONFIG.pm:521 ../lib/GUI/TCONFIG.pm:924
+#: ../lib/GUI/TCONFIG.pm:1182
 msgid "Netscape Revocation URL (nsRevocationUrl):"
-msgstr "Netscape URL odvolan˝ch (nsRevocationUrl):"
+msgstr "Netscape URL odvolan√Ωch (nsRevocationUrl):"
 
-#: ../lib/GUI/TCONFIG.pm:547 ../lib/GUI/TCONFIG.pm:949
+#: ../lib/GUI/TCONFIG.pm:546 ../lib/GUI/TCONFIG.pm:948
 msgid "Netscape Renewal URL (nsRenewalUrl):"
-msgstr "Netscape URL obnovenÌ (nsRenewalUrl):"
+msgstr "Netscape URL obnoven√≠ (nsRenewalUrl):"
 
-#: ../lib/GUI/TCONFIG.pm:608
+#: ../lib/GUI/TCONFIG.pm:607
 msgid "These Settings are passed to OpenSSL for creating Client Certificates"
-msgstr "Tato nastavenÌ jsou p¯ed·na OpenSSL pro vytv·¯enÌ certifik·t˘ klienta"
+msgstr "Tato nastaven√≠ jsou p≈ôed√°na OpenSSL pro vytv√°≈ôen√≠ certifik√°t≈Ø klienta"
 
-#: ../lib/GUI/TCONFIG.pm:633
+#: ../lib/GUI/TCONFIG.pm:632
 msgid "Client Certificate Settings"
-msgstr "NastavenÌ certifik·tu klienta"
+msgstr "Nastaven√≠ certifik√°tu klienta"
 
-#: ../lib/GUI/TCONFIG.pm:1015
+#: ../lib/GUI/TCONFIG.pm:1014
 msgid "These Settings are passed to OpenSSL for creating CA Certificates"
-msgstr "Tato nastavenÌ jsou p¯ed·na OpenSSL pro vytv·¯enÌ certifik·t˘ CA"
+msgstr "Tato nastaven√≠ jsou p≈ôed√°na OpenSSL pro vytv√°≈ôen√≠ certifik√°t≈Ø CA"
 
-#: ../lib/GUI/TCONFIG.pm:1040 ../lib/GUI/TCONFIG.pm:1042
+#: ../lib/GUI/TCONFIG.pm:1039 ../lib/GUI/TCONFIG.pm:1041
 msgid "CA Certificate Settings"
-msgstr "NastavenÌ certifik·tu CA"
+msgstr "Nastaven√≠ certifik√°tu CA"
 
-#: ../lib/GUI/TCONFIG.pm:1235
+#: ../lib/GUI/TCONFIG.pm:1234
 msgid ""
 "These Settings are passed to OpenSSL for creating Certificate Revocation "
 "Lists"
 msgstr ""
-"Tato nastavenÌ jsou p¯ed·na OpenSSL pro vytv·¯enÌ seznam˘ odvolan˝ch "
-"certifik·t˘"
+"Tato nastaven√≠ jsou p≈ôed√°na OpenSSL pro vytv√°≈ôen√≠ seznam≈Ø odvolan√Ωch "
+"certifik√°t≈Ø"
 
-#: ../lib/GUI/TCONFIG.pm:1261
+#: ../lib/GUI/TCONFIG.pm:1260
 msgid "Revocation List Settings"
-msgstr "NastavenÌ seznamu odvolan˝ch"
+msgstr "Nastaven√≠ seznamu odvolan√Ωch"
 
 #: ../lib/GUI/TCONFIG.pm:1322
 msgid "CA Configuration"
-msgstr "NastavenÌ CA"
+msgstr "Nastaven√≠ CA"
 
 #: ../lib/GUI/TCONFIG.pm:1330
 msgid "These Settings are passed to OpenSSL for creating this CA Certificate"
-msgstr "Tato nastavenÌ jsou p¯ed·na OpenSSL pro vytvo¯enÌ certifik·tu tÈto CA"
+msgstr "Tato nastaven√≠ jsou p≈ôed√°na OpenSSL pro vytvo≈ôen√≠ certifik√°tu t√©to CA"
 
 #: ../lib/GUI/TCONFIG.pm:1335
 msgid "and the CA Certificates of every SubCA, created with this CA."
-msgstr "a CA certifik·t˘ kaædÈ pod¯ÌzenÈ CA, vytvo¯en˝ch touto CA."
+msgstr "a CA certifik√°t≈Ø ka≈æd√© pod≈ô√≠zen√© CA, vytvo≈ôen√Ωch touto CA."
+
+#: ../lib/GUI/WORDS.pm:26 ../lib/GUI/WORDS.pm:73
+msgid "Not set"
+msgstr "Nen√≠ nastaveno"
+
+#: ../lib/GUI/WORDS.pm:27 ../lib/GUI/WORDS.pm:74
+msgid "Ask User"
+msgstr "Dotazovat u≈æivatele"
 
 #: ../lib/GUI/WORDS.pm:28 ../lib/GUI/WORDS.pm:75
-msgid "Not set"
-msgstr "NenÌ nastaveno"
+msgid "critical"
+msgstr "kritick√©"
 
 #: ../lib/GUI/WORDS.pm:29 ../lib/GUI/WORDS.pm:76
-msgid "Ask User"
-msgstr "Dotazovat uæivatele"
+msgid "not critical"
+msgstr "nen√≠ kritick√©"
 
 #: ../lib/GUI/WORDS.pm:30 ../lib/GUI/WORDS.pm:77
-msgid "critical"
-msgstr "kritickÈ"
+msgid "Copy Email"
+msgstr "Zkop√≠rovat Email"
 
 #: ../lib/GUI/WORDS.pm:31 ../lib/GUI/WORDS.pm:78
-msgid "not critical"
-msgstr "nenÌ kritickÈ"
-
-#: ../lib/GUI/WORDS.pm:32 ../lib/GUI/WORDS.pm:79
-msgid "Copy Email"
-msgstr "ZkopÌrovat Email"
-
-#: ../lib/GUI/WORDS.pm:33 ../lib/GUI/WORDS.pm:80
 msgid "raw"
 msgstr "raw"
 
-#: ../lib/GUI/WORDS.pm:34 ../lib/GUI/WORDS.pm:81
+#: ../lib/GUI/WORDS.pm:32 ../lib/GUI/WORDS.pm:79
 msgid "DNS Name"
-msgstr "DNS jmÈno"
+msgstr "DNS jm√©no"
 
-#: ../lib/GUI/WORDS.pm:35 ../lib/GUI/WORDS.pm:83
+#: ../lib/GUI/WORDS.pm:33 ../lib/GUI/WORDS.pm:81
 msgid "IP Address"
 msgstr "IP adresa"
 
-#: ../lib/GUI/WORDS.pm:36 ../lib/GUI/WORDS.pm:82
+#: ../lib/GUI/WORDS.pm:34 ../lib/GUI/WORDS.pm:80
 msgid "Email"
 msgstr "Email"
 
-#: ../lib/GUI/WORDS.pm:37 ../lib/GUI/WORDS.pm:84
+#: ../lib/GUI/WORDS.pm:35 ../lib/GUI/WORDS.pm:82
 msgid "SSL Server"
 msgstr "SSL server"
 
-#: ../lib/GUI/WORDS.pm:38 ../lib/GUI/WORDS.pm:85
+#: ../lib/GUI/WORDS.pm:36 ../lib/GUI/WORDS.pm:83
 msgid "SSL Server, SSL Client"
 msgstr "SSL server, SSL klient"
 
-#: ../lib/GUI/WORDS.pm:39 ../lib/GUI/WORDS.pm:86
+#: ../lib/GUI/WORDS.pm:37 ../lib/GUI/WORDS.pm:84
 msgid "Key Encipherment"
-msgstr "©ifrov·nÌ klÌËem"
+msgstr "≈†ifrov√°n√≠ kl√≠ƒçem"
+
+#: ../lib/GUI/WORDS.pm:38 ../lib/GUI/WORDS.pm:85
+msgid "Digital Signature"
+msgstr "Digit√°ln√≠ podpis"
+
+#: ../lib/GUI/WORDS.pm:39 ../lib/GUI/WORDS.pm:86
+msgid "Key Encipherment, Digital Signature"
+msgstr "≈†ifrov√°n√≠ kl√≠ƒçem, Digit√°ln√≠ podpis"
 
 #: ../lib/GUI/WORDS.pm:40 ../lib/GUI/WORDS.pm:87
-msgid "Digital Signature"
-msgstr "Digit·lnÌ podpis"
+msgid "Object Signing"
+msgstr "Podepisov√°n√≠ objekt≈Ø"
 
-#: ../lib/GUI/WORDS.pm:41 ../lib/GUI/WORDS.pm:88
-msgid "Key Encipherment, Digital Signature"
-msgstr "©ifrov·nÌ klÌËem, Digit·lnÌ podpis"
+#: ../lib/GUI/WORDS.pm:41 ../lib/GUI/WORDS.pm:91
+msgid "SSL Client, Object Signing"
+msgstr "SSL klient, Podepisov√°n√≠ objekt≈Ø"
 
 #: ../lib/GUI/WORDS.pm:42 ../lib/GUI/WORDS.pm:89
-msgid "Object Signing"
-msgstr "Podepisov·nÌ objekt˘"
-
-#: ../lib/GUI/WORDS.pm:43 ../lib/GUI/WORDS.pm:93
-msgid "SSL Client, Object Signing"
-msgstr "SSL klient, Podepisov·nÌ objekt˘"
-
-#: ../lib/GUI/WORDS.pm:44 ../lib/GUI/WORDS.pm:91
 msgid "SSL Client, Email(S/MIME)"
 msgstr "SSL klient, Email(S/MIME)"
 
-#: ../lib/GUI/WORDS.pm:45 ../lib/GUI/WORDS.pm:92
+#: ../lib/GUI/WORDS.pm:43 ../lib/GUI/WORDS.pm:90
 msgid "SSL Client"
 msgstr "SSL klient"
 
-#: ../lib/GUI/WORDS.pm:46 ../lib/GUI/WORDS.pm:90
+#: ../lib/GUI/WORDS.pm:44 ../lib/GUI/WORDS.pm:88
 msgid "Email(S/MIME)"
 msgstr "Email(S/MIME)"
 
-#: ../lib/GUI/WORDS.pm:47 ../lib/GUI/WORDS.pm:94
+#: ../lib/GUI/WORDS.pm:45 ../lib/GUI/WORDS.pm:92
 msgid "SSL Client, Email, Object Signing"
-msgstr "SSL klient, Email, Podepisov·nÌ objekt˘"
+msgstr "SSL klient, Email, Podepisov√°n√≠ objekt≈Ø"
 
-#: ../lib/GUI/WORDS.pm:48 ../lib/GUI/WORDS.pm:95
+#: ../lib/GUI/WORDS.pm:46 ../lib/GUI/WORDS.pm:93
 msgid "Object Signing CA"
-msgstr "Podepisov·nÌ objekt˘ CA"
+msgstr "Podepisov√°n√≠ objekt≈Ø CA"
 
-#: ../lib/GUI/WORDS.pm:49 ../lib/GUI/WORDS.pm:96
+#: ../lib/GUI/WORDS.pm:47 ../lib/GUI/WORDS.pm:94
 msgid "S/MIME CA"
 msgstr "S/MIME CA"
 
-#: ../lib/GUI/WORDS.pm:50 ../lib/GUI/WORDS.pm:97
+#: ../lib/GUI/WORDS.pm:48 ../lib/GUI/WORDS.pm:95
 msgid "SSL CA"
 msgstr "SSL CA"
 
-#: ../lib/GUI/WORDS.pm:51 ../lib/GUI/WORDS.pm:98
+#: ../lib/GUI/WORDS.pm:49 ../lib/GUI/WORDS.pm:96
 msgid "SSL CA, S/MIME CA"
 msgstr "SSL CA, S/MIME CA"
 
-#: ../lib/GUI/WORDS.pm:52 ../lib/GUI/WORDS.pm:99
+#: ../lib/GUI/WORDS.pm:50 ../lib/GUI/WORDS.pm:97
 msgid "SSL CA, Object Signing CA"
-msgstr "SSL CA, Podepisov·nÌ objekt˘ CA"
+msgstr "SSL CA, Podepisov√°n√≠ objekt≈Ø CA"
+
+#: ../lib/GUI/WORDS.pm:51 ../lib/GUI/WORDS.pm:98
+msgid "S/MIME CA, Object Signing CA"
+msgstr "S/MIME CA, Podepisov√°n√≠ objekt≈Ø CA"
+
+#: ../lib/GUI/WORDS.pm:52 ../lib/GUI/WORDS.pm:99
+msgid "SSL CA, S/MIME CA, Object Signing CA"
+msgstr "SSL CA, S/MIME CA, Podepisov√°n√≠ objekt≈Ø CA"
 
 #: ../lib/GUI/WORDS.pm:53 ../lib/GUI/WORDS.pm:100
-msgid "S/MIME CA, Object Signing CA"
-msgstr "S/MIME CA, Podepisov·nÌ objekt˘ CA"
+msgid "Certificate Signing"
+msgstr "Podepisov√°n√≠ certifik√°t≈Ø"
 
 #: ../lib/GUI/WORDS.pm:54 ../lib/GUI/WORDS.pm:101
-msgid "SSL CA, S/MIME CA, Object Signing CA"
-msgstr "SSL CA, S/MIME CA, Podepisov·nÌ objekt˘ CA"
+msgid "CRL Signing"
+msgstr "Podepisov√°n√≠ CRL"
 
 #: ../lib/GUI/WORDS.pm:55 ../lib/GUI/WORDS.pm:102
-msgid "Certificate Signing"
-msgstr "Podepisov·nÌ certifik·t˘"
-
-#: ../lib/GUI/WORDS.pm:56 ../lib/GUI/WORDS.pm:103
-msgid "CRL Signing"
-msgstr "Podepisov·nÌ CRL"
-
-#: ../lib/GUI/WORDS.pm:57 ../lib/GUI/WORDS.pm:104
 msgid "Certificate Signing, CRL Signing"
-msgstr "Podepisov·nÌ certifik·t˘, Podepisov·nÌ CRL"
+msgstr "Podepisov√°n√≠ certifik√°t≈Ø, Podepisov√°n√≠ CRL"
 
-#: ../lib/GUI/WORDS.pm:65
+#: ../lib/GUI/WORDS.pm:63
 msgid "Creation Date"
-msgstr "Datum vytvo¯enÌ"
+msgstr "Datum vytvo≈ôen√≠"
 
-#: ../lib/GUI/WORDS.pm:68
+#: ../lib/GUI/WORDS.pm:66
 msgid "Public Key Algorithm"
-msgstr "Algoritmus ve¯ejnÈho klÌËe"
+msgstr "Algoritmus ve≈ôejn√©ho kl√≠ƒçe"
 
-#: ../lib/GUI/WORDS.pm:69
+#: ../lib/GUI/WORDS.pm:67
 msgid "Signature Algorithm"
 msgstr "Algoritmus podpisu"
 
-#: ../lib/GUI/WORDS.pm:73 ../lib/GUI/X509_infobox.pm:81
+#: ../lib/GUI/WORDS.pm:71 ../lib/GUI/X509_infobox.pm:80
 msgid "Fingerprint (MD5)"
 msgstr "Fingerprint (MD5)"
 
-#: ../lib/GUI/WORDS.pm:74 ../lib/GUI/X509_infobox.pm:90
+#: ../lib/GUI/WORDS.pm:72 ../lib/GUI/X509_infobox.pm:89
 msgid "Fingerprint (SHA1)"
 msgstr "Fingerprint (SHA1)"
 
-#: ../lib/GUI/X509_browser.pm:450
+#: ../lib/GUI/X509_browser.pm:448
 msgid "Certificate Information"
-msgstr "Informace certifik·tu"
+msgstr "Informace certifik√°tu"
 
-#: ../lib/GUI/X509_browser.pm:454
+#: ../lib/GUI/X509_browser.pm:452
 msgid "Request Information"
-msgstr "Informace æ·dosti"
+msgstr "Informace ≈æ√°dosti"
 
-#: ../lib/GUI/X509_browser.pm:573
+#: ../lib/GUI/X509_browser.pm:571
 #, fuzzy
 msgid "Invalid browser mode for selection_fname():"
-msgstr "Neplatn˝ mÛd prohlÌæeËe pro selection_dn():"
+msgstr "Neplatn√Ω m√≥d prohl√≠≈æeƒçe pro selection_fname():"
 
-#: ../lib/GUI/X509_browser.pm:573 ../lib/GUI/X509_browser.pm:609
-#: ../lib/GUI/X509_browser.pm:658 ../lib/GUI/X509_browser.pm:679
-#: ../lib/GUI/X509_browser.pm:700 ../lib/GUI/X509_browser.pm:727
+#: ../lib/GUI/X509_browser.pm:571 ../lib/GUI/X509_browser.pm:607
+#: ../lib/GUI/X509_browser.pm:656 ../lib/GUI/X509_browser.pm:677
+#: ../lib/GUI/X509_browser.pm:698 ../lib/GUI/X509_browser.pm:725
 msgid " "
 msgstr " "
 
-#: ../lib/GUI/X509_browser.pm:609
+#: ../lib/GUI/X509_browser.pm:607
 msgid "Invalid browser mode for selection_dn():"
-msgstr "Neplatn˝ mÛd prohlÌæeËe pro selection_dn():"
+msgstr "Neplatn√Ω m√≥d prohl√≠≈æeƒçe pro selection_dn():"
 
-#: ../lib/GUI/X509_browser.pm:658 ../lib/GUI/X509_browser.pm:679
+#: ../lib/GUI/X509_browser.pm:656 ../lib/GUI/X509_browser.pm:677
 msgid "Invalid browser mode for selection_cn():"
-msgstr "Neplatn˝ mÛd prohlÌæeËe pro selection_cn():"
+msgstr "Neplatn√Ω m√≥d prohl√≠≈æeƒçe pro selection_cn():"
 
-#: ../lib/GUI/X509_browser.pm:700
+#: ../lib/GUI/X509_browser.pm:698
 msgid "Invalid browser mode for selection_status():"
-msgstr "Neplatn˝ mÛd prohlÌæeËe pro selection_status():"
+msgstr "Neplatn√Ω m√≥d prohl√≠≈æeƒçe pro selection_status():"
 
-#: ../lib/GUI/X509_browser.pm:727
+#: ../lib/GUI/X509_browser.pm:725
 #, fuzzy
 msgid "Invalid browser mode for selection_type():"
-msgstr "Neplatn˝ mÛd prohlÌæeËe pro selection_dn():"
+msgstr "Neplatn√Ω m√≥d prohl√≠≈æeƒçe pro selection_dn():"
 
-#: ../tinyca2:60
+#: ../tinyca2:63
 #, c-format
 msgid "Can't execute %s.\n"
 msgstr "Nelze spustit %s.\n"
 
-#: ../tinyca2:61
+#: ../tinyca2:64
 msgid "Configure correct path to openssl in tinyca.\n"
-msgstr "Nastavte v tinyca spr·vnou cestu k openssl.\n"
+msgstr "Nastavte v tinyca spr√°vnou cestu k openssl.\n"
 
-#: ../tinyca2:66
+#: ../tinyca2:69
 msgid "zip command not found, support disabled.\n"
-msgstr "P¯Ìkaz zip nenalezen, podpora vypnuta.\n"
+msgstr "P≈ô√≠kaz zip nenalezen, podpora vypnuta.\n"
 
-#: ../tinyca2:67
+#: ../tinyca2:70
 msgid "Configure correct path to zip in tinyca.\n"
-msgstr "Nastavte v tinyca spr·vnou cestu k zipu.\n"
+msgstr "Nastavte v tinyca spr√°vnou cestu k zipu.\n"
 
-#: ../tinyca2:71
+#: ../tinyca2:74
 #, fuzzy
 msgid "tar command not found, support disabled.\n"
-msgstr "P¯Ìkaz zip nenalezen, podpora vypnuta.\n"
+msgstr "P≈ô√≠kaz tar nenalezen, podpora vypnuta.\n"
 
-#: ../tinyca2:72
+#: ../tinyca2:75
 #, fuzzy
 msgid "Configure correct path to tar in tinyca.\n"
-msgstr "Nastavte v tinyca spr·vnou cestu k zipu.\n"
+msgstr "Nastavte v tinyca spr√°vnou cestu k taru.\n"
 
-#: ../tinyca2:79
+#: ../tinyca2:82
 msgid "Can't find templatedir.\n"
-msgstr "Nelze najÌt templatedir.\n"
+msgstr "Nelze naj√≠t templatedir.\n"
 
-#: ../tinyca2:80
+#: ../tinyca2:83
 msgid "Please configure correct path with templates in tinyca.\n"
-msgstr "ProsÌm, nastavte v tinyca spr·vnou cestu k πablon·m.\n"
+msgstr "Pros√≠m, nastavte v tinyca spr√°vnou cestu k ≈°ablon√°m.\n"
 
 #~ msgid "Can't export PKCS#12 without passphrase"
-#~ msgstr "Nelze exportovat do PKCS#12 bez fr·ze"
+#~ msgstr "Nelze exportovat do PKCS#12 bez fr√°ze"

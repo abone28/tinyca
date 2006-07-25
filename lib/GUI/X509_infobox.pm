@@ -1,7 +1,7 @@
 # Copyright (c) Olaf Gellert <og@pre-secure.de> and
 #               Stephan Martin <sm@sm-zone.net>
 #
-# $Id: X509_infobox.pm,v 1.6 2005/04/08 13:48:12 sm Exp $
+# $Id: X509_infobox.pm,v 1.7 2006/06/28 21:50:42 sm Exp $
 # 
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -25,7 +25,6 @@ use GUI::HELPERS;
 use GUI::WORDS;
 
 use POSIX;
-use Locale::gettext;
 
 my $version = "0.1";
 my $true = 1;
@@ -78,7 +77,7 @@ sub display {
          $self->{'certfingerprintmd5'}->destroy();
       } 
       $self->{'certfingerprintmd5'} = GUI::HELPERS::create_label(
-            gettext("Fingerprint (MD5)").": ".$parsed->{'FINGERPRINTMD5'},
+            _("Fingerprint (MD5)").": ".$parsed->{'FINGERPRINTMD5'},
             'center', 0, 0);
       $self->{'x509textbox'}->pack_start( $self->{'certfingerprintmd5'}, 
             0, 0, 0);
@@ -87,7 +86,7 @@ sub display {
          $self->{'certfingerprintsha1'}->destroy();
       } 
       $self->{'certfingerprintsha1'} = GUI::HELPERS::create_label(
-            gettext("Fingerprint (SHA1)").": ".$parsed->{'FINGERPRINTSHA1'},
+            _("Fingerprint (SHA1)").": ".$parsed->{'FINGERPRINTSHA1'},
             'center', 0, 0);
       $self->{'x509textbox'}->pack_start($self->{'certfingerprintsha1'}, 
             0, 0, 0);

@@ -1,6 +1,6 @@
 # Copyright (c) Stephan Martin <sm@sm-zone.net>
 #
-# $Id: TCONFIG.pm,v 1.1.1.1 2005/03/31 18:52:57 sm Exp $
+# $Id: TCONFIG.pm,v 1.2 2006/06/28 21:50:42 sm Exp $
 # 
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -21,7 +21,6 @@ use strict;
 package TCONFIG;
 
 use POSIX;
-use Locale::gettext;
 
 sub new {
    my $self  = {};
@@ -40,14 +39,14 @@ sub init_config {
      $ca = $main->{'CA'}->{'actca'};
    }
    if(not defined($ca)) {
-      GUI::HELPERS::print_warning(gettext("Please select a CA first"));
+      GUI::HELPERS::print_warning(_("Please select a CA first"));
       return;
    }
 
    $file = $main->{'CA'}->{$ca}->{'cnf'};
 
    open(IN, "<$file") || do {
-      GUI::HELPERS::print_warning(gettext("Can't open configuration"));
+      GUI::HELPERS::print_warning(_("Can't open configuration"));
       return;
    };
 
@@ -282,7 +281,7 @@ sub config_ca {
       $ca = $main->{'CA'}->{'actca'};
    }
    if(not defined($ca)) {
-      GUI::HELPERS::print_warning(gettext("Can't get CA name"));
+      GUI::HELPERS::print_warning(_("Can't get CA name"));
    }
 
    $action = GUI::TCONFIG::show_config_ca($main, $ca);
@@ -297,7 +296,7 @@ sub config_openssl {
       $ca = $main->{'CA'}->{'actca'};
    }
    if(not defined($ca)) {
-      GUI::HELPERS::print_warning(gettext("Can't get CA name"));
+      GUI::HELPERS::print_warning(_("Can't get CA name"));
    }
 
    GUI::TCONFIG::show_configbox($main, $ca);
@@ -325,7 +324,7 @@ sub write_config {
    $file = $main->{'CA'}->{$ca}->{'cnf'};
 
    open(OUT, ">$file") || do {
-      GUI::HELPERS::print_warning(gettext("Can't open configfile"));
+      GUI::HELPERS::print_warning(_("Can't open configfile"));
       return;
    };
 

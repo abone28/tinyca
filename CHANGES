@@ -1,4 +1,21 @@
-$Id: CHANGES,v 1.17 2006/05/23 19:44:30 sm Exp $
+$Id: CHANGES,v 1.23 2006/07/25 20:10:54 sm Exp $
+
+version 0.7.5 - Tue July 25 2006
+   * added swedish translation
+     many thanks to Daniel Nylander
+
+version 0.7.4 - Thu June 29 2006
+   * fixed invalid filename encoding with german umlauts in base64
+     thanks to Bruno Blumenthal
+   * Fixed display of UTF8 characters in the GUI
+     Debian #367829
+
+version 0.7.3 - Tue May 23 2006
+   * Add environment variable
+     Gentoo #78576
+     thanks to dragonheart at gentoo dot org
+   * Fixed crash when CA is created with nsCertType
+     Debian #354386
 
 version 0.7.3 - Tue May 23 2006
    * Enhanced version detection

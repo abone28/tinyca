@@ -1,6 +1,6 @@
 # spec file for package tinyca
 #
-# $Id: tinyca2.spec,v 1.7 2006/02/18 10:17:27 sm Exp $
+# $Id: tinyca2.spec,v 1.9 2006/07/25 20:10:54 sm Exp $
 #
 # Copyright (c) 2002 Stephan Martin
 # This file and all modifications and additions to the pristine
@@ -63,7 +63,7 @@ make -C po
 %install
 [ "$RPM_BUILD_ROOT" != "/" ] && [ -d $RPM_BUILD_ROOT ] && rm -rf $RPM_BUILD_ROOT;
 
-LANGUAGES="de es cs fr"
+LANGUAGES="de es cs fr sv"
 
 mkdir -p $RPM_BUILD_ROOT%{bindir}
 mkdir -p $RPM_BUILD_ROOT%{libdir}
@@ -91,9 +91,7 @@ rm -rf %{buildroot}
 %dir %{_datadir}/TinyCA2
 %{bindir}/tinyca2
 %{_datadir}/TinyCA2/*
-%if %suse_version > 820
 %{_datadir}/applications/*
-%endif
 
 %changelog
 * Sun Dec  5 2004 - sm@sm-zone.net

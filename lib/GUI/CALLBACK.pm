@@ -1,6 +1,6 @@
 # Copyright (c) Stephan Martin <sm@sm-zone.net>
 #
-# $Id: CALLBACK.pm,v 1.5 2006/02/18 21:56:07 sm Exp $
+# $Id: CALLBACK.pm,v 1.6 2006/06/28 21:50:42 sm Exp $
 # 
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -20,7 +20,6 @@ use strict;
 package GUI::CALLBACK;
 
 use POSIX;
-use Locale::gettext;
 
 #
 # fill given var-reference with text from entry

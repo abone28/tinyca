@@ -1,6 +1,6 @@
 # Copyright (c) Stephan Martin <sm@sm-zone.net>
 #
-# $Id: CERT.pm,v 1.9 2006/05/23 16:55:43 sm Exp $
+# $Id: CERT.pm,v 1.11 2006/06/28 21:50:41 sm Exp $
 # 
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -21,7 +21,6 @@ use strict;
 package CERT;
 
 use POSIX;
-use Locale::gettext;
 
 sub new {
    my $that = shift;
@@ -59,7 +58,7 @@ sub read_certlist {
 
    opendir(DIR, $certdir) || do {
       GUI::HELPERS::set_cursor($main, 0);
-      $t = sprintf(gettext("Can't open Certificate directory: %s"), $certdir);
+      $t = sprintf(_("Can't open Certificate directory: %s"), $certdir);
       GUI::HELPERS::print_warning($t);
       return(0);
    };
@@ -77,12 +76,12 @@ sub read_certlist {
 
       $f =~ s/\.pem//;
       
-      $tmp = MIME::Base64::decode($f);
+      $tmp = HELPERS::dec_base64($f);
       next if not defined($tmp);
       next if $tmp eq "";
 
       if(defined($main)) {
-         $t = sprintf(gettext("   Read Certificate: %s"), $tmp);
+         $t = sprintf(_("   Read Certificate: %s"), $tmp);
          GUI::HELPERS::set_status($main, $t);
          $p += 100/$c;
          if($p/100 <= 1) {
@@ -100,7 +99,7 @@ sub read_certlist {
 
       defined($parsed) || do {
          GUI::HELPERS::set_cursor($main, 0);
-         GUI::HELPERS::print_error(gettext("Can't read Certificate"));
+         GUI::HELPERS::print_error(_("Can't read Certificate"));
       };
 
       $tmp .= "%".$parsed->{'STATUS'};
@@ -141,7 +140,7 @@ sub get_renew_cert {
       $cert = $main->{'certbrowser'}->selection_dn();
    
       if(not defined($cert)) {
-         GUI::HELPERS::print_info(gettext("Please select a Certificate first"));
+         GUI::HELPERS::print_info(_("Please select a Certificate first"));
          return;
       }
    
@@ -149,15 +148,15 @@ sub get_renew_cert {
       $cadir  = $main->{'certbrowser'}->selection_cadir();
       $status = $main->{'certbrowser'}->selection_status();
    
-      if($status eq gettext("VALID")) {
+      if($status eq _("VALID")) {
          $t = sprintf(
-               gettext("Can't renew Certifikate with Status: %s\nPlease revoke the Certificate first"), 
+               _("Can't renew Certifikate with Status: %s\nPlease revoke the Certificate first"), 
                $status);
          GUI::HELPERS::print_warning($t);
          return;
       } 
 
-      $opts->{'certname'} = MIME::Base64::encode($cert, '');
+      $opts->{'certname'} = HELPERS::enc_base64($cert);
       $opts->{'reqname'} = $opts->{'certname'};
       $opts->{'certfile'} = $cadir."/certs/".$opts->{'certname'}.".pem";
       $opts->{'keyfile'}  = $cadir."/keys/".$opts->{'certname'}.".pem";
@@ -166,7 +165,7 @@ sub get_renew_cert {
       if((not -s $opts->{'certfile'}) ||
          (not -s $opts->{'keyfile'})  ||
          (not -s $opts->{'reqfile'})) {
-         $t = gettext("Key and Request are necessary for renewal of a Certificate\nRenewal is not possible!");
+         $t = _("Key and Request are necessary for renewal of a Certificate\nRenewal is not possible!");
          GUI::HELPERS::print_warning($t);
          return;
       }
@@ -197,7 +196,7 @@ sub get_revoke_cert {
       $opts->{'certfile'} = $main->{'certbrowser'}->selection_fname();
    
       if(not defined($opts->{'certfile'})) {
-         $t = gettext("Please select a Certificate first");
+         $t = _("Please select a Certificate first");
          GUI::HELPERS::print_info($t);
          return;
       }
@@ -207,14 +206,14 @@ sub get_revoke_cert {
       $cert   = $main->{'certbrowser'}->selection_dn();
       $status = $main->{'certbrowser'}->selection_status();
    
-      if($status ne gettext("VALID")) {
-         $t = sprintf(gettext("Can't revoke Certifikate with Status: %s"), 
+      if($status ne _("VALID")) {
+         $t = sprintf(_("Can't revoke Certifikate with Status: %s"), 
                $status);
          GUI::HELPERS::print_warning($t);
          return;
       }
    
-      $opts->{'certname'} = MIME::Base64::encode($cert, '');
+      $opts->{'certname'} = HELPERS::enc_base64($cert);
       $opts->{'cert'} = $cert;
    
       $main->show_cert_revoke_dialog($opts);
@@ -254,21 +253,21 @@ sub revoke_cert {
 
    if($ret eq 1) {
       GUI::HELPERS::set_cursor($main, 0);
-      $t = gettext("Wrong CA password given\nRevoking the Certificate failed");
+      $t = _("Wrong CA password given\nRevoking the Certificate failed");
       GUI::HELPERS::print_warning($t, $ext);
       delete($opts->{$_}) foreach(keys(%$opts));
       $opts = undef;
       return;
    } elsif($ret eq 2) {
       GUI::HELPERS::set_cursor($main, 0);
-      $t = gettext("CA Key not found\nRevoking the Certificate failed");
+      $t = _("CA Key not found\nRevoking the Certificate failed");
       GUI::HELPERS::print_warning($t, $ext);
       delete($opts->{$_}) foreach(keys(%$opts));
       $opts = undef;
       return;
    } elsif($ret) {
       GUI::HELPERS::set_cursor($main, 0);
-      $t = gettext("Revoking the Certificate failed");
+      $t = _("Revoking the Certificate failed");
       GUI::HELPERS::print_warning($t, $ext);
       delete($opts->{$_}) foreach(keys(%$opts));
       $opts = undef;
@@ -288,7 +287,7 @@ sub revoke_cert {
 
       GUI::HELPERS::set_cursor($main, 0);
       GUI::HELPERS::print_error(
-            gettext("Generating a new Revocation List failed"), $ext);
+            _("Generating a new Revocation List failed"), $ext);
    }
 
    $self->{'OpenSSL'}->parsecrl( $cadir."/crl/crl.pem", 1);
@@ -320,7 +319,7 @@ sub get_del_cert {
    $certfile = $main->{'certbrowser'}->selection_fname();
 
    if(not defined $certfile) {
-      GUI::HELPERS::print_info(gettext("Please select a Certificate first"));
+      GUI::HELPERS::print_info(_("Please select a Certificate first"));
       return;
    }
 
@@ -329,11 +328,11 @@ sub get_del_cert {
    $cert   = $main->{'certbrowser'}->selection_dn();
    $status = $main->{'certbrowser'}->selection_status();
 
-   $certname = MIME::Base64::encode($cert, '');
+   $certname = HELPERS::enc_base64($cert);
 
-   if($status eq gettext("VALID")) {
+   if($status eq _("VALID")) {
       GUI::HELPERS::print_warning(
-            gettext("Can't delete VALID certificate!\nPlease revoke the Certificate first."));
+            _("Can't delete VALID certificate!\nPlease revoke the Certificate first."));
       return;
    }
 
@@ -379,7 +378,7 @@ sub get_export_cert {
       $email = $main->{'certbrowser'}->selection_email();
    
       if(not defined $cn) {
-         GUI::HELPERS::print_info(gettext("Please select a Certificate first"));
+         GUI::HELPERS::print_info(_("Please select a Certificate first"));
          return;
       }
 
@@ -389,7 +388,7 @@ sub get_export_cert {
       $opts->{'status'} = $main->{'certbrowser'}->selection_status();
       $opts->{'cert'}   = $main->{'certbrowser'}->selection_dn();
 
-      $opts->{'certname'} = MIME::Base64::encode($opts->{'cert'}, '');
+      $opts->{'certname'} = HELPERS::enc_base64($opts->{'cert'});
       $opts->{'certfile'} = $cadir."/certs/".$opts->{'certname'}.".pem";
       $opts->{'keyfile'}  = $cadir."/keys/".$opts->{'certname'}.".pem";
       $opts->{'cafile'}   = $cadir."/cacert.pem";
@@ -398,10 +397,10 @@ sub get_export_cert {
          $opts->{'cafile'} = $cadir."/cachain.pem";
       }
 
-      if($opts->{'status'} ne gettext("VALID")) {
-         $t = gettext("Certificate seems not to be VALID");
+      if($opts->{'status'} ne _("VALID")) {
+         $t = _("Certificate seems not to be VALID");
          $t .= "\n";
-         $t .= gettext("Export is not possible");
+         $t .= _("Export is not possible");
          GUI::HELPERS::print_warning($t);
          return;
       }
@@ -428,15 +427,15 @@ sub get_export_cert {
    if((not defined($opts->{'outfile'})) || ($opts->{'outfile'} eq '')) {
       $main->show_export_dialog($opts, 'cert');
       GUI::HELPERS::print_warning(
-            gettext("Please give at least the output file"));
+            _("Please give at least the output file"));
       return;
    }
 
    if($opts->{'format'} eq 'P12') {
       if(not -s $opts->{'keyfile'}) {
-         $t = gettext("Key is necessary for export as PKCS#12");
+         $t = _("Key is necessary for export as PKCS#12");
          $t .= "\n";
-         $t .= gettext("Export is not possible!");
+         $t .= _("Export is not possible!");
          GUI::HELPERS::print_warning($t);
          return;
       }
@@ -450,9 +449,9 @@ sub get_export_cert {
    } elsif(($opts->{'format'} eq 'ZIP') || ($opts->{'format'} eq 'TAR')) {
       if(not -s $opts->{'keyfile'}) {
          $t = sprintf(
-               gettext("Key is necessary for export as %s"), $opts->{'format'});
+               _("Key is necessary for export as %s"), $opts->{'format'});
          $t .= "\n";
-         $t .= gettext("Export is not possible!");
+         $t .= _("Export is not possible!");
          GUI::HELPERS::print_warning($t);
          return;
       }
@@ -490,7 +489,7 @@ sub export_cert {
       if($opts->{'include'}) {
          open(IN, "<$opts->{'keyfile'}") || do {
             GUI::HELPERS::set_cursor($main, 0);
-            $t = sprintf(gettext("Can't open Certificate file: %s: %s"),
+            $t = sprintf(_("Can't open Certificate file: %s: %s"),
                   $opts->{'keyfile'}, $!);
             return;
          };
@@ -523,7 +522,7 @@ sub export_cert {
          GUI::HELPERS::print_warning($t, $ext);
          return;
       } elsif($ret || (not -s $opts->{'outfile'})) {
-         $t = gettext("Generating PKCS#12 failed");
+         $t = _("Generating PKCS#12 failed");
          GUI::HELPERS::print_warning($t, $ext);
          return;
       }
@@ -531,7 +530,7 @@ sub export_cert {
       $main->{'exportdir'} = HELPERS::write_export_dir($main, 
             $opts->{'outfile'});
 
-      $t = sprintf(gettext("Certificate and Key successfully exported to %s"), 
+      $t = sprintf(_("Certificate and Key successfully exported to %s"), 
             $opts->{'outfile'});
       GUI::HELPERS::print_info($t, $ext);
       return;
@@ -544,7 +543,7 @@ sub export_cert {
 
       open(OUT, ">$tmpcert") || do {
          GUI::HELPERS::set_cursor($main, 0);
-         $t = sprintf(gettext("Can't create temporary file: %s: %s"), 
+         $t = sprintf(_("Can't create temporary file: %s: %s"), 
                $tmpcert, $!);
          GUI::HELPERS::print_warning($t);
          return;
@@ -556,7 +555,7 @@ sub export_cert {
       {
       open(IN, "<$opts->{'keyfile'}") || do {
          GUI::HELPERS::set_cursor($main, 0);
-         $t = sprintf(gettext("Can't read Key file: %s: %s"), $tmpcert, $!);
+         $t = sprintf(_("Can't read Key file: %s: %s"), $tmpcert, $!);
          GUI::HELPERS::print_warning($t);
          return;
       };
@@ -565,7 +564,7 @@ sub export_cert {
 
       open(OUT, ">$tmpkey") || do {
          GUI::HELPERS::set_cursor($main, 0);
-         $t = sprintf(gettext("Can't create temporary file: %s: %s"), 
+         $t = sprintf(_("Can't create temporary file: %s: %s"), 
                $tmpcert, $!);
          GUI::HELPERS::print_warning($t);
          return;
@@ -578,7 +577,7 @@ sub export_cert {
       {
       open(IN, "<$opts->{'cafile'}") || do {
          GUI::HELPERS::set_cursor($main, 0);
-         GUI::HELPERS::print_warning(gettext("Can't read CA certificate"));
+         GUI::HELPERS::print_warning(_("Can't read CA certificate"));
          return;
       };
       my @cacert = <IN>;
@@ -586,7 +585,7 @@ sub export_cert {
 
       open(OUT, ">$tmpcacert") || do {
          GUI::HELPERS::set_cursor($main, 0);
-         GUI::HELPERS::print_warning(gettext("Can't create temporary file"));
+         GUI::HELPERS::print_warning(_("Can't create temporary file"));
          return;
       };
       print OUT @cacert;
@@ -607,14 +606,14 @@ sub export_cert {
 
       if(not -s $opts->{'outfile'} || $ret) {
          GUI::HELPERS::print_warning(
-               sprintf(gettext("Generating %s file failed"), $opts->{'format'})
+               sprintf(_("Generating %s file failed"), $opts->{'format'})
                );
       } else {
          $main->{'exportdir'} = HELPERS::write_export_dir($main, 
                $opts->{'outfile'});
 
          $t = sprintf(
-               gettext("Certificate and Key successfully exported to %s"), 
+               _("Certificate and Key successfully exported to %s"), 
                $opts->{'outfile'});
          GUI::HELPERS::print_info($t);
       unlink($tmpcacert);
@@ -626,7 +625,7 @@ sub export_cert {
 
    } else {
       GUI::HELPERS::set_cursor($main, 0);
-      $t = sprintf(gettext("Invalid Format for export_cert(): %s"), 
+      $t = sprintf(_("Invalid Format for export_cert(): %s"), 
             $opts->{'format'});
       GUI::HELPERS::print_warning($t);
       return;
@@ -635,7 +634,7 @@ sub export_cert {
    GUI::HELPERS::set_cursor($main, 0);
 
    open(OUT, ">$opts->{'outfile'}") || do {
-      GUI::HELPERS::print_warning(gettext("Can't open output file: %s: %s"),
+      GUI::HELPERS::print_warning(_("Can't open output file: %s: %s"),
             $opts->{'outfile'}, $!);
       return;
    };
@@ -646,7 +645,7 @@ sub export_cert {
    $main->{'exportdir'} = HELPERS::write_export_dir($main, 
          $opts->{'outfile'});
    
-   $t = sprintf(gettext("Certificate successfully exported to: %s"), 
+   $t = sprintf(_("Certificate successfully exported to: %s"), 
          $opts->{'outfile'});
    GUI::HELPERS::print_info($t);
 
@@ -660,7 +659,7 @@ sub reread_cert {
 
    GUI::HELPERS::set_cursor($main, 1);
 
-   $name = MIME::Base64::encode($name, '');
+   $name = HELPERS::enc_base64($name);
       
    $parsed = $self->parse_cert($main, $name, 1);
 

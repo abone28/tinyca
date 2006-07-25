@@ -1,7 +1,7 @@
 # Copyright (c) Olaf Gellert <og@pre-secure.de> and
 #               Stephan Martin <sm@sm-zone.net>
 #
-# $Id: HELPERS.pm,v 1.4 2006/04/18 06:19:46 sm Exp $
+# $Id: HELPERS.pm,v 1.6 2006/06/28 21:50:41 sm Exp $
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -21,7 +21,6 @@ use strict;
 package HELPERS;
 
 use POSIX;
-use Locale::gettext;
 
 my $version = "0.1";
 my $true = 1;
@@ -205,7 +204,7 @@ sub write_export_dir {
    $dir =~ s:/[^/]+$::;
 
    open(EXPOUT, ">$main->{'cadir'}/.exportdir") || do {
-      my $t = sprintf(gettext("Can't write exportdir: %s, %s"), 
+      my $t = sprintf(_("Can't write exportdir: %s, %s"), 
                "$main->{'cadir'}/.exportdir", $!);
       GUI::HELPERS::print_warning($t);
       return;
@@ -253,6 +252,20 @@ my %output = ();        # uniq on the fly
   }
   return(wantarray ? keys(%output) : join(', ', keys(%output)));
 }
+
+sub enc_base64 {
+	my $data = shift;
+	my $ret = MIME::Base64::encode($data, '');
+	$ret =~ tr/\/+/-_/;
+    return $ret;
+}
+
+sub dec_base64 {
+	my $data = shift;
+	$data =~ tr/-_/\/+/;
+	return MIME::Base64::decode($data);	
+}
+
 
 1
 
