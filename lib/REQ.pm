@@ -1,6 +1,6 @@
 # Copyright (c) Stephan Martin <sm@sm-zone.net>
 #
-# $Id: REQ.pm,v 1.7 2006/06/28 21:50:42 sm Exp $
+# $Id: REQ.pm,v 1.8 2006/10/21 21:12:09 sm Exp $
 # 
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -119,6 +119,17 @@ sub get_req_create {
       GUI::HELPERS::print_warning(
             _("Country must be exact 2 letter code"));
       return;
+   }
+
+   if(($opts->{'digest'} =~ /^sha512/ || $opts->{'digest'} =~ /^sha256/) &&
+         $main->{'OpenSSL'}->{'version'} =~ "0.9.7") {
+         $t = sprintf(
+               _("Hash %s is not supported with OpenSSL older than 0.9.8"), 
+               $opts->{'digest'}
+               );
+         $main->show_req_dialog($opts); 
+         GUI::HELPERS::print_warning($t);
+         return;
    }
 
    $name = HELPERS::gen_name($opts);
@@ -352,7 +363,7 @@ sub read_reqlist {
 sub get_sign_req {
    my ($self, $main, $opts, $box) = @_;
 
-   my($time, $parsed, $ca, $cadir, $ext, $ret);
+   my($time, $parsed, $ca, $cadir, $ext, $ret, $t);
 
    $box->destroy() if(defined($box));
    
@@ -426,6 +437,10 @@ sub get_sign_req {
          $opts->{'digest'} = "md5";
       } elsif ($opts->{'digest'} =~ /^sha1/) {
          $opts->{'digest'} = "sha1";
+      } elsif ($opts->{'digest'} =~ /^sha256/) {
+         $opts->{'digest'} = "sha256";
+      } elsif ($opts->{'digest'} =~ /^sha512/) {
+         $opts->{'digest'} = "sha512";
       } elsif ($opts->{'digest'} =~ /^ripemd160/) {
          $opts->{'digest'} = "ripemd160";
       } else {

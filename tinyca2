@@ -1,6 +1,6 @@
 #!/usr/bin/perl -w
 #
-# $Id: tinyca2,v 1.6 2006/07/04 19:53:16 sm Exp $
+# $Id: tinyca2,v 1.7 2007/03/22 07:52:22 sm Exp $
 #
 # Copyright (c) Stephan Martin <sm@sm-zone.net>
 #
@@ -22,6 +22,7 @@ BEGIN { unshift(@INC, './lib'); # put here the location of the modules
 }
 
 use strict;
+use Getopt::Long;
 
 use Gtk2 '-init';
 
@@ -45,6 +46,21 @@ use REQ;
 use KEY;
 use TCONFIG;
 
+my $init = { 'version' => '0.7.5' };
+sub version { print STDERR "TinyCA2 ",$init->{'version'},"\n"; }
+
+sub usage
+{
+    version();
+    print STDERR "Usage: tinyca2 [options]\n",
+                 "\t--version\tshow program version/exit\n",
+                 "\t--ManageCA\tenable CA management options\n",
+                 "\n";
+    exit(1);
+}
+
+print STDERR "To administer more than one CA, call \"tinyca2 --ManageCA\"\n\n";
+
 setlocale(LC_MESSAGES, "");
 bindtextdomain("tinyca2", "./locale/");
 textdomain("tinyca2");
@@ -52,7 +68,14 @@ textdomain("tinyca2");
 # https://bugs.gentoo.org/show_bug.cgi?id=78576
 $ENV{XLIB_SKIP_ARGB_VISUALS}= '1';
 
-my $init = {};
+$init->{ 'options_ManageCA' } = 0;
+usage() unless ( GetOptions (
+                  "version" => sub { printf "TinyCA2 %s\n", $init->{'version'};
+                                     exit(0);
+                                   },
+                  "help" => sub { usage(); },
+                  "ManageCA" => \$init->{'options_ManageCA'}
+                ) );
 
 # location of openssl
 $init->{'opensslbin'} = "/usr/bin/openssl";

@@ -1,4 +1,14 @@
-$Id: CHANGES,v 1.23 2006/07/25 20:10:54 sm Exp $
+$Id: CHANGES,v 1.27 2007/03/22 07:52:22 sm Exp $
+
+version 0.7.6 - 
+   * added sha256 and sha512 as digest algorithms for openssl >= 0.9.8
+   * avoid crash of old gtk2 if no about dialog is available
+     Thanks to ericb at transmeta dot com for the patch
+   * mangle paths correctly if cert or req is included somewhere in the path
+     Thanks to ericb at transmeta dot com for the patch
+   * Switch off CA management by default, use commandline switch to reactivate
+     it again
+     Thanks to ericb at transmeta dot com for the patch
 
 version 0.7.5 - Tue July 25 2006
    * added swedish translation

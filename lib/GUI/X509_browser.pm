@@ -1,7 +1,7 @@
 # Copyright (c) Olaf Gellert <og@pre-secure.de> and
 #               Stephan Martin <sm@sm-zone.net>
 #
-# $Id: X509_browser.pm,v 1.6 2006/06/28 21:50:42 sm Exp $
+# $Id: X509_browser.pm,v 1.7 2007/03/22 07:44:43 sm Exp $
 # 
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -624,7 +624,7 @@ sub selection_cadir {
 
   $dir = $self->{'actdir'};
   # cut off the last directory name to provide the ca-directory
-  $dir =~ s/\/certs|\/req|\/keys$//;
+  $dir =~ s/(\/certs|\/req|\/keys)$//;
   return($dir);
 }
 

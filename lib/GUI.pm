@@ -1,6 +1,6 @@
 # Copyright (c) Stephan Martin <sm@sm-zone.net>
 #
-# $Id: GUI.pm,v 1.34 2006/07/25 20:10:54 sm Exp $
+# $Id: GUI.pm,v 1.37 2007/03/22 07:52:22 sm Exp $
 # 
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -26,17 +26,18 @@ use Gtk2::SimpleMenu;
 my $false=undef;
 my $true=1;
 
+
 # This hash maps our internal MD names to the displayed digest names.
 # Maybe it should live in a crypto-related file instead of a UI-related file?
 my %md_algorithms = (
-		     'md5' => 'MD5',
-		     'sha1' => 'SHA1',
-		     'md2' => 'MD2',
-		     'mdc2' => 'MDC2',
-		     'md4' => 'MD4',
+		     'md5'       => 'MD5',
+		     'md2'       => 'MD2',
+		     'mdc2'      => 'MDC2',
+		     'md4'       => 'MD4',
 		     'ripemd160' => 'RIPEMD-160',
-#		     'sha' => 'SHA',
-		     'sha1' => 'SHA-1',
+		     'sha1'      => 'SHA-1',
+		     'sha256'    => 'SHA-256',
+		     'sha512'    => 'SHA-512',
 		     );
 
 my %bit_lengths = (
@@ -44,6 +45,7 @@ my %bit_lengths = (
 		     '2048' => '2048',
 		     '4096' => '4096'
 		     );
+   
 
 
 #
@@ -58,7 +60,7 @@ sub new {
 
    bless($self, $class);
 
-   $self->{'version'} = '0.7.5';
+   $self->{'version'}          = $self->{'init'}->{'version'};
 
    $self->{'words'} = GUI::WORDS->new();
 
@@ -126,7 +128,7 @@ sub new {
 
    $self->create_toolbar('startup');
    $self->{'mvb'}->pack_start($self->{'toolbar'}, 0, 0, 0);
-   
+
    $self->create_nb();
    $self->{'sizebox'} = Gtk2::VBox->new();
    $self->{'mvb'}->pack_start($self->{'sizebox'}, 1, 1, 0);
@@ -199,7 +201,7 @@ sub create_mframe {
 
    if(not defined($self->{'certbox'})) {
       $self->{'certbox'} = Gtk2::VBox->new(0, 0);
-      
+
       $certlabel = GUI::HELPERS::create_label(
             _("Certificates"), 'left', 1, 0);
       $self->{'nb'}->insert_page($self->{'certbox'}, $certlabel, 1);
@@ -218,7 +220,7 @@ sub create_mframe {
         if(not defined($self->{'certmenu'})) {
            _create_cert_menu($self);
         }
-  
+
         $self->{'certbrowser'}->{'x509clist'}->signal_connect(
               'button_release_event', 
               sub {  _show_popup_menu($self, 'cert', @_) });
@@ -281,13 +283,11 @@ sub create_mframe {
          $self->{'keybrowser'}->{'x509clist'}->signal_connect(
                'button_release_event', 
                sub {  _show_popup_menu($self, 'key', @_) });
-
       } else {
          $self->{'keybrowser'}->update($cadir."/keys",
                                        $cadir."/crl/crl.pem",
                                        $cadir."/index.txt");
       }
-   
    }
 
    # delete old instance, force reinitialisation
@@ -307,7 +307,7 @@ sub create_mframe {
       $reqlabel = GUI::HELPERS::create_label(
             _("Requests"), 'left', 1, 0);
       $self->{'nb'}->insert_page($self->{'reqbox'}, $reqlabel, 3);
-      
+
       if (not defined ($self->{'reqbrowser'})) {
         $self->{'reqbrowser'}=GUI::X509_browser->new($self, 'req');
         $self->{'reqbrowser'}->set_window($self->{'reqbox'});
@@ -369,7 +369,7 @@ sub create_nb {
 #
 sub create_bar {
    my $self = shift;
-   
+
    $self->{'barbox'} = Gtk2::HBox->new();
    $self->{'bar'}    = Gtk2::Statusbar->new();
 
@@ -378,7 +378,7 @@ sub create_bar {
    $self->{'barbox'}->pack_start($self->{'bar'}, 1, 1, 0);
 
    GUI::HELPERS::set_status($self, "   Watch out...");
-      
+
    return;
 }
 
@@ -389,7 +389,7 @@ sub _act_toolbar {
    my ($nb, $self) = @_;
 
    my $page_num = $nb->get_current_page();
-   
+
    my $mode = 'startup';
    my $t;
 
@@ -407,7 +407,7 @@ sub _act_toolbar {
          $mode = 'req';
          $t = _("  Actual CA: %s - Requests");
       }
-   
+
       if(defined($self->{'CA'}->{'actca'})) {
          $t = sprintf($t, $self->{'CA'}->{'actca'});
          GUI::HELPERS::set_status($self, $t);
@@ -430,13 +430,14 @@ sub create_toolbar {
    if(not defined($self->{'separator'})) {
       $self->{'separator'} = Gtk2::SeparatorToolItem->new();
    }
-   
+
    if(defined($self->{'toolbar'})) {
       @children = $self->{'toolbar'}->get_children();
 
-      for(my $i = 6; $i < @children; $i++) {
+      for(my $i = 0, my $delfromhere = 0; $i < @children; $i++) {
          $c = $children[$i];
-         $c->destroy();
+         $c->destroy() if ( $delfromhere );
+         $delfromhere = 1 if ( $c->isa("Gtk2::SeparatorToolItem") );
       }
    } else {
       $self->{'toolbar'} = Gtk2::Toolbar->new();
@@ -458,27 +459,28 @@ sub create_toolbar {
       $button->signal_connect('clicked', sub {
             $self->{'CA'}->get_open_name($self)});
 
-      $button = Gtk2::ToolButton->new_from_stock('gtk-new');
-      $self->{'toolbar'}->insert($button, -1);
-      $button->set_label(_("New CA"));
-      $button->signal_connect('clicked', sub {
-            $self->{'CA'}->get_ca_create($self)});
+      if ( $self->{'init'}->{'options_ManageCA'} ) {
+         $button = Gtk2::ToolButton->new_from_stock('gtk-new');
+         $self->{'toolbar'}->insert($button, -1);
+         $button->set_label(_("New CA"));
+         $button->signal_connect('clicked', sub {
+               $self->{'CA'}->get_ca_create($self)});
 
-      $button = Gtk2::ToolButton->new_from_stock('gtk-convert');
-      $self->{'toolbar'}->insert($button, -1);
-      $button->set_label(_("Import CA"));
-      $button->signal_connect('clicked', sub {
-            $self->{'CA'}->get_ca_import($self)});
+         $button = Gtk2::ToolButton->new_from_stock('gtk-convert');
+         $self->{'toolbar'}->insert($button, -1);
+         $button->set_label(_("Import CA"));
+         $button->signal_connect('clicked', sub {
+               $self->{'CA'}->get_ca_import($self)});
 
-      $button = Gtk2::ToolButton->new_from_stock('gtk-delete');
-      $self->{'toolbar'}->insert($button, -1);
-      $button->set_label(_("Delete CA"));
-      $button->signal_connect('clicked', sub {
-            $self->{'CA'}->get_ca_delete($self)});
-   
+         $button = Gtk2::ToolButton->new_from_stock('gtk-delete');
+         $self->{'toolbar'}->insert($button, -1);
+         $button->set_label(_("Delete CA"));
+         $button->signal_connect('clicked', sub {
+               $self->{'CA'}->get_ca_delete($self)});
+      }
+
       $self->{'toolbar'}->insert($self->{'separator'}, -1); }
 
-   
    if($mode eq 'ca') {
       $button = Gtk2::ToolButton->new_from_stock('gtk-find');
       $self->{'toolbar'}->insert($button, -1);
@@ -491,25 +493,27 @@ sub create_toolbar {
       $button->set_label(_("History"));
       $button->signal_connect('clicked', sub {
             $self->show_history() });
-   
-      $button = Gtk2::ToolButton->new_from_stock('gtk-new');
-      $self->{'toolbar'}->insert($button, -1);
-      $button->set_label(_("Sub CA"));
-      $button->signal_connect('clicked', sub {
-            $self->{'CA'}->get_ca_create($self, undef, undef, "sub")});
-   
+
+      if ( $self->{'init'}->{'options_ManageCA'} ) {
+         $button = Gtk2::ToolButton->new_from_stock('gtk-new');
+         $self->{'toolbar'}->insert($button, -1);
+         $button->set_label(_("Sub CA"));
+         $button->signal_connect('clicked', sub {
+               $self->{'CA'}->get_ca_create($self, undef, undef, "sub")});
+      }
+
       $button = Gtk2::ToolButton->new_from_stock('gtk-save');
       $self->{'toolbar'}->insert($button, -1);
       $button->set_label(_("Export CA"));
       $button->signal_connect('clicked', sub {
             $self->{'CA'}->export_ca_cert($self)});
-   
+
       $button = Gtk2::ToolButton->new_from_stock('gtk-save');
       $self->{'toolbar'}->insert($button, -1);
       $button->set_label(_("Export CRL"));
       $button->signal_connect('clicked', sub {
             $self->{'CA'}->export_crl($self)});
-      
+
       if(-s $self->{'CA'}->{$ca}->{'dir'}."/cachain.pem") {
          $button = Gtk2::ToolButton->new_from_stock('gtk-save');
          $self->{'toolbar'}->insert($button, -1);
@@ -541,7 +545,7 @@ sub create_toolbar {
       $button->signal_connect('clicked' =>
             sub { $self->{'newcertmenu'}->popup( 
                undef, undef, undef, undef, 1, 0) });
-      
+
       $button = Gtk2::ToolButton->new_from_stock('gtk-save');
       $self->{'toolbar'}->insert($button, -1);
       $button->set_label(_("Export"));
@@ -570,7 +574,7 @@ sub create_toolbar {
       $button->set_label(_("Delete"));
       $button->signal_connect('clicked', sub {
             $self->{'CERT'}->get_del_cert($self) });
-      
+
    } elsif($mode eq 'key') {
 
       $button = Gtk2::ToolButton->new_from_stock('gtk-save');
@@ -584,7 +588,7 @@ sub create_toolbar {
       $button->set_label(_("Delete"));
       $button->signal_connect('clicked', sub {
             $self->{'KEY'}->get_del_key($self) });
-      
+
    } elsif($mode eq 'req') {
 
       $button = Gtk2::ToolButton->new_from_stock('gtk-find');
@@ -598,13 +602,13 @@ sub create_toolbar {
       $button->set_label(_("View"));
       $button->signal_connect('clicked', sub {
             $self->show_text('req') });
-      
+
       $button = Gtk2::ToolButton->new_from_stock('gtk-new');
       $self->{'toolbar'}->insert($button, -1);
       $button->set_label(_("New"));
       $button->signal_connect('clicked', sub {
             $self->{'REQ'}->get_req_create($self) });
-      
+
       $button = Gtk2::ToolButton->new_from_stock('gtk-revert-to-saved');
       $self->{'toolbar'}->insert($button, -1);
       $button->set_label(_("Import"));
@@ -656,6 +660,11 @@ sub create_menu {
                item_type   => '<StockItem>',
                extra_data => 'gtk-new'
             },
+            _("_Import CA") => {
+               callback    => sub { $self->{'CA'}->get_ca_import($self)},
+               item_type   => '<StockItem>',
+               extra_data => 'gtk-convert'
+            },
             _("_Delete CA") => {
                callback    => sub { $self->{'CA'}->get_ca_delete($self)},
                item_type   => '<StockItem>',
@@ -704,7 +713,12 @@ sub create_menu {
    ];
 
    $self->{'menu'} = Gtk2::SimpleMenu->new(menu_tree => $menu_tree);
-
+   # delete management functions from menu unless command-line option given
+   unless ( $self->{'init'}->{'options_ManageCA'} ) {
+      $self->{'menu'}->delete_item('/CA/New CA');
+      $self->{'menu'}->delete_item('/CA/Import CA');
+      $self->{'menu'}->delete_item('/CA/Delete CA');
+   }
    return;
 }
 
@@ -752,7 +766,7 @@ sub show_text {
    defined($parsed) || GUI::HELPERS::print_error(_("Can't read file"));
 
    $t = $mode eq 'req'?_("Request"):_("Certificate");
-   
+
    $button_ok = Gtk2::Button->new_from_stock('gtk-ok');
    $button_ok->signal_connect('clicked', sub { $box->destroy() });
    $button_ok->can_default(1);
@@ -867,7 +881,7 @@ sub show_details {
    defined($parsed) || GUI::HELPERS::print_error(_("Can't read file"));
 
    $t = $mode eq 'req'?_("Request Details"):_("Certificate Details");
-   
+
    $button_ok = Gtk2::Button->new_from_stock('gtk-ok');
    $button_ok->can_default(1);
    $button_ok->signal_connect('clicked', sub { $box->destroy() });
@@ -878,7 +892,7 @@ sub show_details {
    $button_ok->grab_default();
 
    $mode = 'cert' if($mode eq 'CA');
-   
+
    $tree = $self->create_detail_tree($parsed, $mode);
    $box->vbox->add($tree);
 
@@ -968,7 +982,7 @@ sub create_detail_tree {
 
    $t = $mode eq 'req'?_("Request Details"):_("Certificate Details"); 
    $t .= " - $parsed->{'CN'}";
-   
+
    $root = $store->append(undef);
    $store->set($root, 0 => $t);
 
@@ -1002,7 +1016,7 @@ sub create_detail_tree {
 
       $piter = $store->append($root);
       $store->set($piter, 0 => $t);
-   
+
       for my $l qw(CN EMAIL O OU C ST L) {
          if(defined($parsed->{'ISSUERDN'}->{$l})) {
             if($l eq "OU") {
@@ -1028,7 +1042,7 @@ sub create_detail_tree {
 
       $piter = $store->append($root);
       $store->set($piter, 0 => $t);
-   
+
       for my $l qw(STATUS NOTBEFORE NOTAFTER) {
          if(defined($parsed->{$l})) {
             $citer = $store->append($piter);
@@ -1059,7 +1073,7 @@ sub create_detail_tree {
       $t = _("Fingerprints").":";
       $piter = $store->append($root);
       $store->set($piter, 0 => $t);
-   
+
       for my $l qw(FINGERPRINTMD5 FINGERPRINTSHA1) {
          if(defined($parsed->{$l})) {
             $citer = $store->append($piter);
@@ -1075,7 +1089,7 @@ sub create_detail_tree {
       $t = $mode eq 'req'?_("Requested X.509 Extensions"):_("X.509v3 Extensions");
       $piter = $store->append($root);
       $store->set($piter, 0 => $t);
-   
+
       while(my ($key, $val) = each(%{$parsed->{'EXT'}})) { 
          if($key =~ /^netscape/i) {
             $nsext = 1; next;
@@ -1100,7 +1114,7 @@ sub create_detail_tree {
          $t = $mode eq 'req'?_("Requested Netscape Extensions"):_("Netscape Extensions");
          $piter = $store->append($root);
          $store->set($piter, 0 => $t);
-      
+
          while(my ($key, $val) = each(%{$parsed->{'EXT'}})) { 
             if($key !~ /^netscape/i) {
                next;
@@ -1109,7 +1123,7 @@ sub create_detail_tree {
             $store->set($citer,
                   0 => $key,
                   1 => $val->[0]);
-   
+
             if(@{$val} > 1) {
                for(my $i = 1; $val->[$i]; $i++) { 
                   $t = [$key, $val->[$i]];
@@ -1145,7 +1159,7 @@ sub show_select_ca_dialog {
       GUI::HELPERS::print_error(_("Invalid action given: ").$action);
       return;
    }
-   
+
    $button_ok = Gtk2::Button->new_from_stock('gtk-ok');
    $button_ok->can_default(1);
 
@@ -1372,9 +1386,9 @@ sub show_cert_revoke_dialog {
       # OpenSSL < 0.9.7 was not able to handle revocation reasons
       $label = GUI::HELPERS::create_label(
             _("Revocation Reason:"), 'left', 0, 0);
-   
+
       $table->attach_defaults($label, 0, 1, 1, 2);
-   
+
       $combo = Gtk2::Combo->new();
       @combostrings = qw(
             unspecified 
@@ -1387,15 +1401,15 @@ sub show_cert_revoke_dialog {
       $combo->set_popdown_strings(@combostrings);
       $combo->set_use_arrows(1);
       $combo->set_value_in_list(1, 0);
-   
+
       $combo->entry->signal_connect('changed' =>
             sub{GUI::CALLBACK::entry_to_var(
                $combo, $combo->entry, \$opts->{'reason'}, undef, undef)});
-   
+
       $table->attach_defaults($combo, 1, 2, 1, 2); }
 
    $box->show_all();
-         
+
    return;
 }
 
@@ -1655,7 +1669,7 @@ sub show_key_nopasswd_dialog {
    $entry->grab_focus();
 
    $box->show_all();
-         
+
    return;
 }
 
@@ -1726,7 +1740,7 @@ sub show_export_dialog {
             _("Invalid mode for show_export_dialog(): ").$mode);
       return;
    }
-         
+
    $button_ok     = Gtk2::Button->new_from_stock('gtk-save');
    $button_cancel = Gtk2::Button->new_from_stock('gtk-cancel');
 
@@ -1744,7 +1758,7 @@ sub show_export_dialog {
    } else {
       $text = _("Export Key to File");
    }
-   
+
    $box = GUI::HELPERS::dialog_box($title, $text, $button_ok, $button_cancel);
 
    # small table for file selection
@@ -1760,7 +1774,7 @@ sub show_export_dialog {
    }else {
       $t = _("Export Key");
    }
-   
+
    $fileentry = Gtk2::Entry->new();
    $table->attach_defaults($fileentry, 1, 2, 0, 1);
    $fileentry->set_text($opts->{'outfile'}) if(defined($opts->{'outfile'}));
@@ -1778,13 +1792,13 @@ sub show_export_dialog {
    $label = GUI::HELPERS::create_label(
       _("Export Format:"), 'center', 0, 0);
    $box->vbox->add($label);
-   
+
    if($mode eq 'cert') {
       $t = _("PEM (Certificate)");
    }else {
       $t = _("PEM (Key)");
    }
-   
+
    $format1 = Gtk2::RadioButton->new(undef, $t);
    $format1->set_active(1)
       if(defined($opts->{'format'}) && $opts->{'format'} eq 'PEM');
@@ -1852,7 +1866,7 @@ sub show_export_dialog {
          if(defined($opts->{'nopass'}) && $opts->{'nopass'} == 0);
       $passbox->add($pass2);
    }
-   
+
    # add key/certificate
 
    if($mode eq 'cert') {
@@ -1878,7 +1892,7 @@ sub show_export_dialog {
    $inc2->set_active(1)
       if(defined($opts->{'include'}) && $opts->{'include'} == 0);
    $incbox->add($inc2);
-   
+
    # add fingerprint
    if($mode eq 'cert') {
       $label = GUI::HELPERS::create_label(
@@ -2198,12 +2212,12 @@ sub show_req_sign_dialog {
       $key1->signal_connect('toggled' =>
            sub{GUI::CALLBACK::toggle_to_var($key1, \$opts->{'noemaildn'}, 0)});
       $radiobox->add($key1);
-         
+
       $key2 = Gtk2::RadioButton->new($key1, _("No"));
       $key2->signal_connect('toggled' =>
            sub{GUI::CALLBACK::toggle_to_var($key2, \$opts->{'noemaildn'}, 1)});
       $radiobox->add($key2);
-            
+
       $label = GUI::HELPERS::create_label(
             _("Add eMail Address to Subject DN:"), 'left', 0, 0);
       $table->attach_defaults($label, 0, 1, $rows, $rows+1);
@@ -2250,7 +2264,7 @@ sub show_ca_dialog {
       $pwtable = Gtk2::Table->new(1, 2, 0);
       $pwtable->set_col_spacing(0, 10);
       $box->vbox->add($pwtable);
-   
+
       $entry = GUI::HELPERS::entry_to_table(
             _("CA Password (for creating the new CA):"),
             \$opts->{'parentpw'}, $pwtable, 0, 0);
@@ -2388,7 +2402,7 @@ sub show_ca_import_dialog {
    $pwtable = Gtk2::Table->new(1, 2, 0);
    $pwtable->set_col_spacing(0, 10);
    $box->vbox->add($pwtable);
-   
+
    $entry = GUI::HELPERS::entry_to_table(
          _("Password of the private CA key (Needed for import):"),
          \$opts->{'passwd'}, $pwtable, 0, 0);
@@ -2520,7 +2534,17 @@ sub about {
 
    my ($aboutdialog, $href, $label);
 
-   $aboutdialog = Gtk2::AboutDialog->new();
+   eval { $aboutdialog = Gtk2::AboutDialog->new() };
+   if ($@) {
+   # older Gtk2 doesn't have AboutDialog
+      GUI::HELPERS::print_info( 
+          "TinyCA2\nVersion ".$main->{'version'}."\n".
+          "Copyright 2002-2006 Stephan Martin\n".
+          "GNU Public License (GPL)\nhttp://tinyca.sm-zone.net/\n".
+          "Stephan Martin <sm\@sm-zone.net>" );
+      return;
+    }
+   
    $aboutdialog->set_name("TinyCA2");
    $aboutdialog->set_version($main->{'version'});
    $aboutdialog->set_copyright("2002-2006 Stephan Martin");
@@ -2573,7 +2597,7 @@ sub show_del_confirm {
 
    $button_cancel = Gtk2::Button->new_from_stock('gtk-cancel');
    $button_cancel->signal_connect('clicked', sub { $box->destroy(); return });
-      
+
    $box = Gtk2::MessageDialog->new(
           undef, [qw/destroy-with-parent modal/], 'question', 'none', $t);
 
@@ -2740,7 +2764,7 @@ sub show_history {
    $list_scrolled->add_with_viewport($list);
 
    $t = _("CA History");
-   
+
    $button_ok = Gtk2::Button->new_from_stock('gtk-ok');
    $button_ok->can_default(1);
    $button_ok->signal_connect('clicked', sub { $box->destroy() });
@@ -2762,7 +2786,7 @@ sub show_cert_overwrite_confirm {
    my ($self, $opts) = @_;
 
    my($box, $button_ok, $button_cancel, $label);
-   
+
    $button_ok = Gtk2::Button->new_from_stock('gtk-ok');
    $button_ok->signal_connect('clicked', 
          sub { $opts->{'overwrite'} = 'true';
@@ -2835,7 +2859,7 @@ sub show_ca_convert_dialog {
 
    $label = GUI::HELPERS::create_label($t, 'center', 1, 0);
    $box->vbox->add($label);
-   
+
    $label = GUI::HELPERS::create_label(' ', 'center', 0, 0);
    $box->vbox->pack_start($label, 0, 0, 0);
 
@@ -2843,7 +2867,7 @@ sub show_ca_convert_dialog {
 
    $label = GUI::HELPERS::create_label($t, 'center', 1, 0);
    $box->vbox->add($label);
-   
+
    $label = GUI::HELPERS::create_label(' ', 'center', 0, 0);
    $box->vbox->pack_start($label, 0, 0, 0);
 
@@ -2948,7 +2972,7 @@ sub _create_cert_menu {
 #
 sub _create_create_cert_menu {
    my $self = shift;
-   
+
    my ($item);
 
    $self->{'newcertmenu'} = Gtk2::Menu->new();
@@ -2975,7 +2999,7 @@ sub _create_create_cert_menu {
 #
 sub _create_renew_cert_menu {
    my $self = shift;
-   
+
    my ($item, $opts);
 
    $self->{'renewcertmenu'} = Gtk2::Menu->new();
@@ -3004,7 +3028,7 @@ sub _create_renew_cert_menu {
 #
 sub _create_sign_req_menu {
    my $self = shift;
-   
+
    my ($item, $opts);
 
    $self->{'reqsignmenu'} = Gtk2::Menu->new();
@@ -3033,7 +3057,7 @@ sub _create_sign_req_menu {
 #
 sub _create_req_menu {
    my $self = shift;
-   
+
    my ($item, $opts, $image);
 
    $self->{'reqmenu'} = Gtk2::Menu->new();
