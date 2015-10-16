@@ -2534,18 +2534,8 @@ sub about {
 
    my ($aboutdialog, $href, $label);
 
-   eval { $aboutdialog = Gtk2::AboutDialog->new() };
-   if ($@) {
-   # older Gtk2 doesn't have AboutDialog
-      GUI::HELPERS::print_info( 
-          "TinyCA2\nVersion ".$main->{'version'}."\n".
-          "Copyright 2002-2006 Stephan Martin\n".
-          "GNU Public License (GPL)\nhttp://tinyca.sm-zone.net/\n".
-          "Stephan Martin <sm\@sm-zone.net>" );
-      return;
-    }
-   
-   $aboutdialog->set_name("TinyCA2");
+   $aboutdialog = Gtk2::AboutDialog->new();
+   $aboutdialog->set_program_name("TinyCA2");
    $aboutdialog->set_version($main->{'version'});
    $aboutdialog->set_copyright("2002-2006 Stephan Martin");
    $aboutdialog->set_license("GNU Public License (GPL)");
@@ -2558,6 +2548,8 @@ sub about {
          _("French: Thibault Le Meur <Thibault.Lemeur\@supelec.fr>"));
 
    $aboutdialog->show_all();
+   $aboutdialog->run();
+   $aboutdialog->destroy();
 
    return;
 }
