@@ -992,7 +992,7 @@ sub create_detail_tree {
    $piter = $store->append($root);
    $store->set($piter, 0 => $t);
 
-   for my $l qw(CN EMAIL O OU C ST L) {
+   for my $l (qw(CN EMAIL O OU C ST L)) {
       if(defined($parsed->{$l})) {
          if($l eq "OU") {
             foreach my $ou (@{$parsed->{'OU'}}) {
@@ -1017,7 +1017,7 @@ sub create_detail_tree {
       $piter = $store->append($root);
       $store->set($piter, 0 => $t);
 
-      for my $l qw(CN EMAIL O OU C ST L) {
+      for my $l (qw(CN EMAIL O OU C ST L)) {
          if(defined($parsed->{'ISSUERDN'}->{$l})) {
             if($l eq "OU") {
                foreach my $ou (@{$parsed->{'ISSUERDN'}->{'OU'}}) {
@@ -1043,7 +1043,7 @@ sub create_detail_tree {
       $piter = $store->append($root);
       $store->set($piter, 0 => $t);
 
-      for my $l qw(STATUS NOTBEFORE NOTAFTER) {
+      for my $l (qw(STATUS NOTBEFORE NOTAFTER)) {
          if(defined($parsed->{$l})) {
             $citer = $store->append($piter);
             $store->set($citer, 
@@ -1059,7 +1059,7 @@ sub create_detail_tree {
    $store->set($piter, 0 => $t);
 
 
-   for my $l qw(STATUS SERIAL KEYSIZE PK_ALGORITHM SIG_ALGORITHM TYPE) {
+   for my $l (qw(STATUS SERIAL KEYSIZE PK_ALGORITHM SIG_ALGORITHM TYPE)) {
       if(defined($parsed->{$l})) {
          $citer = $store->append($piter);
          $store->set($citer, 
@@ -1074,7 +1074,7 @@ sub create_detail_tree {
       $piter = $store->append($root);
       $store->set($piter, 0 => $t);
 
-      for my $l qw(FINGERPRINTMD5 FINGERPRINTSHA1) {
+      for my $l (qw(FINGERPRINTMD5 FINGERPRINTSHA1)) {
          if(defined($parsed->{$l})) {
             $citer = $store->append($piter);
             $store->set($citer, 
