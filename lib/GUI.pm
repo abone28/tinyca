@@ -3110,9 +3110,9 @@ sub _fill_radiobox {
    for $value (keys %values) {
       my $display_name = $values{$value};
       my $key = Gtk2::RadioButton->new($previous_key, $display_name);
-      $key->set_active(1) if(defined($$var) && $$var eq $value);
       $key->signal_connect('toggled' =>
 			   sub{GUI::CALLBACK::toggle_to_var($key, $var, $value)});
+      $key->set_active(1) if(defined($$var) && $$var eq $value);
       $radiobox->add($key);
       $previous_key = $key;
    }
