@@ -2650,7 +2650,7 @@ sub show_req_date_warning {
 
    my ($box, $button_ok, $button_cancel, $t);
 
-   $t = _("The Certificate will be longer valid than your CA!");
+   $t = _("The certificate will be valid longer than its CA!");
    $t .= "\n";
    $t .= _("This may cause problems with some software!!");
 
