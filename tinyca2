@@ -22,6 +22,8 @@ BEGIN { unshift(@INC, './lib'); # put here the location of the modules
 }
 
 use strict;
+use v5.8;
+use warnings;
 use Getopt::Long;
 
 use Gtk2 '-init';
