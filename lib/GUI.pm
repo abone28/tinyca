@@ -440,13 +440,10 @@ sub create_toolbar {
          $delfromhere = 1 if ( $c->isa("Gtk2::SeparatorToolItem") );
       }
    } else {
-      $self->{'toolbar'} = Gtk2::Toolbar->new();
-      $self->{'toolbar'}->set_orientation('horizontal');
-      $self->{'toolbar'}->set_icon_size('small-toolbar');
-
       ## Buttons for all toolbars
       $self->{'toolbar'} = Gtk2::Toolbar->new();
       $self->{'toolbar'}->set_orientation('horizontal');
+      $self->{'toolbar'}->set_icon_size('small-toolbar');
 
       $button = Gtk2::ToolButton->new_from_stock('gtk-quit');
       $self->{'toolbar'}->insert($button, -1);
