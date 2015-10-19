@@ -2534,10 +2534,12 @@ sub about {
    $aboutdialog = Gtk2::AboutDialog->new();
    $aboutdialog->set_program_name("TinyCA2");
    $aboutdialog->set_version($main->{'version'});
-   $aboutdialog->set_copyright("2002-2006 Stephan Martin");
+   $aboutdialog->set_copyright("2002-2006 Stephan Martin\n".
+                              "2015 Christoph Ulrich Scholler");
    $aboutdialog->set_license("GNU Public License (GPL)");
-   $aboutdialog->set_website("http://tinyca.sm-zone.net/");
-   $aboutdialog->set_authors("Stephan Martin <sm\@sm-zone.net>");
+   $aboutdialog->set_website("https://tinyca.alioth.debian.org/");
+   $aboutdialog->set_authors("Stephan Martin <sm\@sm-zone.net>\n".
+                            "Christoph Ulrich Scholler <uli\@scholler.net>");
    $aboutdialog->set_translator_credits(
          _("Czech: Robert Wolf <gentoo\@slave.umbr.cas.cz>")."\n".
          _("Swedish: Daniel Nylander <yeager\@lidkoping.net>")."\n".
