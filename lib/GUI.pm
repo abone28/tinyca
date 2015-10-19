@@ -1182,6 +1182,7 @@ sub show_select_ca_dialog {
    );
 
    $box = GUI::HELPERS::dialog_box($t, $t, $button_ok, $button_cancel);
+   $box->set_default_size(100, 200);
 
    $button_ok->grab_default();
 
