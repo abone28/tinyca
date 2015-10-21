@@ -444,6 +444,7 @@ sub create_toolbar {
       $self->{'toolbar'} = Gtk2::Toolbar->new();
       $self->{'toolbar'}->set_orientation('horizontal');
       $self->{'toolbar'}->set_icon_size('small-toolbar');
+      $self->{'toolbar'}->set_style('both');
 
       $button = Gtk2::ToolButton->new_from_stock('gtk-quit');
       $self->{'toolbar'}->insert($button, -1);
