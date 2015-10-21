@@ -14,7 +14,7 @@ tinyca2.pot: $(POTFILES)
 	xgettext --add-comments \
 		--keyword=_ \
 		--keyword=N_ \
-		--language=C \
+		--language=Perl \
 		-o tinyca2.pot \
 		$(POTFILES); \
 
