@@ -5,7 +5,7 @@ all: $(CATALOGS)
 
 .po.mo:
 	msgfmt -o $@ $<
-	install -m 644 $@ ../locale/`basename $@ .mo`/LC_MESSAGES/tinyca2.mo
+	install -D -m 644 $@ ../locale/`basename $@ .mo`/LC_MESSAGES/tinyca2.mo
 
 %.po: tinyca2.pot
 	msgmerge -vU $@ tinyca2.pot
