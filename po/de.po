@@ -7,8 +7,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: de\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2015-10-21 23:21+0200\n"
 "PO-Revision-Date: 2015-10-21 23:45+0200\n"
+"POT-Creation-Date: 2015-10-24 23:49+0200\n"
 "Last-Translator: Christoph Ulrich Scholler\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -2037,11 +2037,11 @@ msgstr "Fingerabdruck (MD5)"
 msgid "Fingerprint (SHA1)"
 msgstr "Fingerabdruck (SHA1)"
 
-#: ../lib/GUI/X509_browser.pm:448
+#: ../lib/GUI/X509_browser.pm:448 ../lib/GUI/X509_browser.pm:508
 msgid "Certificate Information"
-msgstr "Daten des Zertifikates"
+msgstr "Daten des Zertifikats"
 
-#: ../lib/GUI/X509_browser.pm:452
+#: ../lib/GUI/X509_browser.pm:452 ../lib/GUI/X509_browser.pm:512
 msgid "Request Information"
 msgstr "Daten der Anforderung"
 
