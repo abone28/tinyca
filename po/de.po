@@ -1,15 +1,16 @@
-# translation of de.po to
-# translation of de.po to german
+# Translation of TinyCA to German
 # This file is distributed under the same license as the tinyca package.
 # Copyright (C) 2003-2006 Stephan Martin <sm@sm-zone.net>
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: de\n"
+"Project-Id-Version: tinyca2 0.7.7\n"
 "Report-Msgid-Bugs-To: \n"
-"PO-Revision-Date: 2015-10-21 23:45+0200\n"
 "POT-Creation-Date: 2015-10-24 23:49+0200\n"
+"PO-Revision-Date: 2015-10-24 23:38+0200\n"
 "Last-Translator: Christoph Ulrich Scholler\n"
+"Language-Team: GERMAN https://tinyca.alioth.debian.org/\n"
+"Language: de\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
