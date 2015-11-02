@@ -31,9 +31,6 @@ my $true=1;
 # Maybe it should live in a crypto-related file instead of a UI-related file?
 my %md_algorithms = (
 		     'md5'       => 'MD5',
-		     'md2'       => 'MD2',
-		     'mdc2'      => 'MDC2',
-		     'md4'       => 'MD4',
 		     'ripemd160' => 'RIPEMD-160',
 		     'sha1'      => 'SHA-1',
 		     'sha256'    => 'SHA-256',

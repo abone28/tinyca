@@ -427,13 +427,7 @@ sub get_sign_req {
    if(defined($parsed->{'SIG_ALGORITHM'})) {
       $opts->{'digest'} = $parsed->{'SIG_ALGORITHM'};
 
-      if($opts->{'digest'} =~ /^md2/) {
-         $opts->{'digest'} = "md2";
-      } elsif ($opts->{'digest'} =~ /^mdc2/) {
-         $opts->{'digest'} = "mdc2";
-      } elsif ($opts->{'digest'} =~ /^md4/) {
-         $opts->{'digest'} = "md4";
-      } elsif ($opts->{'digest'} =~ /^md5/) {
+      if ($opts->{'digest'} =~ /^md5/) {
          $opts->{'digest'} = "md5";
       } elsif ($opts->{'digest'} =~ /^sha1/) {
          $opts->{'digest'} = "sha1";
