@@ -37,6 +37,7 @@ my %md_algorithms = (
 		     'ripemd160' => 'RIPEMD-160',
 		     'sha1'      => 'SHA-1',
 		     'sha256'    => 'SHA-256',
+                     'sha384'    => 'SHA-384',
 		     'sha512'    => 'SHA-512',
 		     );
 
@@ -1099,7 +1100,7 @@ sub create_detail_tree {
       $piter = $store->append($root);
       $store->set($piter, 0 => $t);
 
-      for my $l (qw(FINGERPRINTMD5 FINGERPRINTSHA1)) {
+      for my $l (qw(FINGERPRINTMD5 FINGERPRINTSHA1 FINGERPRINTSHA256 FINGERPRINTSHA384 FINGERPRINTSHA512)) {
          if(defined($parsed->{$l})) {
             $citer = $store->append($piter);
             $store->set($citer, 

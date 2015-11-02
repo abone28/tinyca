@@ -59,7 +59,7 @@ sub get_req_create {
          GUI::HELPERS::print_error($t);
       }
       $opts->{'bits'}   = 4096;
-      $opts->{'digest'} = 'sha1';
+      $opts->{'digest'} = 'sha256';
       $opts->{'algo'}   = 'rsa';
       if(defined($opts) && $opts eq "sign") {
          $opts->{'sign'} = 1;
@@ -439,6 +439,8 @@ sub get_sign_req {
          $opts->{'digest'} = "sha1";
       } elsif ($opts->{'digest'} =~ /^sha256/) {
          $opts->{'digest'} = "sha256";
+      } elsif ($opts->{'digest'} =~ /^sha384/) {
+         $opts->{'digest'} = "sha384";
       } elsif ($opts->{'digest'} =~ /^sha512/) {
          $opts->{'digest'} = "sha512";
       } elsif ($opts->{'digest'} =~ /^ripemd160/) {
