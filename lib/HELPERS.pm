@@ -76,22 +76,47 @@ sub mktmp {
 }
 
 
+
+our $retcode = 0; # Global variable for app return code
+our $in_main = 0; # Flag is 1 if app is in Gtk->main_loop
+
+#
+# Run Gtk->main_loop()
+#
+sub main_loop {
+    our $in_main;
+    $in_main = 1;
+    Gtk2->main();
+    $in_main = 0;
+}
+
 #
 # finished...
 #
 sub exit_clean {
-   my ($ret) = @_;
+    my ($ret) = @_;
 
-   $ret = 0 unless(defined $ret);
-   
-   # hack to avoid busy cursor
-   my $rootwin = Gtk2::Gdk->get_default_root_window();
-   my $cursor  = Gtk2::Gdk::Cursor->new('left-ptr');
+    # save return code passed in arg to global variable
+    our $retcode;
+    if (defined $ret) {
+        $retcode = $ret;
+    }
 
-   $rootwin->set_cursor($cursor);
-   
-   Gtk2->main_quit();
-   exit($ret);
+    our $in_main;
+    if ( $in_main ) {
+        # Calling exit() when GTK main loop is active may cause segfault.
+        # Exiting loop and let main thread terminate application later.
+        Gtk2->main_quit();
+    } else {
+        # hack to avoid busy cursor
+        my $rootwin = Gtk2::Gdk->get_default_root_window();
+        my $cursor  = Gtk2::Gdk::Cursor->new('left-ptr');
+        $rootwin->set_cursor($cursor);
+
+        # exit() when Gtk main loop is not active is safe
+        exit($retcode);
+    }
+
 }
 
 #
@@ -284,7 +309,8 @@ HELPERS - helper functions for TinyCA, doing small jobs not related to the GUI
    $dnhash  = HELPERS::parse_dn($dnstring);
    $exthash = HELPERS::parse_extensions($mode, $lines);
    $subjaltname = HELPERS::gen_subjectaltname_contents($type, @list);
-   
+
+   main_loop();
    exit_clean($retcode);
 
 =head1 DESCRIPTION
@@ -347,12 +373,19 @@ data.
 
 =back
 
+=head2 HELPERS::main_loop()
+
+=over 1
+
+wrapper around Gtk->main_loop()
+
+=back
+
 =head2 HELPERS::exit_clean($retcode)
 
 =over 1
 
-does nothing yet, than closing the Gtk application returning the exitcode
-given in $retcode.
+close the Gtk application and return the exitcode given in $retcode.
 
 =back
 

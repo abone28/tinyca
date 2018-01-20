@@ -143,7 +143,5 @@ sub _ {
    return($s);
 }
 
-Gtk2->main();
-
-exit(0);
-
+HELPERS::main_loop();
+HELPERS::exit_clean();

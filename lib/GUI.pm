@@ -448,7 +448,7 @@ sub create_toolbar {
       $button = Gtk2::ToolButton->new_from_stock('gtk-quit');
       $self->{'toolbar'}->insert($button, -1);
       $button->set_tooltip_text(_('Quit TinyCA'));
-      $button->signal_connect('clicked', sub { exit(4) });
+      $button->signal_connect('clicked', sub { HELPERS::exit_clean(4) });
 
 
       $button = Gtk2::ToolButton->new_from_stock('gtk-open');
@@ -697,7 +697,7 @@ sub create_menu {
                item_type => '<Separator>',
             },
             _("_Exit") => {
-               callback    => sub { exit(3) },
+               callback    => sub { HELPERS::exit_clean(3) },
                item_type   => '<StockItem>',
                extra_data  => 'gtk-close'
             }

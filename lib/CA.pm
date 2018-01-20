@@ -42,7 +42,7 @@ sub new {
 
    opendir(DIR, $self->{'init'}->{'basedir'}) || do {
       print _("error: can't open basedir: ").$!;
-      exit(1);
+      HELPERS::exit_clean(1);
    };
 
    $self->{'calist'} = [];
